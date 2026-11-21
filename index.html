@@ -266,6 +266,35 @@
     .prize-tag-chip { background: #0f172a; border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px; }
     .prize-tag-chip button { background: rgba(244, 63, 94, 0.18); border: none; color: #fda4af; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 11px; padding: 0; }
 
+    .wheel-exclude-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+    .wheel-exclude-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .wheel-exclude-chip {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+      border-radius: 99px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .wheel-exclude-chip.is-excluded {
+      background: rgba(244, 63, 94, 0.16);
+      border-color: var(--danger);
+      color: #fda4af;
+      text-decoration: line-through;
+    }
+    .wheel-exclude-chip.is-won {
+      background: rgba(245, 158, 11, 0.14);
+      border-color: var(--brand);
+      color: #fde68a;
+    }
+
     .gift-reveal-box { background: #090e1a; border: 2px dashed var(--brand); border-radius: var(--radius); padding: 22px 14px; margin: 10px 0; text-align: center; cursor: pointer; }
     .vote-list { display: flex; flex-direction: column; gap: 8px; }
     .vote-item-row { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
@@ -613,6 +642,15 @@
               <div id="prizes-exhausted-banner" style="display: none; margin-top: 10px; background: rgba(245, 158, 11, 0.14); border: 1px solid var(--brand); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #fde68a; font-weight: 600;">
                 🎉 ของรางวัลที่ตั้งไว้ถูกแจกครบทุกชิ้นแล้ว! (สามารถพิมพ์เพิ่มรางวัลใหม่ด้านบน หรือหมุนสุ่มรายชื่อทั่วไปต่อได้)
               </div>
+
+              <!-- ระบบเลือกยกเว้นรายชื่อบางคนจากวงล้อ เช่น หัวหน้างาน/ผู้สนับสนุนรางวัล -->
+              <div class="wheel-exclude-box">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+                  <span style="font-size: 11px; font-weight: 700; color: #fde68a;">🙈 ยกเว้นรายชื่อจากวงล้อ (เช่น หัวหน้างาน/ผู้แจกรางวัล — ไม่ตัดสิทธิ์แลกของขวัญกันเอง):</span>
+                  <span style="font-size: 10px; color: var(--muted);">แตะชื่อเพื่อ ซ่อน/แสดง ในวงล้อ</span>
+                </div>
+                <div class="wheel-exclude-list" id="wheel-exclusion-chips-container"></div>
+              </div>
             </div>
 
             <div class="wheel-container-wrap">
@@ -696,14 +734,19 @@
             </div>
           </div>
 
-          <!-- View 4: Best Dressed Voting (พร้อมป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตโหวตรอบใหม่สำหรับ Admin) -->
+          <!-- View 4: Best Dressed Voting (ซ่อนผลโหวตจนกว่า Admin จะกดแสดงผล + ป้ายชนะเลิศร่วม Tie Score) -->
           <div class="panel-card view-section" style="display: none;" id="view-section-voting">
             <div class="panel-title-bar">
               <h2 class="panel-title">👗 โหวตการแต่งกายยอดเยี่ยม</h2>
-              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span class="meta-caption">1 คน 1 โหวต • ห้ามโหวตตัวเอง</span>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="meta-caption">1 คน 1 สิทธิ์ • เปลี่ยนใจได้จนกว่าจะสรุปผล • ห้ามโหวตตัวเอง</span>
+                <button type="button" class="btn btn-primary admin-only-control" id="btn-toggle-vote-reveal" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">📣 แสดงผลโหวตขึ้นจอ</button>
                 <button type="button" class="btn btn-ghost-danger admin-only-control" id="btn-reset-votes" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตผลโหวต (เปิดรอบใหม่)</button>
               </div>
+            </div>
+            <div id="voting-blind-status-banner" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #bae6fd; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span id="voting-blind-status-text">🔒 ซ่อนผลคะแนนโหวตชั่วคราว (ป้องกันการชี้นำ) จนกว่า Admin จะกดแสดงผล</span>
+              <strong id="voting-total-cast-badge" style="color: #fde68a;">โหวตแล้ว 0 / 0 คน</strong>
             </div>
             <div class="vote-list" id="best-dressed-vote-list"></div>
           </div>
@@ -712,27 +755,32 @@
           <div class="panel-card view-section" style="display: none;" id="view-section-witwager">
             <div class="panel-title-bar">
               <h2 class="panel-title">🔢 ทายตัวเลข Wits &amp; Wagers</h2>
-              <span class="meta-caption">⏱️ ตอบใน 15 วินาที (ไม่ตอบ = สละสิทธิ์)</span>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="meta-caption">⏱️ ตอบใน 15 วินาที (ไม่ตอบ = สละสิทธิ์)</span>
+                <button type="button" class="btn btn-ghost-danger admin-only-control" id="btn-wits-clear-game" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🗑️ ล้างข้อมูลเกมที่เล่นไปแล้ว</button>
+              </div>
             </div>
 
             <div class="wits-host-box admin-only-control">
-              <strong style="font-size: 13px; color: var(--brand); display: block; margin-bottom: 8px;">👑 แผงตั้งคำถามทายตัวเลข (สำหรับ Admin)</strong>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงตั้งคำถามทายตัวเลข (สำหรับ Admin)</strong>
+              </div>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div>
                   <label class="field-label" for="wits-question-input">คำถาม (ผู้เล่นมีเวลา 15 วินาทีหลังกดส่ง)</label>
-                  <input type="text" id="wits-question-input" class="input" value="ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?">
+                  <input type="text" id="wits-question-input" class="input" placeholder="พิมพ์คำถามทายตัวเลข..." value="ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?">
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
                   <div>
                     <label class="field-label" for="wits-answer-input">คำตอบตัวเลขที่ถูกต้อง (ซ่อนไว้)</label>
-                    <input type="password" inputmode="decimal" id="wits-answer-input" class="input" value="428">
+                    <input type="password" inputmode="decimal" id="wits-answer-input" class="input" placeholder="ระบุตัวเลขเฉลย..." value="428">
                     <label class="checkbox-label" style="font-size: 11px; margin-top: 4px;">
                       <input type="checkbox" id="chk-show-secret-ans"> แสดงเลขเฉลยให้ Admin ดู
                     </label>
                   </div>
                   <div>
                     <label class="field-label" for="wits-prize-input">ของรางวัลข้อนี้</label>
-                    <input type="text" id="wits-prize-input" class="input" value="อั่งเปาพิเศษ 1,000 บาท">
+                    <input type="text" id="wits-prize-input" class="input" placeholder="ระบุของรางวัล..." value="อั่งเปาพิเศษ 1,000 บาท">
                   </div>
                   <div>
                     <label class="field-label" for="wits-rule-select">กติกาตัดสินผู้ชนะ</label>
@@ -747,7 +795,7 @@
                   <button type="button" class="btn btn-primary" id="btn-wits-broadcast">📢 ส่งคำถาม &amp; เริ่มจับเวลา 15 วิ!</button>
                   <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button type="button" class="btn btn-draw" id="btn-wits-reveal" style="display: none; font-size: 14px; padding: 9px 18px;" disabled>✨ เฉลยคำตอบ &amp; แจกรางวัล!</button>
-                    <button type="button" class="btn btn-secondary" id="btn-wits-newround" style="display: none;">🔄 ตั้งคำถามรอบใหม่</button>
+                    <button type="button" class="btn btn-secondary" id="btn-wits-newround" style="display: none;">🔄 ล้างรอบนี้ &amp; ตั้งคำถามใหม่</button>
                   </div>
                 </div>
               </div>
@@ -870,6 +918,7 @@
         hadConfiguredPrizes: false,
         selectedPrize: '',
         luckyDrawExclusions: [],
+        wheelManualExclusions: [],
         wheelStage: {
           spinId: '',
           status: 'idle',
@@ -881,6 +930,7 @@
         winners: [],
         prizeAlerts: [],
         votedGuests: {},
+        votingRevealed: false,
         circularLoopId: '',
         circularLoopPath: [],
         circularCurrentIdx: 0,
@@ -950,6 +1000,7 @@
         });
         state.guests = state.guests.filter(g => g.id !== guestId);
         state.luckyDrawExclusions = state.luckyDrawExclusions.filter(id => id !== guestId);
+        state.wheelManualExclusions = state.wheelManualExclusions.filter(id => id !== guestId);
         if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
 
         let loopWasReset = false;
@@ -1571,10 +1622,60 @@
       let wheelAngle = 0, wheelIsSpinning = false;
 
       function getActiveWheelPool() {
-        return state.guests.filter(g => !state.luckyDrawExclusions.includes(g.id));
+        return state.guests.filter(g =>
+          !state.luckyDrawExclusions.includes(g.id) &&
+          !state.wheelManualExclusions.includes(g.id)
+        );
       }
 
+      function renderWheelExclusionChips() {
+        const box = document.getElementById('wheel-exclusion-chips-container');
+        if (!box) return;
+        box.innerHTML = '';
+        if (!state.guests.length) {
+          box.innerHTML = '<span style="font-size: 11px; color: var(--muted);">ยังไม่มีรายชื่อผู้เข้าร่วมในขณะนี้</span>';
+          return;
+        }
+        state.guests.forEach(g => {
+          const isManualEx = state.wheelManualExclusions.includes(g.id);
+          const isWonEx = state.luckyDrawExclusions.includes(g.id);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'wheel-exclude-chip' + (isManualEx ? ' is-excluded' : (isWonEx ? ' is-won' : ''));
+          if (isManualEx) {
+            btn.innerHTML = `🚫 ${escapeHtml(g.name)} <small>(ยกเว้น)</small>`;
+            btn.title = 'แตะเพื่อดึงชื่อกลับเข้าวงล้อ';
+          } else if (isWonEx) {
+            btn.innerHTML = `🏆 ${escapeHtml(g.name)} <small>(ได้รางวัลแล้ว)</small>`;
+            btn.title = 'แตะเพื่อดึงชื่อกลับเข้าวงล้อ';
+          } else {
+            btn.innerHTML = `✅ ${escapeHtml(g.name)}`;
+            btn.title = 'แตะเพื่อยกเว้นชื่อนี้จากวงล้อ (เช่น หัวหน้างาน/ผู้แจกรางวัล)';
+          }
+          btn.onclick = () => window.toggleWheelExcludeGuest(g.id);
+          box.appendChild(btn);
+        });
+      }
+
+      window.toggleWheelExcludeGuest = function(guestId) {
+        if (state.deviceRole !== 'all' || wheelIsSpinning) return;
+        const mIdx = state.wheelManualExclusions.indexOf(guestId);
+        const wIdx = state.luckyDrawExclusions.indexOf(guestId);
+        if (mIdx !== -1) {
+          state.wheelManualExclusions.splice(mIdx, 1);
+        } else if (wIdx !== -1) {
+          state.luckyDrawExclusions.splice(wIdx, 1);
+        } else {
+          state.wheelManualExclusions.push(guestId);
+        }
+        triggerHapticVibration(35);
+        renderWheelExclusionChips();
+        drawLuckyWheel();
+        syncAdminCore('wheel_manual_exclude_toggled');
+      };
+
       function renderPrizes() {
+        renderWheelExclusionChips();
         drawPrizeSelect.innerHTML = '<option value="">-- ไม่ระบุชื่อของรางวัล (สุ่มรายชื่อทั่วไป) --</option>';
         const tags = document.getElementById('prize-tags-container');
         tags.innerHTML = '';
@@ -1648,6 +1749,7 @@
         if (state.deviceRole !== 'all') return;
         state.luckyDrawExclusions = [];
         state.wheelStage = { spinId: '', status: 'idle', finalAngle: wheelAngle, winnerId: '', winnerName: '', prizeName: '' };
+        renderWheelExclusionChips();
         syncWheelStageUI();
         drawLuckyWheel();
         syncAdminCore('wheel_restored');
@@ -1963,37 +2065,85 @@
         });
       });
 
-      // Best Dressed Voting (พร้อมป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตคะแนนสำหรับ Admin)
+      // Best Dressed Voting (ซ่อนผลโหวตจนกว่า Admin จะกดแสดงผล + ป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตโหวต)
+      document.getElementById('btn-toggle-vote-reveal').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        state.votingRevealed = !state.votingRevealed;
+        triggerHapticVibration(state.votingRevealed ? [120, 60, 180] : 40);
+        if (state.votingRevealed) triggerGrandConfetti();
+        renderVotingCandidates();
+        syncAdminCore('voting_reveal_toggled');
+      });
+
       document.getElementById('btn-reset-votes').addEventListener('click', () => {
         if (state.deviceRole !== 'all') return;
-        askSafetyConfirm('รีเซ็ตคะแนนโหวตทั้งหมด?', 'คะแนนโหวตการแต่งกายทั้งหมดจะถูกล้างเป็น 0 เพื่อเปิดโหวตรอบใหม่', () => {
+        askSafetyConfirm('รีเซ็ตคะแนนโหวตทั้งหมด?', 'คะแนนโหวตการแต่งกายทั้งหมดจะถูกล้างเป็น 0 และกลับสู่โหมดซ่อนผลโหวตเพื่อเปิดรอบใหม่', () => {
           state.votedGuests = {};
+          state.votingRevealed = false;
+          fbMirror.votes = {};
           fbWriteSubpath('votes', null, 'DELETE');
           renderVotingCandidates();
-          broadcastLocalOnly('votes_reset');
+          syncAdminCore('votes_reset');
         });
       });
 
       function renderVotingCandidates() {
         const list = document.getElementById('best-dressed-vote-list');
+        const toggleBtn = document.getElementById('btn-toggle-vote-reveal');
+        const statusBanner = document.getElementById('voting-blind-status-banner');
+        const statusText = document.getElementById('voting-blind-status-text');
+        const totalCastBadge = document.getElementById('voting-total-cast-badge');
+
+        const totalGuests = state.guests.length;
+        const totalCast = state.guests.filter(g => state.votedGuests && state.votedGuests[g.id] !== undefined).length;
+        if (totalCastBadge) totalCastBadge.textContent = `โหวตแล้ว ${totalCast} / ${totalGuests} คน`;
+
+        if (toggleBtn) {
+          if (state.votingRevealed) {
+            toggleBtn.textContent = '🙈 ซ่อนผลโหวตอีกครั้ง';
+            toggleBtn.className = 'btn btn-secondary admin-only-control';
+          } else {
+            toggleBtn.textContent = '📣 แสดงผลโหวตขึ้นจอ';
+            toggleBtn.className = 'btn btn-primary admin-only-control';
+          }
+          toggleBtn.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
+        }
+
+        if (statusBanner && statusText) {
+          if (state.votingRevealed) {
+            statusBanner.style.background = 'rgba(16, 185, 129, 0.14)';
+            statusBanner.style.borderColor = 'var(--success)';
+            statusText.innerHTML = '🎉 <strong>เปิดเผยผลโหวตการแต่งกายยอดเยี่ยมแล้ว!</strong>';
+          } else {
+            statusBanner.style.background = 'rgba(56, 189, 248, 0.12)';
+            statusBanner.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+            statusText.innerHTML = '🔒 <strong>โหมดลงคะแนนลับ:</strong> ซ่อนผลคะแนนโหวตชั่วคราว (ป้องกันการชี้นำ) จนกว่า Admin จะกดแสดงผล';
+          }
+        }
+
         list.innerHTML = '';
         if (!state.guests.length) {
           list.innerHTML = '<div class="empty-state">ยังไม่มีรายชื่อผู้เข้าร่วมออนไลน์ในขณะนี้</div>';
           return;
         }
         const enriched = state.guests.map(g => ({ ...g, votes: getVoteCount(g.id) }));
-        const sorted = enriched.sort((a, b) => b.votes - a.votes);
-        const topScore = sorted[0]?.votes || 0;
-        const topLeadersCount = topScore > 0 ? sorted.filter(c => c.votes === topScore).length : 0;
+        // ซ่อนผลโหวต = เรียงตามลำดับลงชื่อเข้างานปกติ (ไม่เรียงตามคะแนน เพื่อไม่ให้รู้ว่าใครนำ!)
+        const displayList = state.votingRevealed
+          ? [...enriched].sort((a, b) => b.votes - a.votes)
+          : enriched;
+
+        const maxVotesInRoom = Math.max(0, ...enriched.map(c => c.votes));
+        const topScore = state.votingRevealed ? maxVotesInRoom : 0;
+        const topLeadersCount = topScore > 0 ? enriched.filter(c => c.votes === topScore).length : 0;
         const maxV = Math.max(1, topScore);
 
         const vid = state.deviceRole;
         const isAdmin = vid === 'all';
         const hasVoted = !isAdmin && vid !== 'guest_unselected' && state.votedGuests[vid] !== undefined;
 
-        sorted.forEach(c => {
-          const pct = Math.round((c.votes / maxV) * 100);
-          const isTop = topScore > 0 && c.votes === topScore;
+        displayList.forEach(c => {
+          const pct = state.votingRevealed ? Math.round((c.votes / maxV) * 100) : 0;
+          const isTop = state.votingRevealed && topScore > 0 && c.votes === topScore;
           let leaderBadge = '';
           if (isTop) {
             leaderBadge = topLeadersCount > 1
@@ -2001,27 +2151,42 @@
               : ` <span class="slot-prize-badge" style="margin:0 0 0 6px;padding:2px 8px;font-size:10px;">👑 อันดับ 1 ผู้นำโหวต</span>`;
           }
 
+          const scoreLabel = state.votingRevealed
+            ? `<span style="color:var(--brand);">${c.votes} คะแนน</span>`
+            : `<span style="color:var(--muted);font-size:11px;">🙈 ซ่อนผลโหวต</span>`;
+
           let act = '';
-          if (isAdmin) act = `<span style="font-size:11px;color:var(--muted);padding:6px 10px;border:1px dashed var(--border);border-radius:8px;">👁️ Admin ดูผลเท่านั้น</span>`;
-          else if (vid === 'guest_unselected') act = `<button type="button" class="btn btn-secondary" disabled>กรุณาลงชื่อก่อน</button>`;
-          else if (vid === c.id) act = `<button type="button" class="btn btn-secondary" style="opacity:0.5;border-style:dashed;" disabled>🚫 ห้ามโหวตตัวเอง</button>`;
-          else if (hasVoted) act = state.votedGuests[vid] === c.id
-            ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
-            : `<button type="button" class="btn btn-secondary" style="opacity:0.45;" disabled>ใช้สิทธิ์โหวตแล้ว</button>`;
-          else act = `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🗳️ โหวตให้คนนี้</button>`;
+          if (isAdmin) {
+            act = `<span style="font-size:11px;color:var(--muted);padding:6px 10px;border:1px dashed var(--border);border-radius:8px;">👁️ Admin ดูผลเท่านั้น</span>`;
+          } else if (vid === 'guest_unselected') {
+            act = `<button type="button" class="btn btn-secondary" disabled>กรุณาลงชื่อก่อน</button>`;
+          } else if (vid === c.id) {
+            act = `<button type="button" class="btn btn-secondary" style="opacity:0.5;border-style:dashed;" disabled>🚫 ห้ามโหวตตัวเอง</button>`;
+          } else if (state.votingRevealed) {
+            act = state.votedGuests[vid] === c.id
+              ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
+              : `<button type="button" class="btn btn-secondary" style="opacity:0.45;" disabled>🔒 ปิดโหวตแล้ว</button>`;
+          } else if (hasVoted) {
+            act = state.votedGuests[vid] === c.id
+              ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
+              : `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🔄 เปลี่ยนมาโหวตคนนี้</button>`;
+          } else {
+            act = `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🗳️ โหวตให้คนนี้</button>`;
+          }
 
           const row = document.createElement('div');
           row.className = 'vote-item-row' + (isTop ? ' is-leader' : '');
-          row.innerHTML = `<div class="vote-item-info"><div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;gap:6px;flex-wrap:wrap;"><span>👗 ${escapeHtml(c.name)}${vid === c.id ? ' <small style="color:#fde68a;">(คุณ)</small>' : ''}${leaderBadge}</span><span style="color:var(--brand);">${c.votes} คะแนน</span></div><div class="vote-bar-outer"><div class="vote-bar-inner" style="width:${c.votes > 0 ? pct : 0}%;"></div></div></div>${act}`;
+          row.innerHTML = `<div class="vote-item-info"><div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;gap:6px;flex-wrap:wrap;"><span>👗 ${escapeHtml(c.name)}${vid === c.id ? ' <small style="color:#fde68a;">(คุณ)</small>' : ''}${leaderBadge}</span>${scoreLabel}</div><div class="vote-bar-outer"><div class="vote-bar-inner" style="width:${state.votingRevealed && c.votes > 0 ? pct : 0}%;"></div></div></div>${act}`;
           list.appendChild(row);
         });
       }
 
       window.castVote = function(cid) {
         const vid = state.deviceRole;
-        if (!vid || vid === 'all' || vid === 'guest_unselected' || vid === cid || state.votedGuests[vid] !== undefined) return;
+        if (state.votingRevealed || !vid || vid === 'all' || vid === 'guest_unselected' || vid === cid || state.votedGuests[vid] === cid) return;
         if (state.guests.some(g => g.id === cid)) {
           state.votedGuests[vid] = cid;
+          triggerHapticVibration(35);
           renderVotingCandidates();
           fbWriteSubpath(`votes/${encodeURIComponent(vid)}`, cid, 'PUT');
           broadcastLocalOnly('vote_cast');
@@ -2141,12 +2306,43 @@
         syncAdminCore('wits_reveal');
       });
 
-      document.getElementById('btn-wits-newround').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        state.witsGame = { roundId: '', phase: 'idle', question: '', correctAnswer: null, prize: '', rule: 'wits', durationSec: 15, timeLeft: 15, timeUp: false, submissions: {}, winnerIds: [] };
+      function resetWitsGameStateAndClear(clearInputFields) {
+        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
+        state.witsGame = {
+          roundId: '',
+          phase: 'idle',
+          question: '',
+          correctAnswer: null,
+          prize: '',
+          rule: document.getElementById('wits-rule-select')?.value || 'wits',
+          durationSec: 15,
+          timeLeft: 15,
+          timeUp: false,
+          submissions: {},
+          winnerIds: []
+        };
+        if (clearInputFields) {
+          document.getElementById('wits-question-input').value = '';
+          document.getElementById('wits-answer-input').value = '';
+          document.getElementById('wits-prize-input').value = '';
+          document.getElementById('wits-host-error').classList.remove('visible');
+        }
+        fbMirror.witsSubmissions = {};
         fbWriteSubpath('witsSubmissions', null, 'DELETE');
         renderWitsGame();
         syncAdminCore('wits_reset');
+      }
+
+      document.getElementById('btn-wits-newround').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        resetWitsGameStateAndClear(false);
+      });
+
+      document.getElementById('btn-wits-clear-game').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        askSafetyConfirm('ล้างข้อมูลเกมทายตัวเลข?', 'ข้อมูลคำถาม เฉลย และคำตอบที่เล่นไปแล้วในรอบนี้จะถูกล้างออกทั้งหมดเพื่อเริ่มใหม่', () => {
+          resetWitsGameStateAndClear(true);
+        });
       });
 
       function renderWitsGame() {
@@ -2293,6 +2489,7 @@
       }
 
       function fbWriteSubpath(subPath, dataObj, method, keepalive) {
+        applyFbPathChange(fbMirror, '/' + subPath, method === 'DELETE' ? null : dataObj, false);
         const root = getFirebaseRootUrl();
         if (!root) return Promise.resolve();
         const url = `${root}/${subPath}.json`;
@@ -2311,9 +2508,11 @@
           hadConfiguredPrizes: state.hadConfiguredPrizes,
           selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions,
+          wheelManualExclusions: state.wheelManualExclusions,
           wheelStage: state.wheelStage,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
+          votingRevealed: Boolean(state.votingRevealed),
           circularLoop: {
             loopId: state.circularLoopId,
             path: state.circularLoopPath,
@@ -2336,7 +2535,9 @@
       }
 
       function fbPushCoreState() {
-        fbWriteSubpath('core', buildCoreStateObject(), 'PUT');
+        const coreObj = buildCoreStateObject();
+        fbMirror.core = coreObj;
+        fbWriteSubpath('core', coreObj, 'PUT');
       }
 
       function syncAdminCore(reason) {
@@ -2396,9 +2597,11 @@
           state.hadConfiguredPrizes = Boolean(c.hadConfiguredPrizes);
           state.selectedPrize = typeof c.selectedPrize === 'string' ? c.selectedPrize : '';
           state.luckyDrawExclusions = Array.isArray(c.luckyDrawExclusions) ? c.luckyDrawExclusions : [];
+          state.wheelManualExclusions = Array.isArray(c.wheelManualExclusions) ? c.wheelManualExclusions : [];
           if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
           state.winners = Array.isArray(c.winners) ? c.winners : [];
           state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
+          state.votingRevealed = Boolean(c.votingRevealed);
           if (c.circularLoop && typeof c.circularLoop === 'object') {
             state.circularLoopId = c.circularLoop.loopId || '';
             state.circularLoopPath = Array.isArray(c.circularLoop.path) ? c.circularLoop.path : [];
@@ -2583,8 +2786,9 @@
         const payload = {
           adminPassword: state.adminPassword, guests: state.guests, prizes: state.prizes,
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
-          luckyDrawExclusions: state.luckyDrawExclusions, wheelStage: state.wheelStage,
-          winners: state.winners, prizeAlerts: state.prizeAlerts, votedGuests: state.votedGuests,
+          luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
+          wheelStage: state.wheelStage, winners: state.winners, prizeAlerts: state.prizeAlerts,
+          votedGuests: state.votedGuests, votingRevealed: state.votingRevealed,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
           circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
           circularHasStarted: state.circularHasStarted, witsGame: state.witsGame
@@ -2600,10 +2804,12 @@
         if (typeof p.hadConfiguredPrizes === 'boolean') state.hadConfiguredPrizes = p.hadConfiguredPrizes;
         if (typeof p.selectedPrize === 'string') state.selectedPrize = p.selectedPrize;
         if (Array.isArray(p.luckyDrawExclusions)) state.luckyDrawExclusions = p.luckyDrawExclusions;
+        if (Array.isArray(p.wheelManualExclusions)) state.wheelManualExclusions = p.wheelManualExclusions;
         if (p.wheelStage) state.wheelStage = p.wheelStage;
         if (Array.isArray(p.winners)) state.winners = p.winners;
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
         if (p.votedGuests) state.votedGuests = p.votedGuests;
+        if (typeof p.votingRevealed === 'boolean') state.votingRevealed = p.votingRevealed;
         if (typeof p.circularLoopId === 'string') state.circularLoopId = p.circularLoopId;
         if (Array.isArray(p.circularLoopPath)) state.circularLoopPath = p.circularLoopPath;
         if (typeof p.circularCurrentIdx === 'number') state.circularCurrentIdx = p.circularCurrentIdx;
