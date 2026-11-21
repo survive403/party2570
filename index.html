@@ -1,0 +1,2661 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <title>Mobile Party Webapp — ฉลองปีใหม่ I Love My (Dream) Job</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* === 1. MOBILE-FIRST DESIGN TOKENS & BASE === */
+    :root {
+      --bg: #090e1a;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #162240 0%, #050811 85%);
+      --surface: #111a2e;
+      --surface-elevated: #1a2642;
+      --border: #243861;
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --brand: #f59e0b;
+      --brand-hover: #d97706;
+      --brand-ink: #020617;
+      --accent: #ec4899;
+      --brand-soft: rgba(245, 158, 11, 0.16);
+      --danger: #f43f5e;
+      --danger-soft: rgba(244, 63, 94, 0.16);
+      --success: #10b981;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+      --font: "Prompt", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.45;
+    }
+
+    /* === 2. COMPACT MOBILE HEADER === */
+    .top-toolbar {
+      background: rgba(9, 14, 26, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 8px 12px;
+    }
+    .toolbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .logo-badge { display: flex; align-items: center; gap: 8px; }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .logo-title { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; display: block; line-height: 1.2; }
+    .logo-sub { font-size: 10px; color: var(--brand); font-weight: 600; display: block; line-height: 1.2; }
+    .toolbar-center { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .toolbar-btn, .toolbar-static-pill {
+      background: #10192e;
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 99px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .toolbar-btn { cursor: pointer; transition: all 0.15s ease; min-height: 32px; }
+    .toolbar-btn:hover { background: var(--surface-elevated); border-color: var(--brand); }
+    .toolbar-btn.green-status { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: #a7f3d0; }
+    .toolbar-btn.orange-status { background: rgba(245, 158, 11, 0.2); border-color: var(--brand); color: #fde68a; }
+
+    .container { max-width: 1180px; margin: 0 auto; padding: 10px; position: relative; z-index: 10; }
+    @media (min-width: 768px) { .container { padding: 16px; } }
+
+    /* === 3. HERO COUNTDOWN (COMPACT ON PORTRAIT MOBILE) === */
+    .hero-countdown {
+      text-align: center;
+      padding: 16px 12px 18px;
+      position: relative;
+      background: linear-gradient(180deg, #131c33 0%, #0a1020 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    @media (min-width: 768px) { .hero-countdown { padding: 22px 16px 26px; margin-bottom: 20px; } }
+    .announcement-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fde68a;
+      margin-bottom: 8px;
+    }
+    .countdown-title-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 2px; font-weight: 600; }
+    .grand-countdown-title { font-size: clamp(19px, 5vw, 34px); font-weight: 800; line-height: 1.2; color: #fff; margin: 0 0 6px; }
+    .grand-countdown-title span { background: linear-gradient(to right, #fde68a, #f59e0b, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .grand-countdown-subtitle { font-size: 11px; color: var(--muted); margin: 0 0 12px; }
+    .countdown-timer-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 360px; margin: 0 auto; }
+    .timer-circle-card { background: rgba(17, 26, 46, 0.85); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px; text-align: center; }
+    .timer-circle-card .value { font-size: 20px; font-weight: 800; color: var(--brand); line-height: 1.1; display: block; }
+    @media (min-width: 640px) { .timer-circle-card .value { font-size: 24px; } }
+    .timer-circle-card .label { font-size: 10px; color: var(--muted); }
+
+    /* === 4. MOBILE-FIRST NAVIGATION TABS (PORTRAIT THUMB-FRIENDLY) === */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    @media (min-width: 768px) {
+      .action-grid { gap: 10px; margin-bottom: 20px; }
+    }
+    .action-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+      box-shadow: var(--shadow);
+      transition: all 0.15s ease;
+    }
+    @media (min-width: 860px) {
+      .action-card { flex-direction: row; text-align: left; padding: 12px; gap: 10px; }
+    }
+    .action-card:hover { border-color: var(--brand); background: var(--surface-elevated); }
+    .action-card.active { border-color: var(--brand); background: rgba(245, 158, 11, 0.14); box-shadow: 0 0 14px rgba(245, 158, 11, 0.2); }
+    .action-icon-wrap { width: 34px; height: 34px; border-radius: 10px; background: #0f172a; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+    .action-info { min-width: 0; width: 100%; }
+    .action-badge { font-size: 9px; font-weight: 700; color: var(--brand); display: none; }
+    @media (min-width: 860px) { .action-badge { display: block; text-transform: uppercase; } }
+    .action-title { font-size: 11px; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; word-break: break-word; }
+    @media (min-width: 860px) { .action-title { font-size: 13px; } }
+
+    .module-split-layout { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+    @media (min-width: 1024px) { .module-split-layout { grid-template-columns: 1.38fr 0.72fr; gap: 20px; } }
+
+    .panel-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+    @media (min-width: 640px) { .panel-card { padding: 20px; } }
+    .panel-title-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
+    .panel-title { font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
+    .meta-caption { font-size: 11px; color: var(--muted); }
+
+    /* === 5. TOUCH-FRIENDLY BUTTONS & INPUTS (16px FONT PREVENTS iOS AUTO-ZOOM) === */
+    .btn {
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.08s ease;
+    }
+    .btn:active:not(:disabled) { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-draw { width: 100%; max-width: 340px; font-size: 16px; min-height: 48px; padding: 12px 24px; border-radius: 999px; background: linear-gradient(135deg, var(--brand), #ea580c); color: #fff; box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.45); }
+    .btn-primary { background: var(--brand); color: var(--brand-ink); }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
+    .btn-secondary { background: var(--surface-elevated); color: var(--ink); border-color: var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: #334155; }
+    .btn-ghost-danger { background: transparent; color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); min-height: 34px; padding: 6px 10px; font-size: 12px; }
+    .btn-ghost-danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); }
+
+    .input, .select, .textarea {
+      width: 100%;
+      font: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      background: #090e1a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 44px;
+      padding: 10px 12px;
+    }
+    .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--brand); }
+    .field-label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+    .checkbox-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; user-select: none; }
+    .checkbox-label input { width: 18px; height: 18px; accent-color: var(--brand); cursor: pointer; flex-shrink: 0; }
+    .input-row-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .input-row-group > .input, .input-row-group > .select { flex: 1; min-width: 120px; }
+    .error-msg { color: #fca5a5; font-size: 12px; margin-top: 6px; display: none; }
+    .error-msg.visible { display: block; }
+    .empty-state { text-align: center; padding: 22px 14px; border: 1px dashed var(--border); border-radius: var(--radius-sm); color: var(--muted); font-size: 13px; }
+
+    /* === 6. GATEKEEPER & ACTIVITY MODULES === */
+    .gatekeeper-grid { display: grid; grid-template-columns: 1fr; gap: 14px; max-width: 900px; margin: 0 auto 20px; }
+    @media (min-width: 768px) { .gatekeeper-grid { grid-template-columns: 1.2fr 0.8fr; gap: 18px; } }
+    .gatekeeper-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+
+    .single-player-banner {
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.2), rgba(16, 185, 129, 0.16));
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+
+    .guest-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 8px; }
+    .guest-avatar-card { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; position: relative; }
+    .guest-avatar-card.is-me { border-color: var(--brand); background: rgba(245, 158, 11, 0.08); }
+    .guest-avatar-card.is-grace { opacity: 0.65; border-style: dashed; }
+    .guest-avatar-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+    .guest-badge { font-size: 10px; color: var(--brand); background: rgba(245, 158, 11, 0.12); padding: 2px 6px; border-radius: 99px; display: inline-block; margin-top: 4px; }
+
+    .wheel-container-wrap { display: flex; flex-direction: column; align-items: center; position: relative; margin: 10px auto; width: 100%; max-width: min(300px, calc(100vw - 52px)); }
+    @media (min-width: 640px) { .wheel-container-wrap { max-width: 360px; } }
+    .wheel-arrow { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid var(--danger); z-index: 20; }
+    #lucky-wheel-canvas { background: #0d1323; border: 6px solid var(--border); border-radius: 50%; box-shadow: 0 0 26px rgba(37, 99, 235, 0.35); width: 100%; max-width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; }
+    .slot-stage-inner { background: #090e1a; border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 12px; text-align: center; margin-top: 10px; }
+    .slot-stage-inner.rolling { border-color: var(--brand); }
+    .slot-stage-inner.winner { border-color: var(--success); }
+    .slot-prize-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); margin-bottom: 4px; }
+    .stage-slot-title { font-size: clamp(18px, 4.5vw, 28px); font-weight: 800; color: #fff; margin: 4px 0; }
+    .prize-tags-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .prize-tag-chip { background: #0f172a; border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px; }
+    .prize-tag-chip button { background: rgba(244, 63, 94, 0.18); border: none; color: #fda4af; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 11px; padding: 0; }
+
+    .gift-reveal-box { background: #090e1a; border: 2px dashed var(--brand); border-radius: var(--radius); padding: 22px 14px; margin: 10px 0; text-align: center; cursor: pointer; }
+    .vote-list { display: flex; flex-direction: column; gap: 8px; }
+    .vote-item-row { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .vote-item-row.is-leader { border-color: var(--brand); background: rgba(245, 158, 11, 0.07); }
+    .vote-item-info { flex: 1; min-width: 160px; }
+    .vote-bar-outer { background: #1e293b; height: 8px; border-radius: 99px; margin-top: 6px; overflow: hidden; }
+    .vote-bar-inner { background: linear-gradient(to right, var(--brand), var(--accent)); height: 100%; border-radius: 99px; width: 0%; transition: width 0.35s ease; }
+
+    /* Wits & Wagers */
+    .game-timer-circle { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--brand); display: grid; place-items: center; font-size: 16px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
+    .game-timer-circle.urgent { border-color: var(--danger); color: var(--danger); }
+    .wits-host-box { background: #0b1222; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+    .wits-question-banner { background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(236, 72, 153, 0.16)); border: 1px solid rgba(96, 165, 250, 0.4); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 14px; }
+    .wits-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+    .wits-status-pill { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .wits-status-pill.is-win { border-color: var(--brand); background: rgba(245, 158, 11, 0.16); color: #fde68a; font-weight: 700; }
+
+    .mini-phone { background: #070b14; border: 2px solid #293856; border-radius: 20px; padding: 16px; max-width: 360px; margin: 10px auto 0; min-height: 230px; display: flex; flex-direction: column; justify-content: space-between; }
+    .mini-phone.phone-winner { border-color: var(--brand); background: radial-gradient(circle at 50% 20%, rgba(245, 158, 11, 0.3), rgba(16, 185, 129, 0.2) 65%, #071712 100%); }
+    .phone-num-input { width: 100%; font: inherit; font-size: 22px; font-weight: 800; text-align: center; color: #fde68a; background: #111a2e; border: 1px solid var(--border); border-radius: 10px; min-height: 48px; padding: 8px; margin-bottom: 10px; }
+
+    .item-list { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .item-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: #0f172a; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; }
+    .item-meta { font-size: 11px; color: var(--brand); margin-top: 2px; }
+
+    #celebration-overlay-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; }
+    .interactive-fireworks-container { position: absolute; inset: 0; z-index: 1; cursor: crosshair; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.84); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 60; padding: 14px; }
+    .modal-backdrop.open { display: flex; }
+    .modal-card { background: linear-gradient(180deg, #172340 0%, #0d1527 100%); border: 2px solid var(--brand); border-radius: 20px; max-width: 440px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 22px 18px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.75); }
+  </style>
+</head>
+<body>
+  <canvas id="celebration-overlay-canvas"></canvas>
+
+  <!-- 1. Winner Notification Modal -->
+  <div class="modal-backdrop" id="winner-popup-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="font-size: 48px; line-height: 1.1; margin-bottom: 6px;">🏆🎉</div>
+      <span class="slot-prize-badge" id="winner-popup-tag">แจ้งเตือนผู้โชคดี!</span>
+      <h2 id="winner-popup-title" style="font-size: 20px; font-weight: 800; color: #fde68a; margin: 8px 0;">ยินดีด้วย! คุณได้รับรางวัล!</h2>
+      <div id="winner-popup-desc" style="font-size: 14px; color: #fff; margin: 8px 0 14px;">-</div>
+      <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 10px; padding: 10px; font-size: 12px; color: #a7f3d0; margin-bottom: 14px;">
+        📱 แสดงหน้าจอมือถือนี้กับผู้จัดงาน (Admin) เพื่อรับของรางวัลได้เลย!
+      </div>
+      <button type="button" class="btn btn-primary" id="btn-close-winner-popup" style="width: 100%;">✨ รับทราบ / ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
+  <!-- 2. Queue Turn Notification Modal (เด้งเตือนทันทีเมื่อถึงคิวกดสุ่มของขวัญ!) -->
+  <div class="modal-backdrop" id="queue-turn-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="border-color: var(--success);">
+      <div style="font-size: 48px; line-height: 1.1; margin-bottom: 6px;">🎁🔔</div>
+      <span class="slot-prize-badge" style="background: rgba(16, 185, 129, 0.2); color: #a7f3d0;">ถึงคิวของคุณแล้ว!</span>
+      <h2 id="queue-turn-modal-title" style="font-size: 20px; font-weight: 800; color: #fde68a; margin: 8px 0;">ถึงคิวคุณกดสุ่มแลกของขวัญ!</h2>
+      <p id="queue-turn-modal-desc" style="font-size: 13px; color: #cbd5e1; margin: 6px 0 16px;">ปุ่มกดสุ่มของขวัญบนมือถือของคุณปลดล็อกแล้ว กดปุ่มด้านล่างเพื่อไปสุ่มรับของขวัญได้เลย!</p>
+      <button type="button" class="btn btn-draw" id="btn-go-to-my-queue-turn" style="width: 100%;">🎁 ไปที่ปุ่มกดสุ่มของขวัญทันที ➔</button>
+    </div>
+  </div>
+
+  <!-- 3. LINE Summary Export Modal (สำหรับ Admin คัดลอกสรุปผลส่งเข้า LINE) -->
+  <div class="modal-backdrop" id="line-summary-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 500px; text-align: left;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: var(--brand);">📋 สรุปผลงานปาร์ตี้ (ส่งเข้า LINE)</h3>
+        <button type="button" class="btn btn-ghost-danger" id="btn-close-line-summary" style="min-height: 30px; padding: 4px 10px;">✕ ปิด</button>
+      </div>
+      <textarea id="line-summary-textarea" class="textarea" rows="11" readonly style="font-size: 13px; line-height: 1.45; margin-bottom: 10px;"></textarea>
+      <p id="line-copy-feedback" style="font-size: 12px; color: var(--success); margin: 0 0 10px; display: none; font-weight: 600;">✅ คัดลอกข้อความสรุปผลเรียบร้อย! นำไปวางในแชท LINE ได้เลย</p>
+      <button type="button" class="btn btn-primary" id="btn-copy-line-summary" style="width: 100%;">📋 คัดลอกข้อความทั้งหมดส่งเข้า LINE</button>
+    </div>
+  </div>
+
+  <!-- 4. Admin Login Modal -->
+  <div class="modal-backdrop" id="admin-pw-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="border-color: #60a5fa;">
+      <div style="font-size: 38px; margin-bottom: 4px;">🔑👑</div>
+      <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 800;">เข้าสู่โหมดผู้จัดงาน (Admin)</h3>
+      <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">หากเครื่องนี้ลงทะเบียนเป็นผู้เล่นอยู่ ระบบจะถอดชื่อออกจากผู้เล่นทันที</p>
+      <input type="password" id="admin-pw-input" class="input" placeholder="กรอกรหัสผ่าน Admin..." style="text-align: center; font-size: 18px; letter-spacing: 0.14em;">
+      <p id="admin-pw-error" class="error-msg">❌ รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง</p>
+      <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-admin-pw" style="flex: 1;">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-admin-pw" style="flex: 1;">ยืนยันเข้าโหมด Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Change Admin Password Modal -->
+  <div class="modal-backdrop" id="change-pw-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="font-size: 36px; margin-bottom: 4px;">🛡️🔑</div>
+      <h3 style="margin: 0 0 10px; font-size: 18px; font-weight: 800;">เปลี่ยนรหัสผ่าน Admin</h3>
+      <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
+        <div>
+          <label class="field-label" for="old-admin-pw-input">รหัสผ่านปัจจุบัน</label>
+          <input type="password" id="old-admin-pw-input" class="input" placeholder="กรอกรหัสผ่านปัจจุบัน...">
+        </div>
+        <div>
+          <label class="field-label" for="new-admin-pw-input">รหัสผ่านใหม่</label>
+          <input type="password" id="new-admin-pw-input" class="input" placeholder="ตั้งรหัสผ่านใหม่...">
+        </div>
+        <div>
+          <label class="field-label" for="confirm-admin-pw-input">ยืนยันรหัสผ่านใหม่</label>
+          <input type="password" id="confirm-admin-pw-input" class="input" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง...">
+        </div>
+      </div>
+      <p id="change-pw-error" class="error-msg">-</p>
+      <p id="change-pw-success" style="display: none; color: var(--success); font-size: 13px; font-weight: 600; margin: 10px 0 0;">✅ เปลี่ยนรหัสผ่าน Admin สำเร็จ!</p>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-change-pw" style="flex: 1;">ปิด</button>
+        <button type="button" class="btn btn-primary" id="btn-save-change-pw" style="flex: 1;">บันทึกรหัสผ่านใหม่</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Firebase Realtime Database Config Modal (พร้อมตรวจเช็ก Rules 401/403) -->
+  <div class="modal-backdrop" id="firebase-config-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="border-color: #10b981; max-width: 460px;">
+      <div style="font-size: 36px; margin-bottom: 4px;">☁️📱</div>
+      <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 800;">เชื่อมต่อ Firebase (ออนไลน์ข้ามมือถือจริง)</h3>
+      <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">วางลิงก์ <strong>Firebase Realtime Database URL</strong> เพื่อให้มือถือทุกเครื่องซิงค์ข้อมูลห้องเดียวกันแบบเรียลไทม์</p>
+      <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
+        <div>
+          <label class="field-label" for="firebase-db-url-input">Firebase Database URL</label>
+          <input type="text" id="firebase-db-url-input" class="input" placeholder="วางลิงก์ Firebase Database URL ที่นี่...">
+        </div>
+        <div>
+          <label class="field-label" for="firebase-room-id-input">ชื่อห้องกิจกรรม (Room ID)</label>
+          <input type="text" id="firebase-room-id-input" class="input" value="happynewyear2569">
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.95); border: 1px dashed #10b981; border-radius: 10px; padding: 10px 12px; font-size: 11px; color: #cbd5e1; margin-top: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <strong style="color: #fde68a;">🔐 สำคัญที่สุด! ตั้งค่า Firebase Rules:</strong>
+            <button type="button" class="btn btn-secondary" id="btn-copy-firebase-rules" style="min-height: 24px; padding: 2px 8px; font-size: 10px; border-color: #10b981; color: #a7f3d0;">📋 คัดลอก Rules</button>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">
+            ไปที่ <strong>Firebase Console</strong> ➔ <strong>Realtime Database</strong> ➔ แท็บ <strong>Rules</strong> แล้ววางโค้ดนี้:
+          </div>
+          <pre id="firebase-rules-code" style="background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin: 0; color: #34d399; font-family: monospace; font-size: 11px; line-height: 1.3;">{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre>
+          <div id="copy-rules-feedback" style="font-size: 10px; color: #a7f3d0; margin-top: 4px; display: none; font-weight: 600;">✅ คัดลอกโค้ด Rules แล้ว! นำไปวางในแท็บ Rules ได้เลย</div>
+        </div>
+      </div>
+      <p id="firebase-config-status" style="font-size: 12px; color: #a7f3d0; margin: 10px 0 0; display: none; word-break: break-all;">-</p>
+      <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-ghost-danger" id="btn-disconnect-firebase">ตัดการเชื่อมต่อ</button>
+        <button type="button" class="btn btn-secondary" id="btn-close-firebase-modal" style="flex: 1;">ปิด</button>
+        <button type="button" class="btn btn-primary" id="btn-save-firebase-config" style="flex: 1;">บันทึก &amp; เชื่อมต่อ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Safety Confirmation Modal (ป้องกันเผลอกดปุ่มล้างข้อมูลบนมือถือ) -->
+  <div class="modal-backdrop" id="confirm-action-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="border-color: var(--danger); max-width: 380px;">
+      <div style="font-size: 38px; margin-bottom: 4px;">⚠️🛡️</div>
+      <h3 id="confirm-modal-title" style="margin: 0 0 6px; font-size: 17px; font-weight: 800; color: #fff;">ยืนยันการทำรายการ</h3>
+      <p id="confirm-modal-desc" style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">คุณต้องการดำเนินการนี้ใช่หรือไม่?</p>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary" id="btn-confirm-modal-cancel" style="flex: 1;">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-modal-ok" style="flex: 1; background: var(--danger); color: #fff;">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Header -->
+  <header class="top-toolbar">
+    <div class="toolbar-inner">
+      <div class="logo-badge">
+        <div class="logo-icon">🎉</div>
+        <div>
+          <span class="logo-title">Mobile Party Webapp</span>
+          <span class="logo-sub">เป้าหมาย: 18/12/69 • 18.00 น.</span>
+        </div>
+      </div>
+
+      <div class="toolbar-center">
+        <span class="toolbar-static-pill">🙋 <strong id="tb-identity-label" style="color: #fde68a;">ยังไม่ลงชื่อ</strong></span>
+        <span class="toolbar-static-pill" style="background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: #a7f3d0;">
+          👥 <strong id="tb-joined-count">0</strong> คน
+        </span>
+        <button id="tb-refresh-sync-btn" class="toolbar-btn" type="button" title="แตะเพื่อดึงข้อมูลสดล่าสุด">🔄 รีเฟรช</button>
+        <button id="tb-enter-admin-top-btn" class="toolbar-btn orange-status" type="button">👑 Admin</button>
+        <button id="tb-line-export-btn" class="toolbar-btn green-status admin-only-control" type="button" style="display: none;">📋 สรุปส่ง LINE</button>
+        <button id="tb-firebase-btn" class="toolbar-btn admin-only-control" type="button" style="display: none;">☁️ Firebase</button>
+        <button id="tb-change-pw-btn" class="toolbar-btn admin-only-control" type="button" style="display: none;">🔑 รหัส</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Countdown -->
+    <section class="hero-countdown">
+      <div class="interactive-fireworks-container" id="fireworks-tap-zone" title="แตะหน้าจอจุดพลุได้ทุกเมื่อ!"></div>
+      <div style="position: relative; z-index: 10; pointer-events: none;">
+        <div class="announcement-banner" id="banner-announcement">✨ 🎆 นับถอยหลังงานปีใหม่ I Love My (Dream) Job! 🎆 ✨</div>
+        <h2 class="countdown-title-label">นับถอยหลัง</h2>
+        <h1 class="grand-countdown-title">"ฉลองปีใหม่ <span>I Love My (Dream) Job</span>"</h1>
+        <p class="grand-countdown-subtitle">วันที่ <strong>18 ธันวาคม 2569 (18/12/69) เวลา 18.00 น.</strong> — แตะป้ายนี้จุดพลุได้ทุกเมื่อ!</p>
+        <div class="countdown-timer-group">
+          <div class="timer-circle-card"><span class="value" id="timer-days">00</span><span class="label">วัน</span></div>
+          <div class="timer-circle-card"><span class="value" id="timer-hours">00</span><span class="label">ชม.</span></div>
+          <div class="timer-circle-card"><span class="value" id="timer-mins">00</span><span class="label">นาที</span></div>
+          <div class="timer-circle-card"><span class="value" id="timer-secs">00</span><span class="label">วินาที</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Front Gatekeeper Screen -->
+    <div id="gatekeeper-screen">
+      <div class="gatekeeper-grid">
+        <div class="gatekeeper-panel">
+          <div>
+            <span class="slot-prize-badge">สำหรับผู้เข้าร่วมงาน (1 เครื่อง ต่อ 1 ชื่อ)</span>
+            <h2 style="font-size: 19px; font-weight: 800; color: #fff; margin: 6px 0 8px;">🙋 ลงชื่อเข้างานปาร์ตี้ปีใหม่</h2>
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 14px;">
+              จำชื่อตลอดงาน <strong>24 ชั่วโมง</strong> สามารถล็อกหน้าจอหรือสลับแอปไปถ่ายรูปได้โดยชื่อไม่หลุด หากได้รับรางวัลหรือถึงคิวแลกของขวัญ ป๊อปอัพจะเด้งแจ้งเตือนทันทีเมื่อเปิดจอกลับมา
+            </p>
+            <div id="gatekeeper-checkin-form">
+              <label class="field-label" for="gatekeeper-guest-name-input">ชื่อ หรือฉายาของคุณ</label>
+              <input type="text" id="gatekeeper-guest-name-input" class="input" maxlength="40" placeholder="กรอกชื่อ หรือฉายาของคุณ...">
+              <p id="gatekeeper-error-text" class="error-msg">กรุณาระบุชื่อ หรือฉายาของคุณ</p>
+              <button id="btn-gatekeeper-submit" type="button" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                🎟️ ลงชื่อเข้างานด้วยมือถือเครื่องนี้ ➔
+              </button>
+            </div>
+            <div id="gatekeeper-already-registered-box" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success); border-radius: 12px; padding: 14px; text-align: center;">
+              <div style="font-size: 13px; color: #a7f3d0; font-weight: 600; margin-bottom: 10px;">
+                ✅ เครื่องนี้ลงทะเบียนแล้วในชื่อ: <strong id="already-reg-name" style="color: #fde68a; font-size: 15px;">-</strong>
+              </div>
+              <button type="button" id="btn-return-to-my-lobby" class="btn btn-primary" style="width: 100%;">📱 กลับเข้าสู่หน้าจอมือถือของฉัน ➔</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="gatekeeper-panel" style="border-color: rgba(245, 158, 11, 0.35); background: linear-gradient(180deg, #162038 0%, #0f172a 100%);">
+          <div>
+            <span class="slot-prize-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">สำหรับผู้จัดงาน (Admin)</span>
+            <h2 style="font-size: 19px; font-weight: 800; color: #fff; margin: 6px 0 8px;">👑 เข้าควบคุมเวทีกลาง &amp; ตั้งค่า</h2>
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 14px;">
+              ตั้งค่าของรางวัล หมุนวงล้อ เริ่มสายพานแลกของขวัญ ตั้งคำถามทายตัวเลข และคัดลอกสรุปผลส่งเข้า LINE
+            </p>
+            <label class="field-label" for="gatekeeper-admin-pw">รหัสผ่านผู้จัดงาน (Admin Password)</label>
+            <input type="password" id="gatekeeper-admin-pw" class="input" placeholder="กรอกรหัสผ่าน Admin..." style="text-align: center; letter-spacing: 0.12em;">
+            <p id="gatekeeper-admin-error" class="error-msg">❌ รหัสผ่านผู้จัดงานไม่ถูกต้อง</p>
+          </div>
+          <button type="button" id="btn-gatekeeper-admin-login" class="btn btn-secondary" style="width: 100%; border-color: var(--brand); color: #fde68a; margin-top: 10px;">
+            🔑 เข้าสู่โหมดผู้จัดงาน (Admin) ➔
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Party Lobby -->
+    <div id="party-lobby-screen" style="display: none;">
+      <div class="single-player-banner">
+        <div><span id="role-banner-icon">📱</span> <span id="role-banner-text">-</span></div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="btn-view-my-prizes" style="min-height: 32px; padding: 4px 10px; font-size: 11px; display: none;">🏆 ดูรางวัลของฉัน</button>
+          <button type="button" class="btn btn-ghost-danger" id="btn-leave-party" style="min-height: 32px; padding: 4px 10px; font-size: 11px; display: none;">🚪 ออกจากงาน</button>
+          <button type="button" class="btn btn-secondary" id="btn-switch-to-admin" style="min-height: 32px; padding: 4px 10px; font-size: 11px; border-color: var(--brand); color: #fde68a;">👑 โหมด Admin</button>
+        </div>
+      </div>
+
+      <!-- 5 Thumb-Friendly Mobile Portrait Tabs -->
+      <div class="action-grid" role="tablist">
+        <div class="action-card active" id="card-checkin" onclick="switchMainModule('checkin')">
+          <div class="action-icon-wrap" style="color: #38bdf8;">🙋</div>
+          <div class="action-info">
+            <span class="action-badge">ผู้ร่วมงาน</span>
+            <h3 class="action-title">รายชื่อ (<span class="guest-counter-val">0</span>)</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-luckydraw" onclick="switchMainModule('luckydraw')">
+          <div class="action-icon-wrap" style="color: #f59e0b;">🎡</div>
+          <div class="action-info">
+            <span class="action-badge">Lucky Draw</span>
+            <h3 class="action-title">วงล้อรางวัล</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-giftdraw" onclick="switchMainModule('giftdraw')">
+          <div class="action-icon-wrap" style="color: #fb7185;">🎁</div>
+          <div class="action-info">
+            <span class="action-badge">ส่งต่อคิวออโต้</span>
+            <h3 class="action-title">แลกของขวัญ</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-voting" onclick="switchMainModule('voting')">
+          <div class="action-icon-wrap" style="color: #fbbf24;">👗</div>
+          <div class="action-info">
+            <span class="action-badge">1 คน 1 โหวต</span>
+            <h3 class="action-title">โหวตแต่งกาย</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-witwager" onclick="switchMainModule('witwager')">
+          <div class="action-icon-wrap" style="color: #34d399;">🔢</div>
+          <div class="action-info">
+            <span class="action-badge">จับเวลา 15 วิ</span>
+            <h3 class="action-title">ทายตัวเลข</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="module-split-layout">
+        <div>
+          <!-- View 1: Attendee List -->
+          <div class="panel-card view-section" id="view-section-main">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🙋 รายชื่อผู้เข้าร่วมงาน (<span class="guest-counter-val">0</span> คน)</h2>
+              <span class="meta-caption">🟢 จำชื่อ 24 ชม. • 💤 ล็อกจอชื่อไม่หลุด</span>
+            </div>
+            <div class="guest-list-grid" id="main-guests-display-grid"></div>
+          </div>
+
+          <!-- View 2: Lucky Draw Wheel (พร้อมระบบเตือนเมื่อของรางวัลหมด!) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-luckydraw">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🎡 วงล้อหมุนสุ่มจับรางวัล</h2>
+              <span class="meta-caption" id="wheel-pool-counter-badge">ในวงล้อ: 0 คน</span>
+            </div>
+
+            <div class="admin-only-control" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                <strong style="font-size: 12px; color: var(--brand);">👑 ตั้งค่ารายการของรางวัล (Admin):</strong>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-secondary" id="btn-restore-wheel-names" style="min-height: 30px; padding: 4px 8px; font-size: 11px;">🔄 คืนรายชื่อเข้าวงล้อ</button>
+                  <button type="button" class="btn btn-ghost-danger" id="btn-clear-all-prizes" style="min-height: 30px; padding: 4px 8px; font-size: 11px;">🗑️ ล้างรางวัล</button>
+                </div>
+              </div>
+              <div class="input-row-group" style="margin-bottom: 8px;">
+                <input type="text" id="draw-prize-input-field" class="input" placeholder="พิมพ์ชื่อของรางวัล...">
+                <button type="button" class="btn btn-primary" id="btn-add-custom-prize">+ เพิ่มรางวัล</button>
+              </div>
+              <label class="field-label" for="draw-prize-select">เลือกของรางวัลสำหรับรอบหมุนนี้:</label>
+              <select id="draw-prize-select" class="select">
+                <option value="">-- ไม่ระบุชื่อของรางวัล (สุ่มรายชื่อทั่วไป) --</option>
+              </select>
+              <div class="prize-tags-list" id="prize-tags-container"></div>
+              <div id="prizes-exhausted-banner" style="display: none; margin-top: 10px; background: rgba(245, 158, 11, 0.14); border: 1px solid var(--brand); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #fde68a; font-weight: 600;">
+                🎉 ของรางวัลที่ตั้งไว้ถูกแจกครบทุกชิ้นแล้ว! (สามารถพิมพ์เพิ่มรางวัลใหม่ด้านบน หรือหมุนสุ่มรายชื่อทั่วไปต่อได้)
+              </div>
+            </div>
+
+            <div class="wheel-container-wrap">
+              <div class="wheel-arrow"></div>
+              <canvas id="lucky-wheel-canvas" width="360" height="360"></canvas>
+            </div>
+
+            <div class="slot-stage-inner" id="stage-slot-wrapper">
+              <div class="slot-prize-badge" id="active-draw-prize-label">🎁 รางวัล: สุ่มผู้โชคดีทั่วไป</div>
+              <h2 class="stage-slot-title" id="stage-slot-text" style="color: var(--brand);">รอผู้จัดงาน (Admin) กดหมุนวงล้อ</h2>
+              <p id="stage-slot-hint" style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">เมื่อหมุนได้ผู้ชนะ ป๊อปอัพจะเด้งแจ้งเตือนบนหน้าจอมือถือของผู้โชคดีทันที!</p>
+            </div>
+
+            <div class="admin-only-control" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 14px;">
+              <button id="main-stage-draw-btn" class="btn btn-draw" type="button">🎡 กดหมุนวงล้อสุ่มรางวัล! (Admin)</button>
+              <label class="checkbox-label">
+                <input type="checkbox" id="chk-remove-after-win" checked>
+                ตัดชื่อผู้ชนะออกจากวงล้อรอบถัดไป (รายชื่อในเกมอื่นยังอยู่ครบ)
+              </label>
+            </div>
+          </div>
+
+          <!-- View 3: Circular Single-Loop Gift Exchange (ปลดล็อกคิวถัดไปทันทีในคลิกเดียว + เด้งป๊อปอัพเตือนคิว!) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-giftdraw">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🎁 จับสลากแลกของขวัญ (วงกลมเดี่ยว)</h2>
+              <span class="meta-caption">⚡ กดปุ๊บปลดล็อกคิวคนถัดไปทันที</span>
+            </div>
+
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">
+              เมื่อถึงคิวใครจะมีป๊อปอัพเด้งเตือนบนมือถือ พอกดสุ่มปุ๊บจะรู้ผลทันทีว่าได้ของขวัญของใคร <strong>พร้อมปลดล็อกคิวให้คนถัดไปกดต่อทันทีในคลิกเดียว!</strong>
+            </p>
+
+            <div id="gift-loop-setup-view">
+              <div class="gift-reveal-box admin-only-control" id="btn-start-circular-game">
+                <div style="font-size: 44px;">🔄</div>
+                <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 แตะเพื่อเริ่มสร้างวงจรแลกของขวัญ (เฉพาะ Admin)</h3>
+                <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ผู้เข้าร่วมขณะนี้ <span class="guest-counter-val">0</span> คน (ต้องมีอย่างน้อย 2 คน)</p>
+              </div>
+              <div class="empty-state participant-only-control">
+                <div style="font-size: 36px; margin-bottom: 6px;">⏳🎁</div>
+                <strong style="color: #fff;">รอผู้จัดงาน (Admin) กดเริ่มวงจรแลกของขวัญ</strong>
+                <p style="margin: 4px 0 0; font-size: 12px;">เมื่อถึงคิวของคุณ จะมีป๊อปอัพเด้งแจ้งเตือนและปลดล็อกปุ่มให้กดบนมือถือเครื่องนี้ทันที</p>
+              </div>
+            </div>
+
+            <div id="gift-loop-active-view" style="display: none; background: #090e1a; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+              <!-- แสดงผลล่าสุดว่าใครเพิ่งจับได้ของใคร -->
+              <div id="loop-last-action-box" style="display: none; background: rgba(16, 185, 129, 0.14); border: 1px solid var(--success); padding: 10px 12px; border-radius: 10px; margin-bottom: 12px;">
+                <span style="font-size: 11px; color: #a7f3d0; font-weight: 700;">🎉 ผลการสุ่มคิวล่าสุด:</span>
+                <div style="font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px;" id="loop-result-text">-</div>
+              </div>
+
+              <div id="loop-inprogress-controls">
+                <span class="slot-prize-badge">🎮 คิวการกดสุ่มปัจจุบัน</span>
+                <div style="margin: 8px 0;">
+                  <span style="font-size: 12px; color: var(--muted); display: block;">ถึงคิวมือถือของ:</span>
+                  <h2 style="font-size: 24px; font-weight: 800; color: #fde68a; margin: 2px 0;" id="loop-current-player-name">-</h2>
+                  <p style="font-size: 11px; color: var(--muted); margin: 0;" id="loop-step-info">-</p>
+                </div>
+
+                <div id="loop-queue-lock-banner" style="border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 10px; font-size: 12px; margin: 10px auto; max-width: 440px;">-</div>
+
+                <div style="margin: 14px 0;">
+                  <button class="btn btn-draw" id="btn-loop-draw-gift" type="button">🎁 กดสุ่มของขวัญ</button>
+                </div>
+
+                <div id="loop-admin-emergency-box" class="admin-only-control" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                  <button type="button" class="btn btn-secondary" id="btn-admin-emergency-loop" style="border-color: var(--brand); color: #fde68a; font-size: 12px; min-height: 36px;">
+                    ⏭️ Admin กดสุ่มแทนคิวที่ค้าง (กรณีฉุกเฉิน)
+                  </button>
+                </div>
+              </div>
+
+              <div id="loop-completion-display" style="display: none; padding: 8px 0;">
+                <div style="font-size: 42px;">👑💝</div>
+                <h3 style="color: var(--brand); font-size: 19px; margin: 6px 0;">แลกของขวัญครบวงกลมสมบูรณ์แล้ว!</h3>
+                <div id="gift-loop-complete-summary" style="text-align: left; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; margin: 10px auto; max-width: 420px; max-height: 240px; overflow-y: auto; font-size: 13px;"></div>
+                <button class="btn btn-secondary admin-only-control" id="btn-loop-restart" type="button">🔄 เริ่มวงจรแลกของขวัญรอบใหม่ (Admin)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- View 4: Best Dressed Voting (พร้อมป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตโหวตรอบใหม่สำหรับ Admin) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-voting">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">👗 โหวตการแต่งกายยอดเยี่ยม</h2>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="meta-caption">1 คน 1 โหวต • ห้ามโหวตตัวเอง</span>
+                <button type="button" class="btn btn-ghost-danger admin-only-control" id="btn-reset-votes" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตผลโหวต (เปิดรอบใหม่)</button>
+              </div>
+            </div>
+            <div class="vote-list" id="best-dressed-vote-list"></div>
+          </div>
+
+          <!-- View 5: Wits & Wagers Numeric Game -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-witwager">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🔢 ทายตัวเลข Wits &amp; Wagers</h2>
+              <span class="meta-caption">⏱️ ตอบใน 15 วินาที (ไม่ตอบ = สละสิทธิ์)</span>
+            </div>
+
+            <div class="wits-host-box admin-only-control">
+              <strong style="font-size: 13px; color: var(--brand); display: block; margin-bottom: 8px;">👑 แผงตั้งคำถามทายตัวเลข (สำหรับ Admin)</strong>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                  <label class="field-label" for="wits-question-input">คำถาม (ผู้เล่นมีเวลา 15 วินาทีหลังกดส่ง)</label>
+                  <input type="text" id="wits-question-input" class="input" value="ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+                  <div>
+                    <label class="field-label" for="wits-answer-input">คำตอบตัวเลขที่ถูกต้อง (ซ่อนไว้)</label>
+                    <input type="password" inputmode="decimal" id="wits-answer-input" class="input" value="428">
+                    <label class="checkbox-label" style="font-size: 11px; margin-top: 4px;">
+                      <input type="checkbox" id="chk-show-secret-ans"> แสดงเลขเฉลยให้ Admin ดู
+                    </label>
+                  </div>
+                  <div>
+                    <label class="field-label" for="wits-prize-input">ของรางวัลข้อนี้</label>
+                    <input type="text" id="wits-prize-input" class="input" value="อั่งเปาพิเศษ 1,000 บาท">
+                  </div>
+                  <div>
+                    <label class="field-label" for="wits-rule-select">กติกาตัดสินผู้ชนะ</label>
+                    <select id="wits-rule-select" class="select">
+                      <option value="wits">ใกล้เคียงสุดโดยไม่เกินคำตอบจริง (Wits &amp; Wagers)</option>
+                      <option value="closest">ใกล้เคียงคำตอบจริงมากที่สุด</option>
+                    </select>
+                  </div>
+                </div>
+                <p id="wits-host-error" class="error-msg">กรุณากรอกคำถามและระบุคำตอบเฉลยเป็นตัวเลขให้ครบถ้วน</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; margin-top: 2px;">
+                  <button type="button" class="btn btn-primary" id="btn-wits-broadcast">📢 ส่งคำถาม &amp; เริ่มจับเวลา 15 วิ!</button>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-draw" id="btn-wits-reveal" style="display: none; font-size: 14px; padding: 9px 18px;" disabled>✨ เฉลยคำตอบ &amp; แจกรางวัล!</button>
+                    <button type="button" class="btn btn-secondary" id="btn-wits-newround" style="display: none;">🔄 ตั้งคำถามรอบใหม่</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="wits-active-banner" class="wits-question-banner" style="display: none;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;">
+                <span class="slot-prize-badge" id="wits-banner-prize" style="margin: 0;">🎁 รางวัล: -</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 12px; color: #fde68a; font-weight: 700;" id="wits-timer-status-lbl">เวลาที่เหลือ:</span>
+                  <div class="game-timer-circle" id="wits-timer-circle">15</div>
+                </div>
+              </div>
+              <h3 id="wits-banner-question" style="margin: 4px 0 6px; font-size: 17px; font-weight: 800; color: #fff;">-</h3>
+              <p id="wits-banner-progress" style="margin: 0; font-size: 12px; color: #cbd5e1;">-</p>
+            </div>
+
+            <div id="wits-stage-container"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: Winners History -->
+        <div class="panel-card">
+          <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 700;">🏆 ประวัติผู้โชคดี (<span id="stats-winners-count">0</span>)</h3>
+            <div style="display: flex; gap: 6px;">
+              <button id="btn-open-line-summary-card" class="btn btn-secondary admin-only-control" type="button" style="display: none; min-height: 30px; padding: 4px 10px; font-size: 11px; border-color: var(--success); color: #a7f3d0;">📋 คัดลอกสรุปส่ง LINE</button>
+              <button id="clear-winners-btn" class="btn btn-ghost-danger admin-only-control" type="button" style="display: none; min-height: 30px; padding: 4px 8px;">ล้างประวัติ</button>
+            </div>
+          </div>
+          <div id="winners-empty-state" class="empty-state">ยังไม่มีประวัติผู้ได้รับรางวัลในขณะนี้</div>
+          <ul id="winners-history-list" class="item-list" style="display: none;"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      /* === PART 1: STATE, 24-HOUR PERSISTENT IDENTITY & QUEUED ALERTS === */
+      const targetDateTime = new Date("2026-12-18T18:00:00").getTime();
+      const PERSIST_24H_MS = 86400000;
+      const COOKIE_GUEST_KEY = 'party_guest_id_v6';
+      const DEVICE_24H_KEY = 'happynewyear_device_guest_24h_v6';
+      const SESSION_GUEST_KEY = 'happynewyear_my_device_guest_id_v6';
+      const SEEN_ALERTS_KEY = 'happynewyear_seen_prize_alerts_v6';
+      const SEEN_QUEUE_KEY = 'happynewyear_seen_queue_turns_v6';
+      const ADMIN_PW_STORAGE_KEY = 'happynewyear_admin_pw_v4';
+      const SYNC_STORAGE_KEY = 'happynewyear_party_live_state_v6';
+      const FB_CONFIG_KEY = 'happynewyear_firebase_cfg_v4';
+
+      function setGuestCookie(id) {
+        try {
+          document.cookie = id
+            ? `${COOKIE_GUEST_KEY}=${encodeURIComponent(id)}; max-age=86400; path=/; SameSite=Lax`
+            : `${COOKIE_GUEST_KEY}=; max-age=0; path=/; SameSite=Lax`;
+        } catch (e) {}
+      }
+      function getGuestCookie() {
+        try {
+          const m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE_GUEST_KEY + '=([^;]*)'));
+          return m ? decodeURIComponent(m[1]) : null;
+        } catch (e) { return null; }
+      }
+      function getDevice24hGuest() {
+        try {
+          const raw = localStorage.getItem(DEVICE_24H_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.id && (Date.now() - (parsed.savedAt || 0) < PERSIST_24H_MS)) return parsed.id;
+          localStorage.removeItem(DEVICE_24H_KEY);
+        } catch (e) {}
+        return null;
+      }
+
+      let savedAdminPw = '2569';
+      try {
+        const spw = localStorage.getItem(ADMIN_PW_STORAGE_KEY);
+        if (spw && spw.trim()) savedAdminPw = spw.trim();
+      } catch (e) {}
+
+      let mySessionGuestId = null;
+      try { mySessionGuestId = sessionStorage.getItem(SESSION_GUEST_KEY) || null; } catch (e) {}
+      if (!mySessionGuestId) mySessionGuestId = getGuestCookie() || getDevice24hGuest();
+
+      function setMySessionGuest(id) {
+        mySessionGuestId = id;
+        setGuestCookie(id);
+        try {
+          if (id) {
+            sessionStorage.setItem(SESSION_GUEST_KEY, id);
+            localStorage.setItem(DEVICE_24H_KEY, JSON.stringify({ id, savedAt: Date.now() }));
+          } else {
+            sessionStorage.removeItem(SESSION_GUEST_KEY);
+            localStorage.removeItem(DEVICE_24H_KEY);
+          }
+        } catch (e) {}
+      }
+
+      function getSeenSet(storageKey) {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          const arr = raw ? JSON.parse(raw) : [];
+          return new Set(Array.isArray(arr) ? arr : []);
+        } catch (e) { return new Set(); }
+      }
+      function addSeenIds(storageKey, ids) {
+        if (!ids || !ids.length) return;
+        const set = getSeenSet(storageKey);
+        ids.forEach(id => set.add(id));
+        try { localStorage.setItem(storageKey, JSON.stringify(Array.from(set))); } catch (e) {}
+      }
+
+      const state = {
+        targetTime: targetDateTime,
+        adminPassword: savedAdminPw,
+        activeModule: 'checkin',
+        guests: [],
+        prizes: [],
+        hadConfiguredPrizes: false,
+        selectedPrize: '',
+        luckyDrawExclusions: [],
+        wheelStage: {
+          spinId: '',
+          status: 'idle',
+          finalAngle: 0,
+          winnerId: '',
+          winnerName: '',
+          prizeName: ''
+        },
+        winners: [],
+        prizeAlerts: [],
+        votedGuests: {},
+        circularLoopId: '',
+        circularLoopPath: [],
+        circularCurrentIdx: 0,
+        circularDrawnList: [],
+        circularHasStarted: false,
+        deviceRole: 'guest_unselected',
+        witsGame: {
+          roundId: '',
+          phase: 'idle',
+          question: '',
+          correctAnswer: null,
+          prize: '',
+          rule: 'wits',
+          durationSec: 15,
+          timeLeft: 15,
+          timeUp: false,
+          submissions: {},
+          winnerIds: []
+        }
+      };
+
+      const localRoundDeadlines = {};
+      let pendingModalAlertIds = [];
+      let lastAdminPopupId = null;
+      let lastAnimatedSpinId = '';
+      let witsTimerInterval = null;
+
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function parseCleanNumber(rawStr) {
+        const cleaned = String(rawStr == null ? '' : rawStr).replace(/[,\s]/g, '').trim();
+        if (!cleaned) return NaN;
+        const num = Number(cleaned);
+        return Number.isFinite(num) ? num : NaN;
+      }
+
+      function getVoteCount(candidateId) {
+        let count = 0;
+        const map = state.votedGuests || {};
+        Object.keys(map).forEach(voterId => {
+          if (map[voterId] === candidateId) count++;
+        });
+        return count;
+      }
+
+      function isCircularLoopCompleted() {
+        return Boolean(
+          state.circularHasStarted &&
+          state.circularDrawnList.length >= 2 &&
+          state.circularCurrentIdx >= state.circularLoopPath.length
+        );
+      }
+
+      function purgeGuestDataById(guestId, pushRemote) {
+        if (!guestId) return false;
+        const existed = state.guests.some(g => g.id === guestId);
+        delete state.votedGuests[guestId];
+        Object.keys(state.votedGuests).forEach(v => {
+          if (state.votedGuests[v] === guestId) {
+            delete state.votedGuests[v];
+            if (pushRemote) fbWriteSubpath(`votes/${encodeURIComponent(v)}`, null, 'DELETE');
+          }
+        });
+        state.guests = state.guests.filter(g => g.id !== guestId);
+        state.luckyDrawExclusions = state.luckyDrawExclusions.filter(id => id !== guestId);
+        if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
+
+        let loopWasReset = false;
+        if (state.circularHasStarted && !isCircularLoopCompleted() && state.circularLoopPath.some(p => p.id === guestId)) {
+          resetCircularLoop();
+          loopWasReset = true;
+        }
+
+        if (pushRemote) {
+          fbWriteSubpath(`guests/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`votes/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`witsSubmissions/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          if (loopWasReset || state.deviceRole === 'all') fbPushCoreState('guest_purged');
+        }
+        return existed;
+      }
+
+      /* === PART 2: COUNTDOWN & FIREWORKS === */
+      function tickCountdown() {
+        const diff = state.targetTime - Date.now();
+        if (diff <= 0) {
+          ['days', 'hours', 'mins', 'secs'].forEach(k => { document.getElementById('timer-' + k).textContent = '00'; });
+          document.getElementById('banner-announcement').innerHTML = '✨ 🎆 <strong>ถึงเวลาฉลองปีใหม่ I Love My (Dream) Job แล้ว!</strong> 🎆 ✨';
+          return;
+        }
+        document.getElementById('timer-days').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
+        document.getElementById('timer-hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+        document.getElementById('timer-mins').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        document.getElementById('timer-secs').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      }
+      setInterval(tickCountdown, 1000);
+      tickCountdown();
+
+      const overlayCanvas = document.getElementById('celebration-overlay-canvas');
+      const oCtx = overlayCanvas.getContext('2d');
+      let overlayParticles = [];
+      let canvasAnimId = null;
+
+      function resizeOverlayCanvas() {
+        overlayCanvas.width = window.innerWidth;
+        overlayCanvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeOverlayCanvas);
+      resizeOverlayCanvas();
+
+      function spawnCustomFirework(x, y) {
+        const colors = ['#f59e0b', '#ec4899', '#38bdf8', '#a855f7', '#10b981', '#fb7185'];
+        for (let i = 0; i < 28; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = Math.random() * 5 + 2.5;
+          overlayParticles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: Math.random() * 4 + 2.5, color: colors[i % colors.length], alpha: 1, decay: 0.018 });
+        }
+        if (!canvasAnimId) animateOverlayParticles();
+      }
+      function triggerGrandConfetti() {
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => spawnCustomFirework(overlayCanvas.width * (0.2 + Math.random() * 0.6), overlayCanvas.height * 0.35), i * 200);
+        }
+      }
+
+      /* === 📱 HAPTIC VIBRATION HELPER (ระบบสั่นเตือนบนมือถือ) === */
+      function triggerHapticVibration(pattern) {
+        try {
+          if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+            navigator.vibrate(pattern || 50);
+          }
+        } catch (e) {}
+      }
+      function animateOverlayParticles() {
+        oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        overlayParticles.forEach(p => {
+          p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.alpha -= p.decay;
+          oCtx.globalAlpha = Math.max(0, p.alpha);
+          oCtx.fillStyle = p.color;
+          oCtx.beginPath(); oCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); oCtx.fill();
+        });
+        oCtx.globalAlpha = 1;
+        overlayParticles = overlayParticles.filter(p => p.alpha > 0);
+        canvasAnimId = overlayParticles.length > 0 ? requestAnimationFrame(animateOverlayParticles) : null;
+      }
+      document.getElementById('fireworks-tap-zone').addEventListener('click', (e) => spawnCustomFirework(e.clientX, e.clientY));
+
+      /* === PART 3: QUEUED PRIZE POPUPS, QUEUE TURN POPUP & LINE SUMMARY EXPORT === */
+      const winnerPopupModal = document.getElementById('winner-popup-modal');
+      const queueTurnModal = document.getElementById('queue-turn-modal');
+
+      function triggerWinnerNotification(targetIdsOrSingle, guestName, prizeName, sourceLabel) {
+        const ids = Array.isArray(targetIdsOrSingle)
+          ? targetIdsOrSingle.filter(Boolean)
+          : (targetIdsOrSingle ? [targetIdsOrSingle] : []);
+        const alertObj = {
+          id: 'pa_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          targetGuestIds: ids,
+          guestName,
+          prizeName,
+          source: sourceLabel,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        };
+        state.prizeAlerts.push(alertObj);
+        checkPendingWinnerPopups(alertObj);
+      }
+
+      function showWinnerModalWithItems(items, isForParticipant, guestDisplayName) {
+        if (!items || !items.length) return;
+        const latest = items[items.length - 1];
+        document.getElementById('winner-popup-tag').textContent = items.length > 1
+          ? `🎉 คุณได้รับรวม ${items.length} รางวัล!`
+          : `🎉 ${latest.source}`;
+        document.getElementById('winner-popup-title').textContent = isForParticipant
+          ? `ยินดีด้วย! คุณ ${guestDisplayName} ได้รับรางวัล!`
+          : `ผู้โชคดี: ${latest.guestName}!`;
+
+        if (items.length === 1) {
+          document.getElementById('winner-popup-desc').innerHTML =
+            `ได้รับรางวัล: <strong style="color: var(--brand); font-size: 18px;">${escapeHtml(latest.prizeName)}</strong><br><span style="font-size: 12px; color: var(--muted);">เวลา ${escapeHtml(latest.timestamp || '')}</span>`;
+        } else {
+          document.getElementById('winner-popup-desc').innerHTML = items.map((it, idx) =>
+            `<div style="margin: 4px 0;">${idx + 1}. <strong style="color: var(--brand);">${escapeHtml(it.prizeName)}</strong> <span style="font-size:11px;color:var(--muted);">(${escapeHtml(it.source)})</span></div>`
+          ).join('');
+        }
+        winnerPopupModal.classList.add('open');
+        triggerGrandConfetti();
+        triggerHapticVibration([180, 80, 220, 80, 320]);
+      }
+
+      function checkPendingWinnerPopups(liveAdminAlert) {
+        if (state.deviceRole === 'all') {
+          if (liveAdminAlert && liveAdminAlert.id !== lastAdminPopupId) {
+            lastAdminPopupId = liveAdminAlert.id;
+            showWinnerModalWithItems([liveAdminAlert], false, liveAdminAlert.guestName);
+          }
+          return;
+        }
+        if (!state.deviceRole || state.deviceRole === 'guest_unselected') return;
+
+        const seenSet = getSeenSet(SEEN_ALERTS_KEY);
+        const unseenMine = (state.prizeAlerts || []).filter(a =>
+          a && Array.isArray(a.targetGuestIds) && a.targetGuestIds.includes(state.deviceRole) && !seenSet.has(a.id)
+        );
+        if (unseenMine.length > 0) {
+          pendingModalAlertIds = unseenMine.map(a => a.id);
+          const me = state.guests.find(g => g.id === state.deviceRole);
+          showWinnerModalWithItems(unseenMine, true, me ? me.name : unseenMine[0].guestName);
+        }
+      }
+
+      // ตรวจสอบว่าถึงคิวกดสุ่มแลกของขวัญของผู้เล่นคนนี้หรือยัง ถ้าถึงคิวให้เด้งป๊อปอัพเตือนทันที!
+      let activeQueueTurnKey = '';
+      function checkMyGiftQueueTurnPopup() {
+        if (!state.circularHasStarted || isCircularLoopCompleted()) {
+          queueTurnModal.classList.remove('open');
+          return;
+        }
+        if (!state.deviceRole || state.deviceRole === 'all' || state.deviceRole === 'guest_unselected') return;
+        const currentGiver = state.circularLoopPath[state.circularCurrentIdx];
+        if (!currentGiver || currentGiver.id !== state.deviceRole) {
+          queueTurnModal.classList.remove('open');
+          return;
+        }
+        const turnKey = `${state.circularLoopId || 'loop'}_${state.circularCurrentIdx}_${currentGiver.id}`;
+        const seenTurns = getSeenSet(SEEN_QUEUE_KEY);
+        if (!seenTurns.has(turnKey)) {
+          activeQueueTurnKey = turnKey;
+          document.getElementById('queue-turn-modal-title').textContent = `ถึงคิวคุณ ${currentGiver.name} กดสุ่มของขวัญแล้ว!`;
+          const prevDraw = state.circularDrawnList.length > 0 ? state.circularDrawnList[state.circularDrawnList.length - 1] : null;
+          document.getElementById('queue-turn-modal-desc').innerHTML = prevDraw
+            ? `เมื่อสักครู่ <strong>${escapeHtml(prevDraw.giver)}</strong> จับได้ของขวัญของคุณ ตอนนี้ปุ่มกดสุ่มบนมือถือของคุณปลดล็อกแล้ว!`
+            : `คุณได้เป็นคนเปิดวงคนแรก! กดปุ่มด้านล่างเพื่อไปกดสุ่มรับของขวัญได้เลย!`;
+          queueTurnModal.classList.add('open');
+          triggerGrandConfetti();
+          triggerHapticVibration([220, 90, 220, 90, 360]);
+        }
+      }
+
+      document.getElementById('btn-go-to-my-queue-turn').addEventListener('click', () => {
+        if (activeQueueTurnKey) {
+          addSeenIds(SEEN_QUEUE_KEY, [activeQueueTurnKey]);
+          activeQueueTurnKey = '';
+        }
+        queueTurnModal.classList.remove('open');
+        window.switchMainModule('giftdraw');
+      });
+
+      document.getElementById('btn-close-winner-popup').addEventListener('click', () => {
+        if (pendingModalAlertIds.length > 0) {
+          addSeenIds(SEEN_ALERTS_KEY, pendingModalAlertIds);
+          pendingModalAlertIds = [];
+        }
+        winnerPopupModal.classList.remove('open');
+        // หลังจากปิดป๊อปอัพรางวัล หากมีคิวแลกของขวัญรออยู่ให้เช็กต่อทันที
+        setTimeout(checkMyGiftQueueTurnPopup, 150);
+      });
+
+      document.getElementById('btn-view-my-prizes').addEventListener('click', () => {
+        if (!state.deviceRole || state.deviceRole === 'all' || state.deviceRole === 'guest_unselected') return;
+        const myAll = (state.prizeAlerts || []).filter(a =>
+          a && Array.isArray(a.targetGuestIds) && a.targetGuestIds.includes(state.deviceRole)
+        );
+        if (myAll.length > 0) {
+          const me = state.guests.find(g => g.id === state.deviceRole);
+          showWinnerModalWithItems(myAll, true, me ? me.name : myAll[0].guestName);
+        }
+      });
+
+      // LINE Summary Export Modal
+      const lineSummaryModal = document.getElementById('line-summary-modal');
+      const lineSummaryTextarea = document.getElementById('line-summary-textarea');
+      const lineCopyFeedback = document.getElementById('line-copy-feedback');
+
+      function buildPartySummaryText() {
+        const lines = [];
+        lines.push('🎉 สรุปผลงานปาร์ตี้ฉลองปีใหม่ "I Love My (Dream) Job" 🎉');
+        lines.push(`👥 ผู้ลงชื่อเข้าร่วมทั้งหมด: ${state.guests.length} คน`);
+        lines.push('');
+
+        lines.push(`🏆 1. ประวัติผู้โชคดีรับรางวัล (${state.winners.length} รางวัล):`);
+        if (state.winners.length === 0) {
+          lines.push('   - ยังไม่มีรายการสุ่มรางวัล');
+        } else {
+          state.winners.forEach((w, i) => {
+            lines.push(`   ${i + 1}. ${w.name} ➔ ${w.prize} (${w.timestamp})`);
+          });
+        }
+        lines.push('');
+
+        lines.push(`🎁 2. สรุปสายพานแลกของขวัญ (${state.circularDrawnList.length} คิว):`);
+        if (state.circularDrawnList.length === 0) {
+          lines.push('   - ยังไม่มีรายการแลกของขวัญ');
+        } else {
+          state.circularDrawnList.forEach((d, i) => {
+            lines.push(`   คิวที่ ${i + 1}: ${d.giver} ได้ของขวัญของ ➔ ${d.receiver}`);
+          });
+        }
+        lines.push('');
+
+        lines.push('👗 3. ผลโหวตการแต่งกายยอดเยี่ยม (Best Dressed):');
+        const enrichedVotes = state.guests.map(g => ({ name: g.name, votes: getVoteCount(g.id) })).sort((a, b) => b.votes - a.votes);
+        const topVote = enrichedVotes[0]?.votes || 0;
+        if (topVote === 0) {
+          lines.push('   - ยังไม่มีคะแนนโหวต');
+        } else {
+          const leaders = enrichedVotes.filter(c => c.votes === topVote);
+          if (leaders.length > 1) {
+            lines.push(`   👑 อันดับ 1 (ชนะเลิศร่วม ${leaders.length} คน • ${topVote} คะแนน): ${leaders.map(l => l.name).join(', ')}`);
+          } else {
+            lines.push(`   👑 อันดับ 1 ชนะเลิศ (${topVote} คะแนน): ${leaders[0].name}`);
+          }
+          enrichedVotes.filter(c => c.votes > 0).slice(0, 5).forEach((c, idx) => {
+            lines.push(`   • ${c.name}: ${c.votes} คะแนน`);
+          });
+        }
+        return lines.join('\n');
+      }
+
+      function openLineSummaryModal() {
+        if (state.deviceRole !== 'all') return;
+        lineSummaryTextarea.value = buildPartySummaryText();
+        lineCopyFeedback.style.display = 'none';
+        lineSummaryModal.classList.add('open');
+      }
+
+      document.getElementById('tb-line-export-btn').addEventListener('click', openLineSummaryModal);
+      document.getElementById('btn-open-line-summary-card').addEventListener('click', openLineSummaryModal);
+      document.getElementById('btn-close-line-summary').addEventListener('click', () => lineSummaryModal.classList.remove('open'));
+      document.getElementById('btn-copy-line-summary').addEventListener('click', async () => {
+        const text = lineSummaryTextarea.value;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            lineSummaryTextarea.select();
+            document.execCommand('copy');
+          }
+        } catch (e) {
+          lineSummaryTextarea.select();
+        }
+        lineCopyFeedback.style.display = 'block';
+      });
+
+      // Safety Confirmation Modal Helper
+      const confirmActionModal = document.getElementById('confirm-action-modal');
+      let pendingConfirmCallback = null;
+
+      function askSafetyConfirm(title, desc, callback) {
+        document.getElementById('confirm-modal-title').textContent = title;
+        document.getElementById('confirm-modal-desc').textContent = desc;
+        pendingConfirmCallback = callback;
+        confirmActionModal.classList.add('open');
+      }
+
+      document.getElementById('btn-confirm-modal-cancel').addEventListener('click', () => {
+        pendingConfirmCallback = null;
+        confirmActionModal.classList.remove('open');
+      });
+
+      document.getElementById('btn-confirm-modal-ok').addEventListener('click', () => {
+        const cb = pendingConfirmCallback;
+        pendingConfirmCallback = null;
+        confirmActionModal.classList.remove('open');
+        if (typeof cb === 'function') cb();
+      });
+
+      /* === PART 4: AUTH, 24H REGISTRATION & MANUAL REFRESH BUTTON === */
+      const adminPwModal = document.getElementById('admin-pw-modal');
+      const adminPwInput = document.getElementById('admin-pw-input');
+      const adminPwError = document.getElementById('admin-pw-error');
+
+      function openAdminPasswordModal() {
+        if (state.deviceRole === 'all') {
+          document.getElementById('gatekeeper-screen').style.display = 'none';
+          document.getElementById('party-lobby-screen').style.display = 'block';
+          return;
+        }
+        adminPwInput.value = '';
+        adminPwError.classList.remove('visible');
+        adminPwModal.classList.add('open');
+        setTimeout(() => adminPwInput.focus(), 50);
+      }
+      document.getElementById('btn-cancel-admin-pw').addEventListener('click', () => adminPwModal.classList.remove('open'));
+
+      function verifyAndEnterAdmin(pw, errEl) {
+        if (pw.trim() !== state.adminPassword) { errEl.classList.add('visible'); return; }
+        errEl.classList.remove('visible');
+        adminPwModal.classList.remove('open');
+        document.getElementById('gatekeeper-admin-pw').value = '';
+
+        let dropped = false;
+        if (mySessionGuestId) {
+          dropped = purgeGuestDataById(mySessionGuestId, true);
+          setMySessionGuest(null);
+        }
+        state.deviceRole = 'all';
+        document.getElementById('gatekeeper-screen').style.display = 'none';
+        document.getElementById('party-lobby-screen').style.display = 'block';
+        renderAll();
+        if (dropped) broadcastLocalOnly('admin_dropped_player');
+      }
+
+      document.getElementById('btn-confirm-admin-pw').addEventListener('click', () => verifyAndEnterAdmin(adminPwInput.value, adminPwError));
+      adminPwInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyAndEnterAdmin(adminPwInput.value, adminPwError); });
+      document.getElementById('tb-enter-admin-top-btn').addEventListener('click', openAdminPasswordModal);
+      document.getElementById('btn-switch-to-admin').addEventListener('click', openAdminPasswordModal);
+      document.getElementById('btn-gatekeeper-admin-login').addEventListener('click', () => verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')));
+      document.getElementById('gatekeeper-admin-pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')); });
+
+      // Change Admin Password
+      const changePwModal = document.getElementById('change-pw-modal');
+      document.getElementById('tb-change-pw-btn').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        ['old-admin-pw-input', 'new-admin-pw-input', 'confirm-admin-pw-input'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('change-pw-error').classList.remove('visible');
+        document.getElementById('change-pw-success').style.display = 'none';
+        changePwModal.classList.add('open');
+      });
+      document.getElementById('btn-cancel-change-pw').addEventListener('click', () => changePwModal.classList.remove('open'));
+      document.getElementById('btn-save-change-pw').addEventListener('click', () => {
+        const oldV = document.getElementById('old-admin-pw-input').value.trim();
+        const newV = document.getElementById('new-admin-pw-input').value.trim();
+        const cfmV = document.getElementById('confirm-admin-pw-input').value.trim();
+        const err = document.getElementById('change-pw-error');
+        if (oldV !== state.adminPassword) { err.textContent = '❌ รหัสผ่านปัจจุบันไม่ถูกต้อง'; err.classList.add('visible'); return; }
+        if (!newV || newV !== cfmV) { err.textContent = '❌ รหัสผ่านใหม่ไม่ถูกต้องหรือไม่ตรงกัน'; err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        state.adminPassword = newV;
+        try { localStorage.setItem(ADMIN_PW_STORAGE_KEY, newV); } catch (e) {}
+        document.getElementById('change-pw-success').style.display = 'block';
+        syncAdminCore('admin_pw_changed');
+      });
+
+      // Manual Live Refresh Button (แก้ปัญหา iOS/Safari ตัด SSE ตอนล็อกจอ)
+      const refreshBtn = document.getElementById('tb-refresh-sync-btn');
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.textContent = '⏳...';
+        if (getFirebaseRootUrl()) {
+          await fetchFirebaseRoomOnce();
+        } else {
+          try { if (syncChannel) syncChannel.postMessage({ type: 'REQUEST_STATE' }); } catch (e) {}
+        }
+        renderAll();
+        checkPendingWinnerPopups();
+        checkMyGiftQueueTurnPopup();
+        setTimeout(() => { refreshBtn.textContent = '🔄 รีเฟรช'; }, 400);
+      });
+
+      // Participant Check-in
+      const guestInput = document.getElementById('gatekeeper-guest-name-input');
+      const guestError = document.getElementById('gatekeeper-error-text');
+      const submitCheckinBtn = document.getElementById('btn-gatekeeper-submit');
+      let isCheckingIn = false;
+
+      async function handleCheckin() {
+        if (isCheckingIn) return;
+        const existing = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
+        if (existing) {
+          existing.isIdle = false;
+          state.deviceRole = mySessionGuestId;
+          document.getElementById('gatekeeper-screen').style.display = 'none';
+          document.getElementById('party-lobby-screen').style.display = 'block';
+          renderAll();
+          checkPendingWinnerPopups();
+          checkMyGiftQueueTurnPopup();
+          fbWriteSubpath(`guests/${encodeURIComponent(existing.id)}`, existing, 'PUT');
+          broadcastLocalOnly('guest_reconnected');
+          return;
+        }
+
+        const name = guestInput.value.replace(/\s+/g, ' ').trim();
+        if (!name) {
+          guestError.textContent = 'กรุณาระบุชื่อ หรือฉายาของคุณ';
+          guestError.classList.add('visible');
+          return;
+        }
+
+        isCheckingIn = true;
+        submitCheckinBtn.disabled = true;
+        try {
+          if (getFirebaseRootUrl() && !fbInitialLoaded) {
+            await fetchFirebaseRoomOnce();
+          }
+          if (state.guests.some(g => g.name.toLowerCase() === name.toLowerCase())) {
+            guestError.textContent = '❌ ชื่อหรือฉายานี้มีผู้ใช้งานอยู่ในห้องแล้ว';
+            guestError.classList.add('visible');
+            return;
+          }
+          guestError.classList.remove('visible');
+          const newId = 'g_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+          const guestObj = { id: newId, name, order: Date.now(), isIdle: false };
+          state.guests.push(guestObj);
+          setMySessionGuest(newId);
+          state.deviceRole = newId;
+          guestInput.value = '';
+          document.getElementById('gatekeeper-screen').style.display = 'none';
+          document.getElementById('party-lobby-screen').style.display = 'block';
+          renderAll();
+          fbWriteSubpath(`guests/${encodeURIComponent(newId)}`, guestObj, 'PUT');
+          broadcastLocalOnly('guest_checkin');
+          triggerGrandConfetti();
+        } finally {
+          isCheckingIn = false;
+          submitCheckinBtn.disabled = false;
+        }
+      }
+      submitCheckinBtn.addEventListener('click', handleCheckin);
+      guestInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleCheckin(); });
+
+      document.getElementById('btn-return-to-my-lobby').addEventListener('click', () => {
+        const me = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
+        if (me) {
+          me.isIdle = false;
+          state.deviceRole = mySessionGuestId;
+          document.getElementById('gatekeeper-screen').style.display = 'none';
+          document.getElementById('party-lobby-screen').style.display = 'block';
+          renderAll();
+          checkPendingWinnerPopups();
+          checkMyGiftQueueTurnPopup();
+          fbWriteSubpath(`guests/${encodeURIComponent(me.id)}`, me, 'PUT');
+          broadcastLocalOnly('guest_reconnected');
+        }
+      });
+
+      document.getElementById('btn-leave-party').addEventListener('click', () => {
+        if (!mySessionGuestId) return;
+        const gid = mySessionGuestId;
+        purgeGuestDataById(gid, true);
+        setMySessionGuest(null);
+        state.deviceRole = 'guest_unselected';
+        try { if (syncChannel) syncChannel.postMessage({ type: 'GUEST_LEAVE', guestId: gid }); } catch (e) {}
+        broadcastLocalOnly('guest_left');
+        document.getElementById('party-lobby-screen').style.display = 'none';
+        document.getElementById('gatekeeper-screen').style.display = 'block';
+        renderAll();
+      });
+
+      function markScreenSleep() {
+        const me = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
+        if (me && !me.isIdle) {
+          me.isIdle = true;
+          fbWriteSubpath(`guests/${encodeURIComponent(me.id)}`, me, 'PUT', true);
+          broadcastLocalOnly('guest_idle');
+        }
+      }
+      async function handleScreenWake() {
+        if (getFirebaseRootUrl()) {
+          await fetchFirebaseRoomOnce();
+        }
+        const me = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
+        if (me) {
+          if (me.isIdle) {
+            me.isIdle = false;
+            fbWriteSubpath(`guests/${encodeURIComponent(me.id)}`, me, 'PUT');
+            broadcastLocalOnly('guest_active');
+          }
+          renderAll();
+          checkPendingWinnerPopups();
+          checkMyGiftQueueTurnPopup();
+        }
+      }
+
+      window.addEventListener('pagehide', markScreenSleep);
+      window.addEventListener('pageshow', handleScreenWake);
+      window.addEventListener('focus', handleScreenWake);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') markScreenSleep();
+        else handleScreenWake();
+      });
+
+      function updateRoleVisibility() {
+        if (state.deviceRole !== 'all' && state.deviceRole !== 'guest_unselected' && !state.guests.some(g => g.id === state.deviceRole)) {
+          setMySessionGuest(null);
+          state.deviceRole = 'guest_unselected';
+          document.getElementById('party-lobby-screen').style.display = 'none';
+          document.getElementById('gatekeeper-screen').style.display = 'block';
+        }
+        const isAdmin = state.deviceRole === 'all';
+        document.querySelectorAll('.admin-only-control').forEach(el => { el.style.display = isAdmin ? '' : 'none'; });
+        document.querySelectorAll('.participant-only-control').forEach(el => { el.style.display = !isAdmin ? '' : 'none'; });
+
+        const tbLbl = document.getElementById('tb-identity-label');
+        const topAdminBtn = document.getElementById('tb-enter-admin-top-btn');
+        const leaveBtn = document.getElementById('btn-leave-party');
+        const myPrizesBtn = document.getElementById('btn-view-my-prizes');
+        const switchAdminBtn = document.getElementById('btn-switch-to-admin');
+        const bannerTxt = document.getElementById('role-banner-text');
+
+        if (isAdmin) {
+          tbLbl.textContent = '👑 Admin';
+          topAdminBtn.style.display = 'none';
+          leaveBtn.style.display = 'none';
+          myPrizesBtn.style.display = 'none';
+          switchAdminBtn.style.display = 'none';
+          document.getElementById('role-banner-icon').textContent = '👑';
+          bannerTxt.innerHTML = 'โหมดผู้จัดงาน (<strong>Admin</strong>)';
+        } else if (state.deviceRole !== 'guest_unselected') {
+          const me = state.guests.find(g => g.id === state.deviceRole);
+          const nm = me ? me.name : 'ผู้เข้าร่วม';
+          const myWonList = (state.prizeAlerts || []).filter(a => a && Array.isArray(a.targetGuestIds) && a.targetGuestIds.includes(state.deviceRole));
+          tbLbl.textContent = nm;
+          topAdminBtn.style.display = 'inline-flex';
+          leaveBtn.style.display = 'inline-flex';
+          switchAdminBtn.style.display = 'inline-flex';
+          if (myWonList.length > 0) {
+            myPrizesBtn.style.display = 'inline-flex';
+            myPrizesBtn.textContent = `🏆 รางวัลของฉัน (${myWonList.length})`;
+          } else {
+            myPrizesBtn.style.display = 'none';
+          }
+          document.getElementById('role-banner-icon').textContent = '📱';
+          bannerTxt.innerHTML = `มือถือของ: <strong style="color:#fde68a;">${escapeHtml(nm)}</strong>`;
+        } else {
+          tbLbl.textContent = 'ยังไม่ลงชื่อ';
+          topAdminBtn.style.display = 'inline-flex';
+          leaveBtn.style.display = 'none';
+          myPrizesBtn.style.display = 'none';
+        }
+
+        const myGuest = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
+        document.getElementById('gatekeeper-checkin-form').style.display = myGuest ? 'none' : 'block';
+        document.getElementById('gatekeeper-already-registered-box').style.display = myGuest ? 'block' : 'none';
+        if (myGuest) document.getElementById('already-reg-name').textContent = myGuest.name;
+      }
+
+      /* === PART 5: NAVIGATION, GUESTS, LUCKY WHEEL, ONE-CLICK GIFT LOOP & TIE-AWARE VOTING === */
+      window.switchMainModule = function(mod) {
+        state.activeModule = mod;
+        document.querySelectorAll('.action-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('card-' + mod)?.classList.add('active');
+        const key = mod === 'checkin' ? 'main' : mod;
+        document.querySelectorAll('.view-section').forEach(s => { s.style.display = 'none'; });
+        document.getElementById('view-section-' + key).style.display = 'block';
+        if (key === 'luckydraw') setTimeout(drawLuckyWheel, 30);
+      };
+
+      function renderGuests() {
+        updateRoleVisibility();
+        const grid = document.getElementById('main-guests-display-grid');
+        grid.innerHTML = '';
+        const isAdmin = state.deviceRole === 'all';
+
+        if (state.guests.length === 0) {
+          grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">💡 ยังไม่มีรายชื่อผู้เข้าร่วมออนไลน์ในขณะนี้</div>';
+        } else {
+          const icons = ['🙋', '🧑‍💻', '👩‍💼', '🦸', '😎', '🎉', '🤠', '🪄'];
+          state.guests.forEach((g, idx) => {
+            const card = document.createElement('div');
+            card.className = 'guest-avatar-card' + (state.deviceRole === g.id ? ' is-me' : '') + (g.isIdle ? ' is-grace' : '');
+            const del = isAdmin ? `<button type="button" class="btn btn-ghost-danger" style="position:absolute;top:4px;right:4px;min-height:22px;padding:2px 6px;font-size:10px;" onclick="removeGuest('${escapeHtml(g.id)}')">ลบ</button>` : '';
+            const statusTxt = g.isIdle ? ' • 💤 พักจอ' : ' • 🟢';
+            card.innerHTML = `${del}<div style="font-size:20px;margin-top:2px;">${icons[idx % icons.length]}</div><div class="guest-avatar-name">${escapeHtml(g.name)}</div><div class="guest-badge">#${idx + 1}${state.deviceRole === g.id ? ' • คุณ' : statusTxt}</div>`;
+            grid.appendChild(card);
+          });
+        }
+
+        document.querySelectorAll('.guest-counter-val').forEach(el => { el.textContent = state.guests.length; });
+        document.getElementById('tb-joined-count').textContent = state.guests.length;
+
+        renderPrizes();
+        syncWheelStageUI();
+        drawLuckyWheel();
+        renderVotingCandidates();
+        renderWitsGame();
+        updateCircularLoopUI();
+      }
+
+      window.removeGuest = function(id) {
+        if (state.deviceRole !== 'all') return;
+        const g = state.guests.find(item => item.id === id);
+        askSafetyConfirm('ลบรายชื่อผู้เข้าร่วม?', `ต้องการลบชื่อ "${g ? g.name : ''}" ออกจากห้องใช่หรือไม่?`, () => {
+          purgeGuestDataById(id, true);
+          renderAll();
+          broadcastLocalOnly('guest_removed');
+        });
+      };
+
+      // Lucky Wheel (พร้อมระบบตัดของรางวัลที่แจกแล้ว & เตือนเมื่อของรางวัลหมด!)
+      const wheelCanvas = document.getElementById('lucky-wheel-canvas');
+      const wCtx = wheelCanvas.getContext('2d');
+      const drawPrizeSelect = document.getElementById('draw-prize-select');
+      const mainStageDrawBtn = document.getElementById('main-stage-draw-btn');
+      let wheelAngle = 0, wheelIsSpinning = false;
+
+      function getActiveWheelPool() {
+        return state.guests.filter(g => !state.luckyDrawExclusions.includes(g.id));
+      }
+
+      function renderPrizes() {
+        drawPrizeSelect.innerHTML = '<option value="">-- ไม่ระบุชื่อของรางวัล (สุ่มรายชื่อทั่วไป) --</option>';
+        const tags = document.getElementById('prize-tags-container');
+        tags.innerHTML = '';
+        state.prizes.forEach((p, idx) => {
+          const opt = document.createElement('option');
+          opt.value = p; opt.textContent = `🎁 ${p}`;
+          drawPrizeSelect.appendChild(opt);
+          const chip = document.createElement('span');
+          chip.className = 'prize-tag-chip';
+          chip.innerHTML = `<span>🎁 ${escapeHtml(p)}</span><button type="button" onclick="removePrizeByIndex(${idx})">✕</button>`;
+          tags.appendChild(chip);
+        });
+        if (state.prizes.includes(state.selectedPrize)) {
+          drawPrizeSelect.value = state.selectedPrize;
+        } else {
+          state.selectedPrize = state.prizes[0] || '';
+          drawPrizeSelect.value = state.selectedPrize;
+        }
+
+        const exhaustedBanner = document.getElementById('prizes-exhausted-banner');
+        if (exhaustedBanner) {
+          exhaustedBanner.style.display = (state.hadConfiguredPrizes && state.prizes.length === 0) ? 'block' : 'none';
+        }
+
+        const shownPrize = (state.wheelStage.status !== 'idle' && state.wheelStage.prizeName)
+          ? state.wheelStage.prizeName
+          : state.selectedPrize;
+        document.getElementById('active-draw-prize-label').textContent = shownPrize ? `🎁 รางวัล: ${shownPrize}` : '🎁 รางวัล: สุ่มผู้โชคดีทั่วไป';
+      }
+
+      drawPrizeSelect.addEventListener('change', () => {
+        if (state.deviceRole !== 'all') return;
+        state.selectedPrize = drawPrizeSelect.value;
+        if (state.wheelStage.status !== 'spinning') state.wheelStage.status = 'idle';
+        renderPrizes();
+        syncAdminCore('prize_selected');
+      });
+      function addCustomPrizeAction() {
+        const inp = document.getElementById('draw-prize-input-field');
+        const val = inp.value.trim();
+        if (state.deviceRole !== 'all' || !val) return;
+        state.prizes.push(val);
+        state.hadConfiguredPrizes = true;
+        state.selectedPrize = val;
+        inp.value = '';
+        renderPrizes();
+        syncAdminCore('prize_added');
+      }
+      document.getElementById('btn-add-custom-prize').addEventListener('click', addCustomPrizeAction);
+      document.getElementById('draw-prize-input-field').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addCustomPrizeAction(); }
+      });
+      window.removePrizeByIndex = function(idx) {
+        if (state.deviceRole !== 'all') return;
+        const rem = state.prizes.splice(idx, 1)[0];
+        if (state.selectedPrize === rem) state.selectedPrize = state.prizes[0] || '';
+        renderPrizes();
+        syncAdminCore('prize_removed');
+      };
+      document.getElementById('btn-clear-all-prizes').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        askSafetyConfirm('ล้างรายการของรางวัลทั้งหมด?', 'รายการของรางวัลที่ตั้งไว้ในวงล้อจะถูกล้างออกทั้งหมด', () => {
+          state.prizes = [];
+          state.hadConfiguredPrizes = false;
+          state.selectedPrize = '';
+          renderPrizes();
+          syncAdminCore('prizes_cleared');
+        });
+      });
+      document.getElementById('btn-restore-wheel-names').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        state.luckyDrawExclusions = [];
+        state.wheelStage = { spinId: '', status: 'idle', finalAngle: wheelAngle, winnerId: '', winnerName: '', prizeName: '' };
+        syncWheelStageUI();
+        drawLuckyWheel();
+        syncAdminCore('wheel_restored');
+      });
+
+      function drawLuckyWheel() {
+        const pool = getActiveWheelPool();
+        const N = pool.length;
+        const cx = wheelCanvas.width / 2, cy = wheelCanvas.height / 2, r = cx - 12;
+        document.getElementById('wheel-pool-counter-badge').textContent = `ในวงล้อ: ${N} / ${state.guests.length} คน`;
+        wCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+        if (N === 0) {
+          wCtx.beginPath(); wCtx.arc(cx, cy, r, 0, Math.PI * 2); wCtx.fillStyle = '#1e293b'; wCtx.fill();
+          wCtx.fillStyle = '#94a3b8'; wCtx.font = 'bold 13px Prompt'; wCtx.textAlign = 'center'; wCtx.textBaseline = 'middle';
+          wCtx.fillText(state.guests.length === 0 ? 'รอผู้ร่วมงานลงชื่อเข้าห้องเพื่อหมุนวงล้อ' : 'ทุกคนในวงล้อได้รางวัลครบแล้ว', cx, cy);
+          return;
+        }
+        const slice = (Math.PI * 2) / N;
+        const cols = ['#f59e0b', '#ec4899', '#3b82f6', '#10b981', '#8b5cf6', '#06b6d4', '#f43f5e', '#eab308'];
+        wCtx.save(); wCtx.translate(cx, cy); wCtx.rotate(wheelAngle);
+        for (let i = 0; i < N; i++) {
+          wCtx.beginPath(); wCtx.moveTo(0, 0); wCtx.arc(0, 0, r, i * slice, (i + 1) * slice); wCtx.closePath();
+          wCtx.fillStyle = cols[i % cols.length]; wCtx.fill();
+          wCtx.strokeStyle = 'rgba(15,23,42,0.5)'; wCtx.lineWidth = 2; wCtx.stroke();
+          wCtx.save(); wCtx.rotate(i * slice + slice / 2);
+          wCtx.textAlign = 'right'; wCtx.textBaseline = 'middle'; wCtx.fillStyle = '#fff';
+          wCtx.font = N > 12 ? 'bold 11px Prompt' : 'bold 13px Prompt';
+          const nm = pool[i].name;
+          wCtx.fillText(nm.length > 14 ? nm.slice(0, 12) + '..' : nm, r - 18, 0);
+          wCtx.restore();
+        }
+        wCtx.restore();
+        wCtx.beginPath(); wCtx.arc(cx, cy, 22, 0, Math.PI * 2); wCtx.fillStyle = '#f59e0b'; wCtx.fill(); wCtx.lineWidth = 3; wCtx.strokeStyle = '#fff'; wCtx.stroke();
+      }
+
+      function syncWheelStageUI() {
+        const ws = state.wheelStage || { status: 'idle' };
+        const wrap = document.getElementById('stage-slot-wrapper');
+        const txt = document.getElementById('stage-slot-text');
+        const hint = document.getElementById('stage-slot-hint');
+
+        if (ws.status === 'spinning' && ws.spinId && ws.spinId !== lastAnimatedSpinId) {
+          lastAnimatedSpinId = ws.spinId;
+          runSyncedWheelAnimation(ws);
+          return;
+        }
+        if (wheelIsSpinning) return;
+
+        if (ws.status === 'winner' && ws.winnerName) {
+          if (typeof ws.finalAngle === 'number') wheelAngle = ws.finalAngle;
+          wrap.classList.remove('rolling');
+          wrap.classList.add('winner');
+          txt.style.color = '#fde68a';
+          txt.textContent = `🎊 ${ws.winnerName} 🎊`;
+          hint.innerHTML = `ยินดีด้วย! ได้รับรางวัล <strong style="color:var(--brand);">${escapeHtml(ws.prizeName || 'รางวัลผู้โชคดีประจำปีใหม่')}</strong>`;
+        } else if (ws.status !== 'spinning') {
+          wrap.classList.remove('rolling', 'winner');
+          txt.style.color = 'var(--brand)';
+          txt.textContent = 'รอผู้จัดงาน (Admin) กดหมุนวงล้อ';
+          hint.textContent = 'เมื่อหมุนได้ผู้ชนะ ป๊อปอัพจะเด้งแจ้งเตือนบนหน้าจอมือถือของผู้โชคดีทันที!';
+        }
+      }
+
+      function runSyncedWheelAnimation(wsSnapshot) {
+        wheelIsSpinning = true;
+        mainStageDrawBtn.disabled = true;
+        const wrap = document.getElementById('stage-slot-wrapper');
+        const txt = document.getElementById('stage-slot-text');
+        const hint = document.getElementById('stage-slot-hint');
+        wrap.classList.remove('winner');
+        wrap.classList.add('rolling');
+        txt.style.color = 'var(--brand)';
+        txt.textContent = '🎡 วงล้อกำลังหมุน...';
+        hint.textContent = `กำลังสุ่มผู้โชคดีรับรางวัล: ${wsSnapshot.prizeName || 'รางวัลผู้โชคดีประจำปีใหม่'}`;
+
+        const startAngle = wheelAngle;
+        const targetAngle = typeof wsSnapshot.finalAngle === 'number' && wsSnapshot.finalAngle > startAngle
+          ? wsSnapshot.finalAngle
+          : startAngle + Math.PI * 10;
+        const duration = 3100;
+        const startTime = performance.now();
+
+        function stepFrame(now) {
+          const t = Math.min(1, (now - startTime) / duration);
+          const easeOut = 1 - Math.pow(1 - t, 3);
+          wheelAngle = startAngle + (targetAngle - startAngle) * easeOut;
+          drawLuckyWheel();
+
+          if (t < 1) {
+            requestAnimationFrame(stepFrame);
+          } else {
+            wheelIsSpinning = false;
+            wheelAngle = targetAngle;
+            mainStageDrawBtn.disabled = false;
+
+            if (state.deviceRole === 'all' && state.wheelStage.spinId === wsSnapshot.spinId && state.wheelStage.status === 'spinning') {
+              state.wheelStage.status = 'winner';
+              state.winners.unshift({
+                name: wsSnapshot.winnerName,
+                prize: wsSnapshot.prizeName,
+                timestamp: new Date().toLocaleTimeString('th-TH')
+              });
+              if (document.getElementById('chk-remove-after-win').checked && wsSnapshot.winnerId && !state.luckyDrawExclusions.includes(wsSnapshot.winnerId)) {
+                state.luckyDrawExclusions.push(wsSnapshot.winnerId);
+              }
+              // ตัดของรางวัลที่เพิ่งแจกแล้วออกจากรายการรอแจกอัตโนมัติ
+              const prizeIdx = state.prizes.indexOf(wsSnapshot.prizeName);
+              if (prizeIdx !== -1) {
+                state.prizes.splice(prizeIdx, 1);
+                state.selectedPrize = state.prizes[0] || '';
+              }
+              triggerWinnerNotification(wsSnapshot.winnerId, wsSnapshot.winnerName, wsSnapshot.prizeName, 'วงล้อจับรางวัล Lucky Draw');
+              renderAll();
+              syncAdminCore('wheel_winner');
+            } else {
+              syncWheelStageUI();
+              drawLuckyWheel();
+            }
+          }
+        }
+        requestAnimationFrame(stepFrame);
+      }
+
+      mainStageDrawBtn.addEventListener('click', () => {
+        const pool = getActiveWheelPool();
+        if (state.deviceRole !== 'all' || wheelIsSpinning || !pool.length) return;
+
+        const N = pool.length;
+        const slice = (Math.PI * 2) / N;
+        const extraRotation = Math.PI * 10 + Math.random() * Math.PI * 4;
+        const finalAngle = wheelAngle + extraRotation;
+        let norm = (1.5 * Math.PI - finalAngle) % (Math.PI * 2);
+        if (norm < 0) norm += Math.PI * 2;
+        const winner = pool[Math.floor(norm / slice) % N];
+        const prize = state.selectedPrize || 'รางวัลผู้โชคดีประจำปีใหม่';
+        const spinId = 'sp_' + Date.now();
+
+        state.wheelStage = {
+          spinId,
+          status: 'spinning',
+          finalAngle,
+          winnerId: winner.id,
+          winnerName: winner.name,
+          prizeName: prize
+        };
+        renderPrizes();
+        syncAdminCore('wheel_spin_start');
+        syncWheelStageUI();
+      });
+
+      function renderWinners() {
+        const list = document.getElementById('winners-history-list');
+        const empty = document.getElementById('winners-empty-state');
+        const clr = document.getElementById('clear-winners-btn');
+        const lineBtn = document.getElementById('btn-open-line-summary-card');
+        document.getElementById('stats-winners-count').textContent = state.winners.length;
+        list.innerHTML = '';
+        if (lineBtn) lineBtn.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
+        if (!state.winners.length) {
+          empty.style.display = 'block'; list.style.display = 'none'; clr.style.display = 'none';
+          return;
+        }
+        empty.style.display = 'none'; list.style.display = 'flex';
+        clr.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
+        state.winners.forEach(w => {
+          const li = document.createElement('li');
+          li.className = 'item-row';
+          li.innerHTML = `<div><div style="font-weight:600;">🎉 ${escapeHtml(w.name)}</div><div class="item-meta">${escapeHtml(w.prize)} (${escapeHtml(w.timestamp)})</div></div>`;
+          list.appendChild(li);
+        });
+      }
+      document.getElementById('clear-winners-btn').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        askSafetyConfirm('ล้างประวัติผู้โชคดีทั้งหมด?', 'ประวัติรายชื่อผู้ได้รับรางวัลทั้งหมดจะถูกล้างออก', () => {
+          state.winners = [];
+          state.prizeAlerts = [];
+          renderAll();
+          syncAdminCore('winners_cleared');
+        });
+      });
+
+      // Circular Single-Loop Gift Exchange (ปลดล็อกคิวถัดไปทันทีในคลิกเดียว + เด้งเตือนคิวถัดไป!)
+      function resetCircularLoop() {
+        state.circularLoopId = '';
+        state.circularHasStarted = false;
+        state.circularLoopPath = [];
+        state.circularCurrentIdx = 0;
+        state.circularDrawnList = [];
+      }
+
+      document.getElementById('btn-start-circular-game').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        if (state.guests.length < 2) {
+          document.getElementById('gift-loop-setup-hint').innerHTML = '<span style="color:var(--danger);">❌ ต้องมีผู้เข้าร่วมอย่างน้อย 2 คนขึ้นไป</span>';
+          return;
+        }
+        const pool = [...state.guests].map(g => ({ id: g.id, name: g.name }));
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        state.circularLoopId = 'loop_' + Date.now();
+        state.circularLoopPath = pool;
+        state.circularCurrentIdx = 0;
+        state.circularDrawnList = [];
+        state.circularHasStarted = true;
+        updateCircularLoopUI();
+        checkMyGiftQueueTurnPopup();
+        syncAdminCore('gift_loop_started');
+      });
+
+      function updateCircularLoopUI() {
+        const setup = document.getElementById('gift-loop-setup-view');
+        const active = document.getElementById('gift-loop-active-view');
+        const completed = isCircularLoopCompleted();
+
+        if (!state.circularHasStarted || (!completed && state.circularLoopPath.length < 2)) {
+          setup.style.display = 'block';
+          active.style.display = 'none';
+          return;
+        }
+        setup.style.display = 'none';
+        active.style.display = 'block';
+
+        const lastBox = document.getElementById('loop-last-action-box');
+        const inprog = document.getElementById('loop-inprogress-controls');
+        const comp = document.getElementById('loop-completion-display');
+        const drawBtn = document.getElementById('btn-loop-draw-gift');
+        const banner = document.getElementById('loop-queue-lock-banner');
+        const emgBox = document.getElementById('loop-admin-emergency-box');
+        const emgBtn = document.getElementById('btn-admin-emergency-loop');
+
+        if (state.circularDrawnList.length > 0) {
+          const last = state.circularDrawnList[state.circularDrawnList.length - 1];
+          lastBox.style.display = 'block';
+          document.getElementById('loop-result-text').innerHTML = `<strong>${escapeHtml(last.giver)}</strong> ได้รับของขวัญของ <strong>${escapeHtml(last.receiver)}</strong>!`;
+        } else {
+          lastBox.style.display = 'none';
+        }
+
+        if (completed) {
+          inprog.style.display = 'none';
+          comp.style.display = 'block';
+          document.getElementById('gift-loop-complete-summary').innerHTML = '<strong>สรุปสายพานแลกของขวัญครบวงกลม:</strong><br>' +
+            state.circularDrawnList.map((d, i) => `➡️ คิวที่ ${i + 1}: <strong>${escapeHtml(d.giver)}</strong> ได้ของขวัญของ <strong>${escapeHtml(d.receiver)}</strong>`).join('<br>');
+          return;
+        }
+
+        inprog.style.display = 'block';
+        comp.style.display = 'none';
+        emgBox.style.display = state.deviceRole === 'all' ? 'block' : 'none';
+
+        const path = state.circularLoopPath;
+        const idx = state.circularCurrentIdx;
+        const giver = path[idx];
+        const isMyTurn = state.deviceRole === giver.id;
+
+        document.getElementById('loop-current-player-name').textContent = giver.name;
+        document.getElementById('loop-step-info').textContent = `คิวคนที่ ${idx + 1} จาก ${path.length} คน`;
+
+        banner.style.background = isMyTurn ? 'rgba(16,185,129,0.16)' : 'rgba(56,189,248,0.1)';
+        banner.style.color = isMyTurn ? '#a7f3d0' : '#bae6fd';
+        banner.innerHTML = isMyTurn
+          ? `🔓 <strong>ถึงคิวมือถือของคุณ (${escapeHtml(giver.name)}) แล้ว!</strong> กดปุ่มด้านล่างเพื่อสุ่มรับของขวัญได้เลย`
+          : `🔒 <strong>ล็อกเฉพาะเจ้าของคิว:</strong> รอมือถือของ <strong>${escapeHtml(giver.name)}</strong> กดสุ่ม`;
+
+        drawBtn.disabled = !isMyTurn;
+        drawBtn.textContent = isMyTurn
+          ? `🎁 กดสุ่มรับของขวัญของคุณ (${giver.name})`
+          : `🔒 รอมือถือของ ${giver.name} กดสุ่ม...`;
+        emgBtn.textContent = `⏭️ Admin กดสุ่มแทนคิวที่ค้าง (${giver.name}) (กรณีฉุกเฉิน)`;
+      }
+
+      // กดคลิกเดียว: สุ่มของขวัญ + เด้งป๊อปอัพรางวัลให้คนกด + เลื่อนคิวปลดล็อกให้คนถัดไปทันที!
+      function execOneClickLoopDraw() {
+        const path = state.circularLoopPath;
+        const idx = state.circularCurrentIdx;
+        if (!state.circularHasStarted || idx >= path.length) return;
+        const giver = path[idx];
+        const receiver = path[(idx + 1) % path.length];
+
+        const turnKey = `${state.circularLoopId || 'loop'}_${idx}_${giver.id}`;
+        addSeenIds(SEEN_QUEUE_KEY, [turnKey]);
+
+        state.circularDrawnList.push({ giver: giver.name, receiver: receiver.name });
+        state.circularCurrentIdx++; // เลื่อนคิวไปปลดล็อกให้คนถัดไปทันทีในคลิกเดียว!
+
+        updateCircularLoopUI();
+        triggerWinnerNotification(giver.id, giver.name, `ของขวัญของ ${receiver.name}`, 'จับสลากแลกของขวัญปีใหม่');
+        checkMyGiftQueueTurnPopup();
+        syncAdminCore('gift_loop_oneclick_step');
+      }
+
+      document.getElementById('btn-loop-draw-gift').addEventListener('click', () => {
+        const giver = state.circularLoopPath[state.circularCurrentIdx];
+        if (state.circularHasStarted && !isCircularLoopCompleted() && giver && state.deviceRole === giver.id) {
+          execOneClickLoopDraw();
+        }
+      });
+
+      document.getElementById('btn-admin-emergency-loop').addEventListener('click', () => {
+        if (state.deviceRole !== 'all' || !state.circularHasStarted || isCircularLoopCompleted()) return;
+        execOneClickLoopDraw();
+      });
+
+      document.getElementById('btn-loop-restart').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        askSafetyConfirm('เริ่มวงจรแลกของขวัญรอบใหม่?', 'ตารางสรุปสายพานแลกของขวัญรอบปัจจุบันจะถูกรีเซ็ต', () => {
+          resetCircularLoop();
+          updateCircularLoopUI();
+          syncAdminCore('gift_loop_reset');
+        });
+      });
+
+      // Best Dressed Voting (พร้อมป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตคะแนนสำหรับ Admin)
+      document.getElementById('btn-reset-votes').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        askSafetyConfirm('รีเซ็ตคะแนนโหวตทั้งหมด?', 'คะแนนโหวตการแต่งกายทั้งหมดจะถูกล้างเป็น 0 เพื่อเปิดโหวตรอบใหม่', () => {
+          state.votedGuests = {};
+          fbWriteSubpath('votes', null, 'DELETE');
+          renderVotingCandidates();
+          broadcastLocalOnly('votes_reset');
+        });
+      });
+
+      function renderVotingCandidates() {
+        const list = document.getElementById('best-dressed-vote-list');
+        list.innerHTML = '';
+        if (!state.guests.length) {
+          list.innerHTML = '<div class="empty-state">ยังไม่มีรายชื่อผู้เข้าร่วมออนไลน์ในขณะนี้</div>';
+          return;
+        }
+        const enriched = state.guests.map(g => ({ ...g, votes: getVoteCount(g.id) }));
+        const sorted = enriched.sort((a, b) => b.votes - a.votes);
+        const topScore = sorted[0]?.votes || 0;
+        const topLeadersCount = topScore > 0 ? sorted.filter(c => c.votes === topScore).length : 0;
+        const maxV = Math.max(1, topScore);
+
+        const vid = state.deviceRole;
+        const isAdmin = vid === 'all';
+        const hasVoted = !isAdmin && vid !== 'guest_unselected' && state.votedGuests[vid] !== undefined;
+
+        sorted.forEach(c => {
+          const pct = Math.round((c.votes / maxV) * 100);
+          const isTop = topScore > 0 && c.votes === topScore;
+          let leaderBadge = '';
+          if (isTop) {
+            leaderBadge = topLeadersCount > 1
+              ? ` <span class="slot-prize-badge" style="margin:0 0 0 6px;padding:2px 8px;font-size:10px;">🏆 อันดับ 1 (ชนะเลิศร่วม)</span>`
+              : ` <span class="slot-prize-badge" style="margin:0 0 0 6px;padding:2px 8px;font-size:10px;">👑 อันดับ 1 ผู้นำโหวต</span>`;
+          }
+
+          let act = '';
+          if (isAdmin) act = `<span style="font-size:11px;color:var(--muted);padding:6px 10px;border:1px dashed var(--border);border-radius:8px;">👁️ Admin ดูผลเท่านั้น</span>`;
+          else if (vid === 'guest_unselected') act = `<button type="button" class="btn btn-secondary" disabled>กรุณาลงชื่อก่อน</button>`;
+          else if (vid === c.id) act = `<button type="button" class="btn btn-secondary" style="opacity:0.5;border-style:dashed;" disabled>🚫 ห้ามโหวตตัวเอง</button>`;
+          else if (hasVoted) act = state.votedGuests[vid] === c.id
+            ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
+            : `<button type="button" class="btn btn-secondary" style="opacity:0.45;" disabled>ใช้สิทธิ์โหวตแล้ว</button>`;
+          else act = `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🗳️ โหวตให้คนนี้</button>`;
+
+          const row = document.createElement('div');
+          row.className = 'vote-item-row' + (isTop ? ' is-leader' : '');
+          row.innerHTML = `<div class="vote-item-info"><div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;gap:6px;flex-wrap:wrap;"><span>👗 ${escapeHtml(c.name)}${vid === c.id ? ' <small style="color:#fde68a;">(คุณ)</small>' : ''}${leaderBadge}</span><span style="color:var(--brand);">${c.votes} คะแนน</span></div><div class="vote-bar-outer"><div class="vote-bar-inner" style="width:${c.votes > 0 ? pct : 0}%;"></div></div></div>${act}`;
+          list.appendChild(row);
+        });
+      }
+
+      window.castVote = function(cid) {
+        const vid = state.deviceRole;
+        if (!vid || vid === 'all' || vid === 'guest_unselected' || vid === cid || state.votedGuests[vid] !== undefined) return;
+        if (state.guests.some(g => g.id === cid)) {
+          state.votedGuests[vid] = cid;
+          renderVotingCandidates();
+          fbWriteSubpath(`votes/${encodeURIComponent(vid)}`, cid, 'PUT');
+          broadcastLocalOnly('vote_cast');
+        }
+      };
+
+      /* === PART 6: WITS & WAGERS (15s ROUND TIMER & CLEAN NUMBER PARSING) === */
+      const chkAns = document.getElementById('chk-show-secret-ans');
+      const witsAnsIn = document.getElementById('wits-answer-input');
+      chkAns.addEventListener('change', () => { witsAnsIn.type = chkAns.checked ? 'text' : 'password'; });
+
+      function getLocalRoundRemainingSec(wg) {
+        if (!wg || wg.phase !== 'asking') return 0;
+        if (wg.timeUp) return 0;
+        const rid = wg.roundId || 'default_round';
+        if (!localRoundDeadlines[rid]) {
+          localRoundDeadlines[rid] = Date.now() + ((wg.durationSec || 15) * 1000);
+        }
+        return Math.max(0, Math.ceil((localRoundDeadlines[rid] - Date.now()) / 1000));
+      }
+
+      function ensureWitsCountdownLoop() {
+        if (witsTimerInterval) clearInterval(witsTimerInterval);
+        const wg = state.witsGame;
+        if (wg.phase !== 'asking' || wg.timeUp) return;
+
+        getLocalRoundRemainingSec(wg);
+
+        witsTimerInterval = setInterval(() => {
+          if (state.witsGame.phase !== 'asking') { clearInterval(witsTimerInterval); witsTimerInterval = null; return; }
+          const rem = getLocalRoundRemainingSec(state.witsGame);
+          state.witsGame.timeLeft = rem;
+
+          const cEl = document.getElementById('wits-timer-circle');
+          if (cEl) { cEl.textContent = String(rem); cEl.classList.toggle('urgent', rem <= 5); }
+          const pSec = document.getElementById('wits-phone-live-sec');
+          if (pSec) pSec.textContent = String(rem);
+
+          if (rem <= 0) {
+            clearInterval(witsTimerInterval); witsTimerInterval = null;
+            state.witsGame.timeUp = true; state.witsGame.timeLeft = 0;
+            renderWitsGame();
+            if (state.deviceRole === 'all') syncAdminCore('wits_timeup');
+          }
+        }, 250);
+      }
+
+      document.getElementById('btn-wits-broadcast').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        const q = document.getElementById('wits-question-input').value.trim();
+        const num = parseCleanNumber(witsAnsIn.value);
+        const err = document.getElementById('wits-host-error');
+        if (!q || !Number.isFinite(num)) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        if (!chkAns.checked) witsAnsIn.type = 'password';
+
+        const newRoundId = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+        localRoundDeadlines[newRoundId] = Date.now() + 15000;
+
+        state.witsGame = {
+          roundId: newRoundId,
+          phase: 'asking',
+          question: q,
+          correctAnswer: num,
+          prize: document.getElementById('wits-prize-input').value.trim() || 'ของรางวัลพิเศษปีใหม่',
+          rule: document.getElementById('wits-rule-select').value,
+          durationSec: 15,
+          timeLeft: 15,
+          timeUp: false,
+          submissions: {},
+          winnerIds: []
+        };
+        fbWriteSubpath('witsSubmissions', null, 'DELETE');
+        renderWitsGame();
+        ensureWitsCountdownLoop();
+        syncAdminCore('wits_question');
+      });
+
+      window.submitWitsGuess = function() {
+        const wg = state.witsGame, gid = state.deviceRole;
+        if (wg.phase !== 'asking' || wg.timeUp || !gid || gid === 'all' || gid === 'guest_unselected') return;
+        if (getLocalRoundRemainingSec(wg) <= 0) { wg.timeUp = true; renderWitsGame(); return; }
+        const inp = document.getElementById('wits-my-guess-input');
+        if (!inp) return;
+        const val = parseCleanNumber(inp.value);
+        if (!Number.isFinite(val)) { inp.style.borderColor = 'var(--danger)'; inp.focus(); return; }
+
+        wg.submissions[gid] = val;
+        renderWitsGame();
+        fbWriteSubpath(`witsSubmissions/${encodeURIComponent(gid)}`, val, 'PUT');
+        broadcastLocalOnly('wits_guess');
+      };
+
+      document.getElementById('btn-wits-reveal').addEventListener('click', () => {
+        if (state.deviceRole !== 'all' || state.witsGame.phase !== 'asking') return;
+        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
+        const wg = state.witsGame, target = wg.correctAnswer;
+        const entries = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').map(g => ({ id: g.id, name: g.name, guess: wg.submissions[g.id] }));
+
+        let winners = [];
+        if (entries.length) {
+          const under = wg.rule === 'wits' ? entries.filter(e => e.guess <= target) : [];
+          if (under.length) {
+            const best = Math.max(...under.map(e => e.guess));
+            winners = under.filter(e => e.guess === best);
+          } else {
+            const minD = Math.min(...entries.map(e => Math.abs(e.guess - target)));
+            winners = entries.filter(e => Math.abs(e.guess - target) === minD);
+          }
+        }
+        wg.phase = 'revealed'; wg.timeUp = true; wg.winnerIds = winners.map(w => w.id);
+        winners.forEach(w => {
+          state.winners.unshift({ name: w.name, prize: `${wg.prize} (ทาย ${w.guess.toLocaleString('th-TH')} / เฉลย ${target.toLocaleString('th-TH')})`, timestamp: new Date().toLocaleTimeString('th-TH') });
+        });
+        if (winners.length) triggerWinnerNotification(winners.map(w => w.id), winners.map(w => w.name).join(', '), wg.prize, 'ชนะเกมทายตัวเลข Wits & Wagers');
+        renderWinners(); renderWitsGame();
+        syncAdminCore('wits_reveal');
+      });
+
+      document.getElementById('btn-wits-newround').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        state.witsGame = { roundId: '', phase: 'idle', question: '', correctAnswer: null, prize: '', rule: 'wits', durationSec: 15, timeLeft: 15, timeUp: false, submissions: {}, winnerIds: [] };
+        fbWriteSubpath('witsSubmissions', null, 'DELETE');
+        renderWitsGame();
+        syncAdminCore('wits_reset');
+      });
+
+      function renderWitsGame() {
+        const wg = state.witsGame, isAdmin = state.deviceRole === 'all';
+        const banner = document.getElementById('wits-active-banner');
+        const stage = document.getElementById('wits-stage-container');
+        const btnBroad = document.getElementById('btn-wits-broadcast');
+        const btnRev = document.getElementById('btn-wits-reveal');
+        const btnNew = document.getElementById('btn-wits-newround');
+
+        if (wg.phase === 'asking') {
+          wg.timeLeft = getLocalRoundRemainingSec(wg);
+          if (wg.timeLeft <= 0) wg.timeUp = true;
+        }
+        const total = state.guests.length;
+        const ansCount = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').length;
+        const forfeitCount = wg.timeUp ? Math.max(0, total - ansCount) : 0;
+
+        if (wg.phase === 'idle') {
+          banner.style.display = 'none';
+          btnBroad.style.display = 'inline-flex'; btnRev.style.display = 'none'; btnNew.style.display = 'none';
+        } else if (wg.phase === 'asking') {
+          banner.style.display = 'block';
+          document.getElementById('wits-banner-prize').textContent = `🎁 รางวัล: ${wg.prize}`;
+          document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
+          document.getElementById('wits-timer-status-lbl').textContent = wg.timeUp ? 'หมดเวลา!' : 'เวลาที่เหลือ:';
+          const tc = document.getElementById('wits-timer-circle');
+          tc.textContent = String(wg.timeUp ? 0 : wg.timeLeft);
+          tc.classList.toggle('urgent', wg.timeUp || wg.timeLeft <= 5);
+          document.getElementById('wits-banner-progress').innerHTML = wg.timeUp
+            ? `ปิดรับคำตอบแล้ว • ตอบทัน <strong style="color:var(--success);">${ansCount}</strong> คน • สละสิทธิ์ <strong style="color:var(--danger);">${forfeitCount}</strong> คน`
+            : `ตอบแล้ว <strong style="color:var(--brand);">${ansCount} / ${total}</strong> คน`;
+          btnBroad.style.display = 'inline-flex';
+          btnRev.style.display = isAdmin ? 'inline-flex' : 'none';
+          btnRev.disabled = !(ansCount > 0 || wg.timeUp);
+          btnNew.style.display = 'none';
+        } else {
+          banner.style.display = 'block';
+          document.getElementById('wits-banner-prize').textContent = `🏆 เฉลย: ${Number(wg.correctAnswer).toLocaleString('th-TH')}`;
+          document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
+          document.getElementById('wits-timer-status-lbl').textContent = 'สถานะ:';
+          document.getElementById('wits-timer-circle').textContent = 'จบ';
+          const winNames = state.guests.filter(g => wg.winnerIds.includes(g.id)).map(g => g.name).join(', ');
+          document.getElementById('wits-banner-progress').innerHTML = winNames
+            ? `🎉 ผู้ชนะรับรางวัล <strong>${escapeHtml(wg.prize)}</strong>: <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`
+            : '<span style="color:#fca5a5;">ไม่มีผู้ได้รับรางวัลในรอบนี้ (สละสิทธิ์ทั้งหมด)</span>';
+          btnBroad.style.display = 'none'; btnRev.style.display = 'none';
+          btnNew.style.display = isAdmin ? 'inline-flex' : 'none';
+        }
+
+        if (isAdmin) {
+          if (!state.guests.length) { stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้เข้าร่วมออนไลน์ในขณะนี้</div>'; return; }
+          stage.innerHTML = '<div class="meta-caption" style="margin-bottom:6px;">📋 สถานะการตอบของผู้เข้าร่วมทั้งหมด:</div><div class="wits-status-grid">' +
+            state.guests.map(g => {
+              const has = typeof wg.submissions[g.id] === 'number';
+              const isW = wg.phase === 'revealed' && wg.winnerIds.includes(g.id);
+              let st = '<span style="color:var(--muted);">⚪ รอคำถาม</span>';
+              if (wg.phase === 'asking') {
+                st = has ? '<span style="color:#38bdf8;">✅ ตอบแล้ว</span>' : (wg.timeUp ? '<span style="color:var(--danger);">🚫 สละสิทธิ์</span>' : '<span style="color:#fde68a;">⏳ รอตอบ...</span>');
+              } else if (wg.phase === 'revealed') {
+                if (has) {
+                  const gVal = Number(wg.submissions[g.id]);
+                  const diffVal = Math.abs(gVal - Number(wg.correctAnswer));
+                  st = `${isW ? '🏆 ' : ''}${gVal.toLocaleString('th-TH')} <small style="opacity:0.8;">(ห่าง ${diffVal.toLocaleString('th-TH')})</small>`;
+                } else {
+                  st = '<span style="color:var(--danger);">สละสิทธิ์</span>';
+                }
+              }
+              return `<div class="wits-status-pill${isW ? ' is-win' : ''}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(g.name)}</span><span>${st}</span></div>`;
+            }).join('') + '</div>';
+          return;
+        }
+
+        const me = state.guests.find(g => g.id === state.deviceRole);
+        if (!me) { stage.innerHTML = '<div class="empty-state">กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อร่วมเล่น</div>'; return; }
+        const has = typeof wg.submissions[me.id] === 'number';
+        const myVal = wg.submissions[me.id];
+        const isW = wg.phase === 'revealed' && wg.winnerIds.includes(me.id);
+
+        const existingInput = document.getElementById('wits-my-guess-input');
+        if (wg.phase === 'asking' && !has && !wg.timeUp && existingInput && existingInput.getAttribute('data-round-id') === String(wg.roundId)) {
+          const prizeSpan = document.getElementById('wits-phone-live-prize');
+          if (prizeSpan) prizeSpan.textContent = `🎁 ${wg.prize}`;
+          const secSpan = document.getElementById('wits-phone-live-sec');
+          if (secSpan) secSpan.textContent = String(wg.timeLeft);
+          return;
+        }
+
+        let inner = '';
+        if (wg.phase === 'idle') {
+          inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:34px;margin-bottom:6px;">📡</div><strong>หน้าจอมือถือพร้อมเล่น</strong><p style="font-size:12px;color:var(--muted);margin:6px 0 0;">เมื่อ Admin ส่งคำถาม คุณมีเวลา 15 วินาทีในการกรอกตัวเลข</p></div>`;
+        } else if (wg.phase === 'asking') {
+          if (has) {
+            inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">✅</div><strong style="color:#38bdf8;">ส่งคำตอบเรียบร้อย!</strong><div style="margin-top:6px;font-size:13px;">คำตอบของคุณ: <strong style="color:#fde68a;">${Number(myVal).toLocaleString('th-TH')}</strong></div><p style="font-size:11px;color:var(--muted);margin-top:8px;">รอฟังเฉลยพร้อมกัน...</p></div>`;
+          } else if (wg.timeUp) {
+            inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">⌛🚫</div><strong style="color:#fda4af;">หมดเวลา 15 วินาที!</strong><p style="font-size:12px;color:#fecdd3;margin:6px 0 0;">ไม่ได้ส่งคำตอบ • ถือว่าสละสิทธิ์ในข้อนี้</p></div>`;
+          } else {
+            inner = `<form onsubmit="event.preventDefault();submitWitsGuess();return false;" style="display:flex;flex-direction:column;justify-content:space-between;flex:1;margin:0;"><div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;"><span id="wits-phone-live-prize" style="color:var(--brand);font-weight:600;">🎁 ${escapeHtml(wg.prize)}</span><span style="color:#fde68a;font-weight:700;">⏱️ <span id="wits-phone-live-sec">${wg.timeLeft}</span> วิ</span></div><input type="text" inputmode="decimal" enterkeyhint="send" id="wits-my-guess-input" data-round-id="${escapeHtml(wg.roundId)}" class="phone-num-input" placeholder="กรอกตัวเลข..." onkeydown="if(event.key==='Enter'){event.preventDefault();submitWitsGuess();}"></div><button type="submit" class="btn btn-primary" style="width:100%;">🚀 ส่งคำตอบตัวเลขทันที</button></form>`;
+          }
+        } else {
+          const targetNum = Number(wg.correctAnswer);
+          const ansStr = targetNum.toLocaleString('th-TH');
+          const myStr = has ? Number(myVal).toLocaleString('th-TH') : 'สละสิทธิ์ (หมดเวลา 15 วิ)';
+          let diffSummaryHtml = '';
+          if (has) {
+            const diffNum = Math.abs(Number(myVal) - targetNum);
+            if (diffNum === 0) {
+              diffSummaryHtml = `<div style="margin-top:6px;font-size:12px;color:#a7f3d0;font-weight:700;">🎯 ทายตรงเป๊ะ! (ห่าง 0 หน่วย)</div>`;
+            } else {
+              const dirTxt = Number(myVal) < targetNum ? 'ต่ำกว่าเฉลย' : 'เกินเฉลย';
+              diffSummaryHtml = `<div style="margin-top:6px;font-size:12px;color:#fde68a;font-weight:600;">📏 คุณทายห่างจากเฉลยจริงไป ${diffNum.toLocaleString('th-TH')} หน่วย (${dirTxt})</div>`;
+            }
+          }
+          inner = isW
+            ? `<div style="text-align:center;margin:auto 0;"><div style="font-size:42px;">🏆🎉</div><h3 style="color:#fde68a;margin:4px 0;">ยินดีด้วย! คุณได้รางวัล!</h3><div style="background:rgba(245,158,11,0.2);border:1px solid var(--brand);border-radius:8px;padding:6px 10px;margin:8px 0;font-size:13px;font-weight:700;">🎁 ${escapeHtml(wg.prize)}</div><div style="font-size:12px;">เลขที่ทาย: <strong>${myStr}</strong> • เฉลย: <strong>${ansStr}</strong></div>${diffSummaryHtml}</div>`
+            : `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">${has ? '😅💨' : '⌛🚫'}</div><h3 style="color:#cbd5e1;margin:4px 0;">${has ? 'อดเลยรอบนี้!' : 'สละสิทธิ์รอบนี้'}</h3><div style="font-size:12px;color:var(--muted);margin-top:6px;">ของคุณ: <strong>${myStr}</strong> • เฉลยจริง: <strong style="color:var(--brand);">${ansStr}</strong></div>${diffSummaryHtml}</div>`;
+        }
+        stage.innerHTML = `<div class="mini-phone${isW ? ' phone-winner' : ''}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:10px;"><span>📱 ${escapeHtml(me.name)}</span><span style="color:var(--success);">● ออนไลน์</span></div>${inner}</div>`;
+      }
+
+      /* === PART 7: ATOMIC FIREBASE SYNC (WITH 401/403 RULES CHECK) + BROADCASTCHANNEL === */
+      let syncChannel = null;
+      let firebaseConfig = { dbUrl: '', roomId: 'happynewyear2569' };
+      let fbEventSource = null;
+      let fbPollTimer = null;
+      let fbInitialLoaded = false;
+      const fbMirror = { guests: {}, votes: {}, witsSubmissions: {}, core: null };
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('db')) {
+          firebaseConfig.dbUrl = params.get('db').replace(/\/+$/, '');
+          firebaseConfig.roomId = (params.get('room') || 'happynewyear2569').replace(/[^a-zA-Z0-9_-]/g, '');
+        } else {
+          const savedFb = localStorage.getItem(FB_CONFIG_KEY);
+          if (savedFb) firebaseConfig = JSON.parse(savedFb);
+        }
+      } catch (e) {}
+
+      function getFirebaseRootUrl() {
+        return firebaseConfig.dbUrl
+          ? `${firebaseConfig.dbUrl.replace(/\/+$/, '')}/party_rooms/${firebaseConfig.roomId || 'happynewyear2569'}`
+          : null;
+      }
+
+      function fbWriteSubpath(subPath, dataObj, method, keepalive) {
+        const root = getFirebaseRootUrl();
+        if (!root) return Promise.resolve();
+        const url = `${root}/${subPath}.json`;
+        const opts = { method: method || 'PUT', keepalive: Boolean(keepalive) };
+        if (method !== 'DELETE') {
+          opts.headers = { 'Content-Type': 'application/json' };
+          opts.body = JSON.stringify(dataObj);
+        }
+        return fetch(url, opts).catch(() => {});
+      }
+
+      function buildCoreStateObject() {
+        return {
+          adminPassword: state.adminPassword,
+          prizes: state.prizes,
+          hadConfiguredPrizes: state.hadConfiguredPrizes,
+          selectedPrize: state.selectedPrize,
+          luckyDrawExclusions: state.luckyDrawExclusions,
+          wheelStage: state.wheelStage,
+          winners: state.winners,
+          prizeAlerts: state.prizeAlerts,
+          circularLoop: {
+            loopId: state.circularLoopId,
+            path: state.circularLoopPath,
+            currentIdx: state.circularCurrentIdx,
+            drawnList: state.circularDrawnList,
+            hasStarted: state.circularHasStarted
+          },
+          witsMeta: {
+            roundId: state.witsGame.roundId,
+            phase: state.witsGame.phase,
+            question: state.witsGame.question,
+            correctAnswer: state.witsGame.correctAnswer,
+            prize: state.witsGame.prize,
+            rule: state.witsGame.rule,
+            durationSec: state.witsGame.durationSec || 15,
+            timeUp: state.witsGame.timeUp,
+            winnerIds: state.witsGame.winnerIds
+          }
+        };
+      }
+
+      function fbPushCoreState() {
+        fbWriteSubpath('core', buildCoreStateObject(), 'PUT');
+      }
+
+      function syncAdminCore(reason) {
+        fbPushCoreState();
+        broadcastLocalOnly(reason);
+      }
+
+      function applyFbPathChange(target, relPath, val, isPatch) {
+        const parts = String(relPath || '/').split('/').filter(Boolean);
+        if (parts.length === 0) {
+          if (isPatch && val && typeof val === 'object') {
+            Object.keys(val).forEach(k => { target[k] = val[k]; });
+          } else {
+            const src = val && typeof val === 'object' ? val : {};
+            target.guests = src.guests && typeof src.guests === 'object' ? src.guests : {};
+            target.votes = src.votes && typeof src.votes === 'object' ? src.votes : {};
+            target.witsSubmissions = src.witsSubmissions && typeof src.witsSubmissions === 'object' ? src.witsSubmissions : {};
+            target.core = src.core || null;
+          }
+          return;
+        }
+        let cur = target;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const p = parts[i];
+          if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
+          cur = cur[p];
+        }
+        const leaf = parts[parts.length - 1];
+        if (val === null) {
+          delete cur[leaf];
+        } else if (isPatch && val && typeof val === 'object' && cur[leaf] && typeof cur[leaf] === 'object') {
+          Object.assign(cur[leaf], val);
+        } else {
+          cur[leaf] = val;
+        }
+      }
+
+      function syncStateFromFbMirror() {
+        const gMap = fbMirror.guests && typeof fbMirror.guests === 'object' ? fbMirror.guests : {};
+        state.guests = Object.values(gMap)
+          .filter(g => g && g.id && g.name)
+          .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        state.votedGuests = fbMirror.votes && typeof fbMirror.votes === 'object' ? { ...fbMirror.votes } : {};
+
+        const subMap = fbMirror.witsSubmissions && typeof fbMirror.witsSubmissions === 'object' ? fbMirror.witsSubmissions : {};
+        const cleanSubs = {};
+        Object.keys(subMap).forEach(k => {
+          const n = Number(subMap[k]);
+          if (Number.isFinite(n)) cleanSubs[k] = n;
+        });
+
+        const c = fbMirror.core;
+        if (c && typeof c === 'object') {
+          if (typeof c.adminPassword === 'string' && c.adminPassword) state.adminPassword = c.adminPassword;
+          state.prizes = Array.isArray(c.prizes) ? c.prizes : [];
+          state.hadConfiguredPrizes = Boolean(c.hadConfiguredPrizes);
+          state.selectedPrize = typeof c.selectedPrize === 'string' ? c.selectedPrize : '';
+          state.luckyDrawExclusions = Array.isArray(c.luckyDrawExclusions) ? c.luckyDrawExclusions : [];
+          if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
+          state.winners = Array.isArray(c.winners) ? c.winners : [];
+          state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
+          if (c.circularLoop && typeof c.circularLoop === 'object') {
+            state.circularLoopId = c.circularLoop.loopId || '';
+            state.circularLoopPath = Array.isArray(c.circularLoop.path) ? c.circularLoop.path : [];
+            state.circularCurrentIdx = typeof c.circularLoop.currentIdx === 'number' ? c.circularLoop.currentIdx : 0;
+            state.circularDrawnList = Array.isArray(c.circularLoop.drawnList) ? c.circularLoop.drawnList : [];
+            state.circularHasStarted = Boolean(c.circularLoop.hasStarted);
+          }
+          if (c.witsMeta && typeof c.witsMeta === 'object') {
+            const prevRoundId = state.witsGame.roundId;
+            const prevPhase = state.witsGame.phase;
+            state.witsGame = {
+              ...state.witsGame,
+              roundId: c.witsMeta.roundId || '',
+              phase: c.witsMeta.phase || 'idle',
+              question: c.witsMeta.question || '',
+              correctAnswer: c.witsMeta.correctAnswer ?? null,
+              prize: c.witsMeta.prize || '',
+              rule: c.witsMeta.rule || 'wits',
+              durationSec: c.witsMeta.durationSec || 15,
+              timeUp: Boolean(c.witsMeta.timeUp),
+              winnerIds: Array.isArray(c.witsMeta.winnerIds) ? c.witsMeta.winnerIds : [],
+              submissions: cleanSubs
+            };
+            if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRoundId !== state.witsGame.roundId)) {
+              ensureWitsCountdownLoop();
+            }
+          } else {
+            state.witsGame.submissions = cleanSubs;
+          }
+        } else {
+          state.witsGame.submissions = cleanSubs;
+        }
+        renderAll();
+        checkPendingWinnerPopups();
+        checkMyGiftQueueTurnPopup();
+      }
+
+      function fetchFirebaseRoomOnce() {
+        const root = getFirebaseRootUrl();
+        if (!root) return Promise.resolve({ ok: false });
+        return fetch(`${root}.json`)
+          .then(async r => {
+            fbInitialLoaded = true;
+            if (r.status === 401 || r.status === 403) {
+              return { ok: false, permDenied: true };
+            }
+            const d = r.ok ? await r.json() : null;
+            if (d && typeof d === 'object') {
+              applyFbPathChange(fbMirror, '/', d, false);
+              syncStateFromFbMirror();
+            }
+            return { ok: r.ok };
+          })
+          .catch(() => {
+            fbInitialLoaded = true;
+            return { ok: false };
+          });
+      }
+
+      function connectFirebaseStream() {
+        if (fbEventSource) { try { fbEventSource.close(); } catch (e) {} fbEventSource = null; }
+        if (fbPollTimer) { clearInterval(fbPollTimer); fbPollTimer = null; }
+        const root = getFirebaseRootUrl();
+        const fbBtn = document.getElementById('tb-firebase-btn');
+        if (!root) {
+          fbInitialLoaded = false;
+          fbBtn.textContent = '☁️ Firebase';
+          fbBtn.classList.remove('green-status');
+          return;
+        }
+        fbBtn.textContent = `☁️ ${firebaseConfig.roomId}`;
+        fbBtn.classList.add('green-status');
+
+        fetchFirebaseRoomOnce();
+
+        try {
+          fbEventSource = new EventSource(`${root}.json`);
+          fbEventSource.addEventListener('put', (ev) => {
+            try {
+              const msg = JSON.parse(ev.data);
+              if (msg && typeof msg.path === 'string') {
+                fbInitialLoaded = true;
+                applyFbPathChange(fbMirror, msg.path, msg.data, false);
+                syncStateFromFbMirror();
+              }
+            } catch (e) {}
+          });
+          fbEventSource.addEventListener('patch', (ev) => {
+            try {
+              const msg = JSON.parse(ev.data);
+              if (msg && typeof msg.path === 'string') {
+                fbInitialLoaded = true;
+                applyFbPathChange(fbMirror, msg.path, msg.data, true);
+                syncStateFromFbMirror();
+              }
+            } catch (e) {}
+          });
+        } catch (e) {}
+
+        fbPollTimer = setInterval(fetchFirebaseRoomOnce, 5000);
+      }
+
+      const fbModal = document.getElementById('firebase-config-modal');
+      const fbStatus = document.getElementById('firebase-config-status');
+      const btnCopyFbRules = document.getElementById('btn-copy-firebase-rules');
+      const copyRulesFeedback = document.getElementById('copy-rules-feedback');
+
+      if (btnCopyFbRules) {
+        btnCopyFbRules.addEventListener('click', async () => {
+          const rulesText = '{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}';
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(rulesText);
+            }
+          } catch (e) {}
+          if (copyRulesFeedback) copyRulesFeedback.style.display = 'block';
+          triggerHapticVibration(40);
+        });
+      }
+
+      document.getElementById('tb-firebase-btn').addEventListener('click', () => {
+        if (state.deviceRole !== 'all') return;
+        document.getElementById('firebase-db-url-input').value = firebaseConfig.dbUrl || '';
+        document.getElementById('firebase-room-id-input').value = firebaseConfig.roomId || 'happynewyear2569';
+        fbStatus.style.display = firebaseConfig.dbUrl ? 'block' : 'none';
+        if (firebaseConfig.dbUrl) fbStatus.textContent = `✅ เชื่อมต่อห้อง "${firebaseConfig.roomId}" อยู่`;
+        fbModal.classList.add('open');
+      });
+      document.getElementById('btn-close-firebase-modal').addEventListener('click', () => fbModal.classList.remove('open'));
+      document.getElementById('btn-save-firebase-config').addEventListener('click', async () => {
+        const rawUrl = document.getElementById('firebase-db-url-input').value.trim().replace(/\/+$/, '');
+        const room = (document.getElementById('firebase-room-id-input').value.trim() || 'happynewyear2569').replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!/^https:\/\/.+/i.test(rawUrl)) {
+          fbStatus.style.display = 'block'; fbStatus.style.color = '#fca5a5'; fbStatus.textContent = '❌ กรุณาวาง URL ที่ขึ้นต้นด้วย https://'; return;
+        }
+        firebaseConfig = { dbUrl: rawUrl, roomId: room };
+        try { localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(firebaseConfig)); } catch (e) {}
+        const res = await fetchFirebaseRoomOnce();
+        if (res && res.permDenied) {
+          fbStatus.style.display = 'block';
+          fbStatus.style.color = '#fca5a5';
+          fbStatus.textContent = '⚠️ เชื่อมต่อได้ แต่ติดสิทธิ์ Firebase Rules (401/403)! กรุณาตั้งค่า Rules ใน Firebase Console ให้ .read และ .write เป็น true';
+          return;
+        }
+        if (!fbMirror.core) fbPushCoreState();
+        connectFirebaseStream();
+        fbStatus.style.display = 'block'; fbStatus.style.color = '#a7f3d0';
+        fbStatus.textContent = `✅ เชื่อมต่อห้อง "${room}" สำเร็จ! (พารามิเตอร์สำหรับแชร์ลิงก์: ?db=${encodeURIComponent(rawUrl)}&room=${encodeURIComponent(room)})`;
+      });
+      document.getElementById('btn-disconnect-firebase').addEventListener('click', () => {
+        firebaseConfig = { dbUrl: '', roomId: 'happynewyear2569' };
+        try { localStorage.removeItem(FB_CONFIG_KEY); } catch (e) {}
+        connectFirebaseStream();
+        fbStatus.style.display = 'block'; fbStatus.style.color = '#fde68a'; fbStatus.textContent = '🔌 ตัดการเชื่อมต่อ Firebase แล้ว';
+      });
+
+      // Local Cross-Tab Sync
+      try {
+        if (typeof BroadcastChannel !== 'undefined') {
+          syncChannel = new BroadcastChannel('happynewyear_party_channel_2569_v6');
+          syncChannel.onmessage = (ev) => {
+            if (!ev?.data) return;
+            if (ev.data.type === 'REQUEST_STATE' && (state.guests.length || state.winners.length || state.deviceRole === 'all')) {
+              broadcastLocalOnly('reply');
+            } else if (ev.data.type === 'GUEST_LEAVE' && ev.data.guestId) {
+              if (purgeGuestDataById(ev.data.guestId, false)) renderAll();
+            } else if (ev.data.type === 'SYNC_STATE' && ev.data.payload) {
+              applyLocalSyncState(ev.data.payload);
+            }
+          };
+        }
+      } catch (e) {}
+
+      window.addEventListener('storage', (ev) => {
+        if (ev.key === SYNC_STORAGE_KEY && ev.newValue) {
+          try { const p = JSON.parse(ev.newValue); if (p?.payload) applyLocalSyncState(p.payload); } catch (e) {}
+        }
+      });
+
+      function broadcastLocalOnly(reason) {
+        const ts = Date.now();
+        const payload = {
+          adminPassword: state.adminPassword, guests: state.guests, prizes: state.prizes,
+          hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
+          luckyDrawExclusions: state.luckyDrawExclusions, wheelStage: state.wheelStage,
+          winners: state.winners, prizeAlerts: state.prizeAlerts, votedGuests: state.votedGuests,
+          circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
+          circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
+          circularHasStarted: state.circularHasStarted, witsGame: state.witsGame
+        };
+        try { if (syncChannel) syncChannel.postMessage({ type: 'SYNC_STATE', reason, ts, payload }); } catch (e) {}
+        try { localStorage.setItem(SYNC_STORAGE_KEY, JSON.stringify({ ts, reason, payload })); } catch (e) {}
+      }
+
+      function applyLocalSyncState(p) {
+        if (typeof p.adminPassword === 'string' && p.adminPassword) state.adminPassword = p.adminPassword;
+        if (Array.isArray(p.guests)) state.guests = p.guests;
+        if (Array.isArray(p.prizes)) state.prizes = p.prizes;
+        if (typeof p.hadConfiguredPrizes === 'boolean') state.hadConfiguredPrizes = p.hadConfiguredPrizes;
+        if (typeof p.selectedPrize === 'string') state.selectedPrize = p.selectedPrize;
+        if (Array.isArray(p.luckyDrawExclusions)) state.luckyDrawExclusions = p.luckyDrawExclusions;
+        if (p.wheelStage) state.wheelStage = p.wheelStage;
+        if (Array.isArray(p.winners)) state.winners = p.winners;
+        if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
+        if (p.votedGuests) state.votedGuests = p.votedGuests;
+        if (typeof p.circularLoopId === 'string') state.circularLoopId = p.circularLoopId;
+        if (Array.isArray(p.circularLoopPath)) state.circularLoopPath = p.circularLoopPath;
+        if (typeof p.circularCurrentIdx === 'number') state.circularCurrentIdx = p.circularCurrentIdx;
+        if (Array.isArray(p.circularDrawnList)) state.circularDrawnList = p.circularDrawnList;
+        if (typeof p.circularHasStarted === 'boolean') state.circularHasStarted = p.circularHasStarted;
+        if (p.witsGame) {
+          const prevPhase = state.witsGame.phase, prevRid = state.witsGame.roundId;
+          state.witsGame = p.witsGame;
+          if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRid !== state.witsGame.roundId)) {
+            ensureWitsCountdownLoop();
+          }
+        }
+        renderAll();
+        checkPendingWinnerPopups();
+        checkMyGiftQueueTurnPopup();
+      }
+
+      function renderAll() { renderGuests(); renderWinners(); }
+
+      // Startup initialization
+      (async function initPartyApp() {
+        try {
+          const cached = localStorage.getItem(SYNC_STORAGE_KEY);
+          if (cached) { const p = JSON.parse(cached); if (p?.payload) applyLocalSyncState(p.payload); }
+        } catch (e) {}
+
+        if (getFirebaseRootUrl()) {
+          await fetchFirebaseRoomOnce();
+          connectFirebaseStream();
+        }
+
+        if (mySessionGuestId) {
+          const me = state.guests.find(g => g.id === mySessionGuestId);
+          if (me) {
+            me.isIdle = false;
+            state.deviceRole = mySessionGuestId;
+            document.getElementById('gatekeeper-screen').style.display = 'none';
+            document.getElementById('party-lobby-screen').style.display = 'block';
+            renderAll();
+            checkPendingWinnerPopups();
+            checkMyGiftQueueTurnPopup();
+            fbWriteSubpath(`guests/${encodeURIComponent(me.id)}`, me, 'PUT');
+            broadcastLocalOnly('guest_reconnected');
+          } else {
+            setMySessionGuest(null);
+          }
+        }
+
+        try { if (syncChannel) syncChannel.postMessage({ type: 'REQUEST_STATE' }); } catch (e) {}
+        renderAll();
+      })();
+    })();
+  </script>
+</body>
+</html>
