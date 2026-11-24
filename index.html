@@ -296,12 +296,33 @@
     }
 
     .gift-reveal-box { background: #090e1a; border: 2px dashed var(--brand); border-radius: var(--radius); padding: 22px 14px; margin: 10px 0; text-align: center; cursor: pointer; }
-    .vote-list { display: flex; flex-direction: column; gap: 8px; }
-    .vote-item-row { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-    .vote-item-row.is-leader { border-color: var(--brand); background: rgba(245, 158, 11, 0.07); }
-    .vote-item-info { flex: 1; min-width: 160px; }
-    .vote-bar-outer { background: #1e293b; height: 8px; border-radius: 99px; margin-top: 6px; overflow: hidden; }
-    .vote-bar-inner { background: linear-gradient(to right, var(--brand), var(--accent)); height: 100%; border-radius: 99px; width: 0%; transition: width 0.35s ease; }
+    /* Kahoot Speed Quiz */
+    .kahoot-choice-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 12px 0; }
+    @media (min-width: 480px) { .kahoot-choice-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kahoot-choice-btn {
+      font: inherit; font-weight: 700; font-size: 14px; color: #fff;
+      min-height: 62px; padding: 12px 14px; border-radius: 12px; border: 2px solid transparent;
+      cursor: pointer; display: flex; align-items: center; gap: 10px; text-align: left;
+      transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+    .kahoot-choice-btn:active:not(:disabled) { transform: scale(0.97); }
+    .kahoot-choice-btn:disabled { cursor: default; }
+    .kahoot-c0 { background: linear-gradient(135deg, #e11d48, #be123c); }
+    .kahoot-c1 { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .kahoot-c2 { background: linear-gradient(135deg, #d97706, #b45309); }
+    .kahoot-c3 { background: linear-gradient(135deg, #059669, #047857); }
+    .kahoot-choice-btn.is-selected { border-color: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45); }
+    .kahoot-choice-btn.is-correct { border-color: #6ee7b7; box-shadow: 0 0 18px rgba(16, 185, 129, 0.7); }
+    .kahoot-choice-btn.is-dimmed { opacity: 0.32; }
+    .kahoot-shape { width: 28px; height: 28px; border-radius: 8px; background: rgba(0, 0, 0, 0.25); display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .kahoot-q-list { display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto; margin-top: 8px; }
+    .kahoot-q-item { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
+    .kahoot-q-item.is-active { border-color: var(--brand); background: rgba(245, 158, 11, 0.14); }
+    .kahoot-lb-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .kahoot-lb-row { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+    .kahoot-lb-row.is-top1 { border-color: var(--brand); background: rgba(245, 158, 11, 0.12); }
+    .kahoot-lb-row.is-me { box-shadow: inset 3px 0 0 #38bdf8; }
 
     /* Wits & Wagers */
     .game-timer-circle { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--brand); display: grid; place-items: center; font-size: 16px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
@@ -339,7 +360,7 @@
       <h2 id="winner-popup-title" style="font-size: 20px; font-weight: 800; color: #fde68a; margin: 8px 0;">ยินดีด้วย! คุณได้รับรางวัล!</h2>
       <div id="winner-popup-desc" style="font-size: 14px; color: #fff; margin: 8px 0 14px;">-</div>
       <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); border-radius: 10px; padding: 10px; font-size: 12px; color: #a7f3d0; margin-bottom: 14px;">
-        📱 แสดงหน้าจอมือถือนี้กับผู้จัดงาน (Admin) เพื่อรับของรางวัลได้เลย!
+        📱 แสดงหน้าจอมือถือนี้กับผู้จัดงาน (Host) เพื่อรับของรางวัลได้เลย!
       </div>
       <button type="button" class="btn btn-primary" id="btn-close-winner-popup" style="width: 100%;">✨ รับทราบ / ปิดหน้าต่าง</button>
     </div>
@@ -373,41 +394,51 @@
   <div class="modal-backdrop" id="admin-pw-modal" role="dialog" aria-modal="true">
     <div class="modal-card" style="border-color: #60a5fa;">
       <div style="font-size: 38px; margin-bottom: 4px;">🔑👑</div>
-      <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 800;">เข้าสู่โหมดผู้จัดงาน (Admin)</h3>
+      <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 800;">เข้าสู่โหมดผู้จัดงาน (Host)</h3>
       <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">หากเครื่องนี้ลงทะเบียนเป็นผู้เล่นอยู่ ระบบจะถอดชื่อออกจากผู้เล่นทันที</p>
-      <input type="password" id="admin-pw-input" class="input" placeholder="กรอกรหัสผ่าน Admin..." style="text-align: center; font-size: 18px; letter-spacing: 0.14em;">
+      <input type="password" id="admin-pw-input" class="input" placeholder="กรอกรหัสผ่าน Host..." style="text-align: center; font-size: 18px; letter-spacing: 0.14em;">
       <p id="admin-pw-error" class="error-msg">❌ รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง</p>
       <div style="display: flex; gap: 8px; margin-top: 14px;">
         <button type="button" class="btn btn-secondary" id="btn-cancel-admin-pw" style="flex: 1;">ยกเลิก</button>
-        <button type="button" class="btn btn-primary" id="btn-confirm-admin-pw" style="flex: 1;">ยืนยันเข้าโหมด Admin</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-admin-pw" style="flex: 1;">ยืนยันเข้าโหมด Host</button>
       </div>
     </div>
   </div>
 
-  <!-- 5. Change Admin Password Modal -->
+  <!-- 5. Change Admin Password Modal (จัดการรหัสผ่าน 4 ระดับ - เฉพาะ Super Admin) -->
   <div class="modal-backdrop" id="change-pw-modal" role="dialog" aria-modal="true">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 460px;">
       <div style="font-size: 36px; margin-bottom: 4px;">🛡️🔑</div>
-      <h3 style="margin: 0 0 10px; font-size: 18px; font-weight: 800;">เปลี่ยนรหัสผ่าน Admin</h3>
+      <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 800;">ตั้งค่ารหัสผ่าน Host ทั้ง 4 ระดับ</h3>
+      <p style="font-size: 11px; color: var(--muted); margin: 0 0 12px;">กรอกรหัสผ่านหลัก (Super Host) ปัจจุบันเพื่อยืนยัน แล้วแก้ไขรหัสทั้ง 4 ชุดได้ทันที</p>
       <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
         <div>
-          <label class="field-label" for="old-admin-pw-input">รหัสผ่านปัจจุบัน</label>
-          <input type="password" id="old-admin-pw-input" class="input" placeholder="กรอกรหัสผ่านปัจจุบัน...">
+          <label class="field-label" for="old-admin-pw-input">🔐 ยืนยันรหัสผ่านหลัก (Super Host) ปัจจุบัน</label>
+          <input type="password" id="old-admin-pw-input" class="input" placeholder="กรอกรหัสผ่านหลักปัจจุบัน...">
+        </div>
+        <hr style="border: none; border-top: 1px dashed var(--border); margin: 2px 0;">
+        <div>
+          <label class="field-label" for="pw-super-input">1️⃣ รหัสผ่าน Host หลัก (คุมทุกเกม &amp; ทุกระบบ)</label>
+          <input type="text" id="pw-super-input" class="input" placeholder="ค่าเริ่มต้น: 2569">
         </div>
         <div>
-          <label class="field-label" for="new-admin-pw-input">รหัสผ่านใหม่</label>
-          <input type="password" id="new-admin-pw-input" class="input" placeholder="ตั้งรหัสผ่านใหม่...">
+          <label class="field-label" for="pw-core-input">2️⃣ รหัสผ่าน Host กลาง (คุมทุกอย่าง ยกเว้น Kahoot &amp; ทายตัวเลข)</label>
+          <input type="text" id="pw-core-input" class="input" placeholder="ค่าเริ่มต้น: stage2569">
         </div>
         <div>
-          <label class="field-label" for="confirm-admin-pw-input">ยืนยันรหัสผ่านใหม่</label>
-          <input type="password" id="confirm-admin-pw-input" class="input" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง...">
+          <label class="field-label" for="pw-kahoot-input">3️⃣ รหัสผ่าน Host เฉพาะ Kahoot (คุมเฉพาะเกม Kahoot)</label>
+          <input type="text" id="pw-kahoot-input" class="input" placeholder="ค่าเริ่มต้น: kahoot2569">
+        </div>
+        <div>
+          <label class="field-label" for="pw-wits-input">4️⃣ รหัสผ่าน Host เฉพาะ Wits &amp; Wagers (คุมเฉพาะเกมทายตัวเลข)</label>
+          <input type="text" id="pw-wits-input" class="input" placeholder="ค่าเริ่มต้น: wits2569">
         </div>
       </div>
       <p id="change-pw-error" class="error-msg">-</p>
-      <p id="change-pw-success" style="display: none; color: var(--success); font-size: 13px; font-weight: 600; margin: 10px 0 0;">✅ เปลี่ยนรหัสผ่าน Admin สำเร็จ!</p>
+      <p id="change-pw-success" style="display: none; color: var(--success); font-size: 13px; font-weight: 600; margin: 10px 0 0;">✅ บันทึกรหัสผ่านทั้ง 4 ระดับสำเร็จ!</p>
       <div style="display: flex; gap: 8px; margin-top: 16px;">
         <button type="button" class="btn btn-secondary" id="btn-cancel-change-pw" style="flex: 1;">ปิด</button>
-        <button type="button" class="btn btn-primary" id="btn-save-change-pw" style="flex: 1;">บันทึกรหัสผ่านใหม่</button>
+        <button type="button" class="btn btn-primary" id="btn-save-change-pw" style="flex: 1;">บันทึกรหัสผ่านทั้งหมด</button>
       </div>
     </div>
   </div>
@@ -483,10 +514,10 @@
           👥 <strong id="tb-joined-count">0</strong> คน
         </span>
         <button id="tb-refresh-sync-btn" class="toolbar-btn" type="button" title="แตะเพื่อดึงข้อมูลสดล่าสุด">🔄 รีเฟรช</button>
-        <button id="tb-enter-admin-top-btn" class="toolbar-btn orange-status" type="button">👑 Admin</button>
-        <button id="tb-line-export-btn" class="toolbar-btn green-status admin-only-control" type="button" style="display: none;">📋 สรุปส่ง LINE</button>
-        <button id="tb-firebase-btn" class="toolbar-btn admin-only-control" type="button" style="display: none;">☁️ Firebase</button>
-        <button id="tb-change-pw-btn" class="toolbar-btn admin-only-control" type="button" style="display: none;">🔑 รหัส</button>
+        <button id="tb-enter-admin-top-btn" class="toolbar-btn orange-status" type="button">👑 Host</button>
+        <button id="tb-line-export-btn" class="toolbar-btn green-status admin-only-control" data-admin-scope="core" type="button" style="display: none;">📋 สรุปส่ง LINE</button>
+        <button id="tb-firebase-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;">☁️ Firebase</button>
+        <button id="tb-change-pw-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;">🔑 รหัส</button>
       </div>
     </div>
   </header>
@@ -517,7 +548,7 @@
             <span class="slot-prize-badge">สำหรับผู้เข้าร่วมงาน (1 เครื่อง ต่อ 1 ชื่อ)</span>
             <h2 style="font-size: 19px; font-weight: 800; color: #fff; margin: 6px 0 8px;">🙋 ลงชื่อเข้างานปาร์ตี้ปีใหม่</h2>
             <p style="font-size: 12px; color: var(--muted); margin: 0 0 14px;">
-              จำชื่อตลอดงาน <strong>24 ชั่วโมง</strong> สามารถล็อกหน้าจอหรือสลับแอปไปถ่ายรูปได้โดยชื่อไม่หลุด หากได้รับรางวัลหรือถึงคิวแลกของขวัญ ป๊อปอัพจะเด้งแจ้งเตือนทันทีเมื่อเปิดจอกลับมา
+              จำชื่อไว้ตลอดไป <strong>จนกว่าจะกดออกเอง หรือ Host กดลบออก</strong> สามารถล็อกหน้าจอหรือสลับแอปไปถ่ายรูปได้โดยชื่อไม่หลุด หากได้รับรางวัลหรือถึงคิวแลกของขวัญ ป๊อปอัพจะเด้งแจ้งเตือนทันทีเมื่อเปิดจอกลับมา
             </p>
             <div id="gatekeeper-checkin-form">
               <label class="field-label" for="gatekeeper-guest-name-input">ชื่อ หรือฉายาของคุณ</label>
@@ -538,17 +569,17 @@
 
         <div class="gatekeeper-panel" style="border-color: rgba(245, 158, 11, 0.35); background: linear-gradient(180deg, #162038 0%, #0f172a 100%);">
           <div>
-            <span class="slot-prize-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">สำหรับผู้จัดงาน (Admin)</span>
+            <span class="slot-prize-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">สำหรับผู้จัดงาน (Host)</span>
             <h2 style="font-size: 19px; font-weight: 800; color: #fff; margin: 6px 0 8px;">👑 เข้าควบคุมเวทีกลาง &amp; ตั้งค่า</h2>
             <p style="font-size: 12px; color: var(--muted); margin: 0 0 14px;">
               ตั้งค่าของรางวัล หมุนวงล้อ เริ่มสายพานแลกของขวัญ ตั้งคำถามทายตัวเลข และคัดลอกสรุปผลส่งเข้า LINE
             </p>
-            <label class="field-label" for="gatekeeper-admin-pw">รหัสผ่านผู้จัดงาน (Admin Password)</label>
-            <input type="password" id="gatekeeper-admin-pw" class="input" placeholder="กรอกรหัสผ่าน Admin..." style="text-align: center; letter-spacing: 0.12em;">
+            <label class="field-label" for="gatekeeper-admin-pw">รหัสผ่านผู้จัดงาน (Host Password)</label>
+            <input type="password" id="gatekeeper-admin-pw" class="input" placeholder="กรอกรหัสผ่าน Host..." style="text-align: center; letter-spacing: 0.12em;">
             <p id="gatekeeper-admin-error" class="error-msg">❌ รหัสผ่านผู้จัดงานไม่ถูกต้อง</p>
           </div>
           <button type="button" id="btn-gatekeeper-admin-login" class="btn btn-secondary" style="width: 100%; border-color: var(--brand); color: #fde68a; margin-top: 10px;">
-            🔑 เข้าสู่โหมดผู้จัดงาน (Admin) ➔
+            🔑 เข้าสู่โหมดผู้จัดงาน (Host) ➔
           </button>
         </div>
       </div>
@@ -561,7 +592,7 @@
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
           <button type="button" class="btn btn-primary" id="btn-view-my-prizes" style="min-height: 32px; padding: 4px 10px; font-size: 11px; display: none;">🏆 ดูรางวัลของฉัน</button>
           <button type="button" class="btn btn-ghost-danger" id="btn-leave-party" style="min-height: 32px; padding: 4px 10px; font-size: 11px; display: none;">🚪 ออกจากงาน</button>
-          <button type="button" class="btn btn-secondary" id="btn-switch-to-admin" style="min-height: 32px; padding: 4px 10px; font-size: 11px; border-color: var(--brand); color: #fde68a;">👑 โหมด Admin</button>
+          <button type="button" class="btn btn-secondary" id="btn-switch-to-admin" style="min-height: 32px; padding: 4px 10px; font-size: 11px; border-color: var(--brand); color: #fde68a;">👑 โหมด Host</button>
         </div>
       </div>
 
@@ -588,17 +619,17 @@
             <h3 class="action-title">แลกของขวัญ</h3>
           </div>
         </div>
-        <div class="action-card" id="card-voting" onclick="switchMainModule('voting')">
-          <div class="action-icon-wrap" style="color: #fbbf24;">👗</div>
+        <div class="action-card" id="card-kahoot" onclick="switchMainModule('kahoot')">
+          <div class="action-icon-wrap" style="color: #a855f7;">⚡</div>
           <div class="action-info">
-            <span class="action-badge">1 คน 1 โหวต</span>
-            <h3 class="action-title">โหวตแต่งกาย</h3>
+            <span class="action-badge">ควิซตอบไว</span>
+            <h3 class="action-title">Kahoot</h3>
           </div>
         </div>
         <div class="action-card" id="card-witwager" onclick="switchMainModule('witwager')">
           <div class="action-icon-wrap" style="color: #34d399;">🔢</div>
           <div class="action-info">
-            <span class="action-badge">จับเวลา 15 วิ</span>
+            <span class="action-badge">ตั้งเวลา / Auto</span>
             <h3 class="action-title">ทายตัวเลข</h3>
           </div>
         </div>
@@ -610,7 +641,7 @@
           <div class="panel-card view-section" id="view-section-main">
             <div class="panel-title-bar">
               <h2 class="panel-title">🙋 รายชื่อผู้เข้าร่วมงาน (<span class="guest-counter-val">0</span> คน)</h2>
-              <span class="meta-caption">🟢 จำชื่อ 24 ชม. • 💤 ล็อกจอชื่อไม่หลุด</span>
+              <span class="meta-caption">🟢 จำชื่อถาวร (จนกว่าจะออก/ถูกลบ) • 💤 ล็อกจอชื่อไม่หลุด</span>
             </div>
             <div class="guest-list-grid" id="main-guests-display-grid"></div>
           </div>
@@ -622,9 +653,9 @@
               <span class="meta-caption" id="wheel-pool-counter-badge">ในวงล้อ: 0 คน</span>
             </div>
 
-            <div class="admin-only-control" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
+            <div class="admin-only-control" data-admin-scope="core" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
-                <strong style="font-size: 12px; color: var(--brand);">👑 ตั้งค่ารายการของรางวัล (Admin):</strong>
+                <strong style="font-size: 12px; color: var(--brand);">👑 ตั้งค่ารายการของรางวัล (Host):</strong>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                   <button type="button" class="btn btn-secondary" id="btn-restore-wheel-names" style="min-height: 30px; padding: 4px 8px; font-size: 11px;">🔄 คืนรายชื่อเข้าวงล้อ</button>
                   <button type="button" class="btn btn-ghost-danger" id="btn-clear-all-prizes" style="min-height: 30px; padding: 4px 8px; font-size: 11px;">🗑️ ล้างรางวัล</button>
@@ -660,12 +691,12 @@
 
             <div class="slot-stage-inner" id="stage-slot-wrapper">
               <div class="slot-prize-badge" id="active-draw-prize-label">🎁 รางวัล: สุ่มผู้โชคดีทั่วไป</div>
-              <h2 class="stage-slot-title" id="stage-slot-text" style="color: var(--brand);">รอผู้จัดงาน (Admin) กดหมุนวงล้อ</h2>
+              <h2 class="stage-slot-title" id="stage-slot-text" style="color: var(--brand);">รอผู้จัดงาน (Host) กดหมุนวงล้อ</h2>
               <p id="stage-slot-hint" style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">เมื่อหมุนได้ผู้ชนะ ป๊อปอัพจะเด้งแจ้งเตือนบนหน้าจอมือถือของผู้โชคดีทันที!</p>
             </div>
 
-            <div class="admin-only-control" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 14px;">
-              <button id="main-stage-draw-btn" class="btn btn-draw" type="button">🎡 กดหมุนวงล้อสุ่มรางวัล! (Admin)</button>
+            <div class="admin-only-control" data-admin-scope="core" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 14px;">
+              <button id="main-stage-draw-btn" class="btn btn-draw" type="button">🎡 กดหมุนวงล้อสุ่มรางวัล! (Host)</button>
               <label class="checkbox-label">
                 <input type="checkbox" id="chk-remove-after-win" checked>
                 ตัดชื่อผู้ชนะออกจากวงล้อรอบถัดไป (รายชื่อในเกมอื่นยังอยู่ครบ)
@@ -685,14 +716,14 @@
             </p>
 
             <div id="gift-loop-setup-view">
-              <div class="gift-reveal-box admin-only-control" id="btn-start-circular-game">
+              <div class="gift-reveal-box admin-only-control" data-admin-scope="core" id="btn-start-circular-game">
                 <div style="font-size: 44px;">🔄</div>
-                <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 แตะเพื่อเริ่มสร้างวงจรแลกของขวัญ (เฉพาะ Admin)</h3>
+                <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 แตะเพื่อเริ่มสร้างวงจรแลกของขวัญ (เฉพาะ Host)</h3>
                 <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ผู้เข้าร่วมขณะนี้ <span class="guest-counter-val">0</span> คน (ต้องมีอย่างน้อย 2 คน)</p>
               </div>
               <div class="empty-state participant-only-control">
                 <div style="font-size: 36px; margin-bottom: 6px;">⏳🎁</div>
-                <strong style="color: #fff;">รอผู้จัดงาน (Admin) กดเริ่มวงจรแลกของขวัญ</strong>
+                <strong style="color: #fff;">รอผู้จัดงาน (Host) กดเริ่มวงจรแลกของขวัญ</strong>
                 <p style="margin: 4px 0 0; font-size: 12px;">เมื่อถึงคิวของคุณ จะมีป๊อปอัพเด้งแจ้งเตือนและปลดล็อกปุ่มให้กดบนมือถือเครื่องนี้ทันที</p>
               </div>
             </div>
@@ -718,9 +749,9 @@
                   <button class="btn btn-draw" id="btn-loop-draw-gift" type="button">🎁 กดสุ่มของขวัญ</button>
                 </div>
 
-                <div id="loop-admin-emergency-box" class="admin-only-control" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                <div id="loop-admin-emergency-box" class="admin-only-control" data-admin-scope="core" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
                   <button type="button" class="btn btn-secondary" id="btn-admin-emergency-loop" style="border-color: var(--brand); color: #fde68a; font-size: 12px; min-height: 36px;">
-                    ⏭️ Admin กดสุ่มแทนคิวที่ค้าง (กรณีฉุกเฉิน)
+                    ⏭️ Host กดสุ่มแทนคิวที่ค้าง (กรณีฉุกเฉิน)
                   </button>
                 </div>
               </div>
@@ -729,75 +760,195 @@
                 <div style="font-size: 42px;">👑💝</div>
                 <h3 style="color: var(--brand); font-size: 19px; margin: 6px 0;">แลกของขวัญครบวงกลมสมบูรณ์แล้ว!</h3>
                 <div id="gift-loop-complete-summary" style="text-align: left; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; margin: 10px auto; max-width: 420px; max-height: 240px; overflow-y: auto; font-size: 13px;"></div>
-                <button class="btn btn-secondary admin-only-control" id="btn-loop-restart" type="button">🔄 เริ่มวงจรแลกของขวัญรอบใหม่ (Admin)</button>
+                <button class="btn btn-secondary admin-only-control" data-admin-scope="core" id="btn-loop-restart" type="button">🔄 เริ่มวงจรแลกของขวัญรอบใหม่ (Host)</button>
               </div>
             </div>
           </div>
 
-          <!-- View 4: Best Dressed Voting (ซ่อนผลโหวตจนกว่า Admin จะกดแสดงผล + ป้ายชนะเลิศร่วม Tie Score) -->
-          <div class="panel-card view-section" style="display: none;" id="view-section-voting">
+          <!-- View 4: Kahoot Speed Quiz (ควิซตอบไว 4 ตัวเลือก + สะสมคะแนนความเร็ว + ตารางอันดับ) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-kahoot">
             <div class="panel-title-bar">
-              <h2 class="panel-title">👗 โหวตการแต่งกายยอดเยี่ยม</h2>
+              <h2 class="panel-title">⚡ ควิซตอบไว Kahoot</h2>
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span class="meta-caption">1 คน 1 สิทธิ์ • เปลี่ยนใจได้จนกว่าจะสรุปผล • ห้ามโหวตตัวเอง</span>
-                <button type="button" class="btn btn-primary admin-only-control" id="btn-toggle-vote-reveal" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">📣 แสดงผลโหวตขึ้นจอ</button>
-                <button type="button" class="btn btn-ghost-danger admin-only-control" id="btn-reset-votes" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตผลโหวต (เปิดรอบใหม่)</button>
+                <span class="meta-caption">ตอบถูก + ตอบไว = ยิ่งได้คะแนนเยอะ (สูงสุด 1,000/ข้อ)</span>
+                <button type="button" class="btn btn-ghost-danger admin-only-control" data-admin-scope="kahoot" id="btn-kahoot-reset-all" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตคะแนนทั้งหมด</button>
               </div>
             </div>
-            <div id="voting-blind-status-banner" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #bae6fd; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-              <span id="voting-blind-status-text">🔒 ซ่อนผลคะแนนโหวตชั่วคราว (ป้องกันการชี้นำ) จนกว่า Admin จะกดแสดงผล</span>
-              <strong id="voting-total-cast-badge" style="color: #fde68a;">โหวตแล้ว 0 / 0 คน</strong>
+
+            <!-- Admin Control Panel for Kahoot -->
+            <div class="wits-host-box admin-only-control" data-admin-scope="kahoot">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงควบคุมเกม Kahoot (Host)</strong>
+                <button type="button" class="btn btn-secondary" id="btn-kahoot-toggle-editor" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">➕ เพิ่ม/จัดการคลังคำถาม</button>
+              </div>
+
+              <!-- Question Bank Selector -->
+              <div style="margin-bottom: 10px;">
+                <span class="field-label" style="margin-bottom: 4px;">คลังคำถามทั้งหมด (แตะเพื่อเลือกข้อที่จะเล่น):</span>
+                <div class="kahoot-q-list" id="kahoot-question-bank-list"></div>
+              </div>
+
+              <!-- Add New Question Collapsible Form -->
+              <div id="kahoot-editor-box" style="display: none; background: #070b14; border: 1px dashed var(--brand); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                <strong style="font-size: 12px; color: #fde68a; display: block; margin-bottom: 8px;">✏️ เพิ่มคำถามใหม่เข้าคลัง</strong>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <input type="text" id="kh-new-q" class="input" placeholder="พิมพ์คำถาม...">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px;">
+                    <input type="text" id="kh-new-c0" class="input" placeholder="▲ ตัวเลือก A (สีแดง)">
+                    <input type="text" id="kh-new-c1" class="input" placeholder="◆ ตัวเลือก B (สีน้ำเงิน)">
+                    <input type="text" id="kh-new-c2" class="input" placeholder="● ตัวเลือก C (สีเหลือง)">
+                    <input type="text" id="kh-new-c3" class="input" placeholder="■ ตัวเลือก D (สีเขียว)">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                      <label class="field-label" for="kh-new-ans">ข้อที่ถูก</label>
+                      <select id="kh-new-ans" class="select">
+                        <option value="0">▲ A (สีแดง)</option>
+                        <option value="1">◆ B (สีน้ำเงิน)</option>
+                        <option value="2">● C (สีเหลือง)</option>
+                        <option value="3">■ D (สีเขียว)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="field-label" for="kh-new-sec">เวลาตอบ (วินาที)</label>
+                      <select id="kh-new-sec" class="select">
+                        <option value="10">10 วินาที</option>
+                        <option value="15" selected>15 วินาที</option>
+                        <option value="20">20 วินาที</option>
+                        <option value="30">30 วินาที</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p id="kh-editor-error" class="error-msg">กรุณากรอกคำถามและตัวเลือกให้ครบทั้ง 4 ข้อ</p>
+                  <button type="button" class="btn btn-primary" id="btn-kahoot-add-q">+ บันทึกคำถามเข้าคลัง</button>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 10px;">
+                <label class="field-label" for="kahoot-prize-input">ของรางวัลสำหรับแชมป์ Kahoot</label>
+                <input type="text" id="kahoot-prize-input" class="input" placeholder="ระบุของรางวัลแชมป์..." value="รางวัลแชมป์ Kahoot ประจำปีใหม่">
+              </div>
+
+              <!-- Auto-Run Settings -->
+              <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <label class="checkbox-label" style="color: #e9d5ff; font-weight: 600;">
+                  <input type="checkbox" id="chk-kahoot-autorun" checked>
+                  🤖 รันข้อคำถามอัตโนมัติยาวๆ จนจบเกม (ไม่ต้องกดทีละข้อ)
+                </label>
+                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);">
+                  <span>พักโชว์เฉลย:</span>
+                  <select id="kahoot-autodelay-select" class="select" style="width: auto; min-height: 32px; padding: 4px 10px; font-size: 12px;">
+                    <option value="3">3 วินาที</option>
+                    <option value="5" selected>5 วินาที</option>
+                    <option value="8">8 วินาที</option>
+                    <option value="10">10 วินาที</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" id="btn-kahoot-start-q" style="flex: 1;">🚀 เริ่มรันอัตโนมัติยาวๆ!</button>
+                <button type="button" class="btn btn-draw" id="btn-kahoot-reveal-q" style="display: none; flex: 1; font-size: 14px; padding: 9px 16px;">✨ เฉลยเลยตอนนี้!</button>
+                <button type="button" class="btn btn-secondary" id="btn-kahoot-next-q" style="display: none;">⏭️ ข้อถัดไป</button>
+                <button type="button" class="btn btn-ghost-danger" id="btn-kahoot-pause-auto" style="display: none; min-height: 44px; padding: 8px 14px; font-size: 13px;">⏸️ หยุดรันอัตโนมัติ</button>
+                <button type="button" class="btn btn-secondary" id="btn-kahoot-finish-award" style="border-color: var(--success); color: #a7f3d0;">🏆 ประกาศแชมป์ &amp; แจกรางวัล</button>
+              </div>
             </div>
-            <div class="vote-list" id="best-dressed-vote-list"></div>
+
+            <!-- Live Kahoot Stage (Both Admin & Participants) -->
+            <div id="kahoot-stage-container"></div>
           </div>
 
-          <!-- View 5: Wits & Wagers Numeric Game -->
+          <!-- View 5: Wits & Wagers Numeric Game (คลังคำถาม + ตั้งค่าวินาที + รันอัตโนมัติยาวๆ) -->
           <div class="panel-card view-section" style="display: none;" id="view-section-witwager">
             <div class="panel-title-bar">
               <h2 class="panel-title">🔢 ทายตัวเลข Wits &amp; Wagers</h2>
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span class="meta-caption">⏱️ ตอบใน 15 วินาที (ไม่ตอบ = สละสิทธิ์)</span>
-                <button type="button" class="btn btn-ghost-danger admin-only-control" id="btn-wits-clear-game" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🗑️ ล้างข้อมูลเกมที่เล่นไปแล้ว</button>
+                <span class="meta-caption">⏱️ ตั้งเวลาได้ • ไม่ตอบ = สละสิทธิ์</span>
+                <button type="button" class="btn btn-ghost-danger admin-only-control" data-admin-scope="wits" id="btn-wits-clear-game" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตรอบเกม</button>
               </div>
             </div>
 
-            <div class="wits-host-box admin-only-control">
+            <div class="wits-host-box admin-only-control" data-admin-scope="wits">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                <strong style="font-size: 13px; color: var(--brand);">👑 แผงตั้งคำถามทายตัวเลข (สำหรับ Admin)</strong>
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงควบคุมเกมทายตัวเลข (Host)</strong>
+                <button type="button" class="btn btn-secondary" id="btn-wits-toggle-editor" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">➕ เพิ่ม/จัดการคลังคำถาม</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div>
-                  <label class="field-label" for="wits-question-input">คำถาม (ผู้เล่นมีเวลา 15 วินาทีหลังกดส่ง)</label>
-                  <input type="text" id="wits-question-input" class="input" placeholder="พิมพ์คำถามทายตัวเลข..." value="ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?">
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+
+              <!-- Question Bank Selector -->
+              <div style="margin-bottom: 10px;">
+                <span class="field-label" style="margin-bottom: 4px;">คลังคำถามทายตัวเลขทั้งหมด (แตะเพื่อเลือกข้อเริ่มต้น):</span>
+                <div class="kahoot-q-list" id="wits-question-bank-list"></div>
+              </div>
+
+              <!-- Add New Question Collapsible Form -->
+              <div id="wits-editor-box" style="display: none; background: #070b14; border: 1px dashed var(--brand); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                <strong style="font-size: 12px; color: #fde68a; display: block; margin-bottom: 8px;">✏️ เพิ่มคำถามทายตัวเลขใหม่เข้าคลัง</strong>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
                   <div>
-                    <label class="field-label" for="wits-answer-input">คำตอบตัวเลขที่ถูกต้อง (ซ่อนไว้)</label>
-                    <input type="password" inputmode="decimal" id="wits-answer-input" class="input" placeholder="ระบุตัวเลขเฉลย..." value="428">
-                    <label class="checkbox-label" style="font-size: 11px; margin-top: 4px;">
-                      <input type="checkbox" id="chk-show-secret-ans"> แสดงเลขเฉลยให้ Admin ดู
-                    </label>
+                    <label class="field-label" for="wits-question-input">คำถาม</label>
+                    <input type="text" id="wits-question-input" class="input" placeholder="พิมพ์คำถามทายตัวเลข...">
                   </div>
-                  <div>
-                    <label class="field-label" for="wits-prize-input">ของรางวัลข้อนี้</label>
-                    <input type="text" id="wits-prize-input" class="input" placeholder="ระบุของรางวัล..." value="อั่งเปาพิเศษ 1,000 บาท">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
+                    <div>
+                      <label class="field-label" for="wits-answer-input">คำตอบตัวเลขที่ถูกต้อง (ซ่อนไว้)</label>
+                      <input type="password" inputmode="decimal" id="wits-answer-input" class="input" placeholder="ระบุตัวเลขเฉลย...">
+                      <label class="checkbox-label" style="font-size: 11px; margin-top: 4px;">
+                        <input type="checkbox" id="chk-show-secret-ans"> แสดงเลขเฉลยให้ Host ดู
+                      </label>
+                    </div>
+                    <div>
+                      <label class="field-label" for="wits-prize-input">ของรางวัลข้อนี้</label>
+                      <input type="text" id="wits-prize-input" class="input" placeholder="เช่น อั่งเปา 500 บาท..." value="ของรางวัลพิเศษปีใหม่">
+                    </div>
                   </div>
-                  <div>
-                    <label class="field-label" for="wits-rule-select">กติกาตัดสินผู้ชนะ</label>
-                    <select id="wits-rule-select" class="select">
-                      <option value="wits">ใกล้เคียงสุดโดยไม่เกินคำตอบจริง (Wits &amp; Wagers)</option>
-                      <option value="closest">ใกล้เคียงคำตอบจริงมากที่สุด</option>
-                    </select>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                      <label class="field-label" for="wits-rule-select">กติกาตัดสินผู้ชนะ</label>
+                      <select id="wits-rule-select" class="select">
+                        <option value="wits">ใกล้สุดไม่เกินจริง (Wits &amp; Wagers)</option>
+                        <option value="closest">ใกล้เคียงคำตอบจริงมากที่สุด</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="field-label" for="wits-sec-select">เวลาตอบ (วินาที)</label>
+                      <select id="wits-sec-select" class="select">
+                        <option value="10">10 วินาที</option>
+                        <option value="15" selected>15 วินาที</option>
+                        <option value="20">20 วินาที</option>
+                        <option value="30">30 วินาที</option>
+                        <option value="45">45 วินาที</option>
+                        <option value="60">60 วินาที</option>
+                      </select>
+                    </div>
                   </div>
+                  <p id="wits-host-error" class="error-msg">กรุณากรอกคำถามและระบุคำตอบเฉลยเป็นตัวเลขให้ครบถ้วน</p>
+                  <button type="button" class="btn btn-primary" id="btn-wits-add-q">+ บันทึกคำถามเข้าคลัง</button>
                 </div>
-                <p id="wits-host-error" class="error-msg">กรุณากรอกคำถามและระบุคำตอบเฉลยเป็นตัวเลขให้ครบถ้วน</p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; margin-top: 2px;">
-                  <button type="button" class="btn btn-primary" id="btn-wits-broadcast">📢 ส่งคำถาม &amp; เริ่มจับเวลา 15 วิ!</button>
-                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-draw" id="btn-wits-reveal" style="display: none; font-size: 14px; padding: 9px 18px;" disabled>✨ เฉลยคำตอบ &amp; แจกรางวัล!</button>
-                    <button type="button" class="btn btn-secondary" id="btn-wits-newround" style="display: none;">🔄 ล้างรอบนี้ &amp; ตั้งคำถามใหม่</button>
-                  </div>
+              </div>
+
+              <!-- Auto-Run Settings -->
+              <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <label class="checkbox-label" style="color: #e9d5ff; font-weight: 600;">
+                  <input type="checkbox" id="chk-wits-autorun" checked>
+                  🤖 รันข้อคำถามอัตโนมัติยาวๆ จนจบคลัง (ไม่ต้องกดทีละข้อ)
+                </label>
+                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);">
+                  <span>พักโชว์เฉลย:</span>
+                  <select id="wits-autodelay-select" class="select" style="width: auto; min-height: 32px; padding: 4px 10px; font-size: 12px;">
+                    <option value="3">3 วินาที</option>
+                    <option value="5" selected>5 วินาที</option>
+                    <option value="8">8 วินาที</option>
+                    <option value="10">10 วินาที</option>
+                  </select>
                 </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" id="btn-wits-broadcast" style="flex: 1;">🚀 เริ่มรันอัตโนมัติยาวๆ!</button>
+                <button type="button" class="btn btn-draw" id="btn-wits-reveal" style="display: none; flex: 1; font-size: 14px; padding: 9px 18px;">✨ เฉลยเลยตอนนี้ &amp; แจกรางวัล!</button>
+                <button type="button" class="btn btn-secondary" id="btn-wits-next-q" style="display: none;">⏭️ ข้อถัดไป</button>
+                <button type="button" class="btn btn-ghost-danger" id="btn-wits-pause-auto" style="display: none; min-height: 44px; padding: 8px 14px; font-size: 13px;">⏸️ หยุดรันอัตโนมัติ</button>
               </div>
             </div>
 
@@ -813,6 +964,8 @@
               <p id="wits-banner-progress" style="margin: 0; font-size: 12px; color: #cbd5e1;">-</p>
             </div>
 
+            <div id="wits-autonext-banner" style="display: none; background: rgba(168, 85, 247, 0.16); border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 12px; color: #e9d5ff; margin-bottom: 10px; font-weight: 600;"></div>
+
             <div id="wits-stage-container"></div>
           </div>
         </div>
@@ -822,8 +975,8 @@
           <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
             <h3 style="margin: 0; font-size: 15px; font-weight: 700;">🏆 ประวัติผู้โชคดี (<span id="stats-winners-count">0</span>)</h3>
             <div style="display: flex; gap: 6px;">
-              <button id="btn-open-line-summary-card" class="btn btn-secondary admin-only-control" type="button" style="display: none; min-height: 30px; padding: 4px 10px; font-size: 11px; border-color: var(--success); color: #a7f3d0;">📋 คัดลอกสรุปส่ง LINE</button>
-              <button id="clear-winners-btn" class="btn btn-ghost-danger admin-only-control" type="button" style="display: none; min-height: 30px; padding: 4px 8px;">ล้างประวัติ</button>
+              <button id="btn-open-line-summary-card" class="btn btn-secondary admin-only-control" data-admin-scope="core" type="button" style="display: none; min-height: 30px; padding: 4px 10px; font-size: 11px; border-color: var(--success); color: #a7f3d0;">📋 คัดลอกสรุปส่ง LINE</button>
+              <button id="clear-winners-btn" class="btn btn-ghost-danger admin-only-control" data-admin-scope="core" type="button" style="display: none; min-height: 30px; padding: 4px 8px;">ล้างประวัติ</button>
             </div>
           </div>
           <div id="winners-empty-state" class="empty-state">ยังไม่มีประวัติผู้ได้รับรางวัลในขณะนี้</div>
@@ -837,7 +990,6 @@
     (function() {
       /* === PART 1: STATE, 24-HOUR PERSISTENT IDENTITY & QUEUED ALERTS === */
       const targetDateTime = new Date("2026-12-18T18:00:00").getTime();
-      const PERSIST_24H_MS = 86400000;
       const COOKIE_GUEST_KEY = 'party_guest_id_v6';
       const DEVICE_24H_KEY = 'happynewyear_device_guest_24h_v6';
       const SESSION_GUEST_KEY = 'happynewyear_my_device_guest_id_v6';
@@ -850,7 +1002,7 @@
       function setGuestCookie(id) {
         try {
           document.cookie = id
-            ? `${COOKIE_GUEST_KEY}=${encodeURIComponent(id)}; max-age=86400; path=/; SameSite=Lax`
+            ? `${COOKIE_GUEST_KEY}=${encodeURIComponent(id)}; max-age=315360000; path=/; SameSite=Lax`
             : `${COOKIE_GUEST_KEY}=; max-age=0; path=/; SameSite=Lax`;
         } catch (e) {}
       }
@@ -865,16 +1017,29 @@
           const raw = localStorage.getItem(DEVICE_24H_KEY);
           if (!raw) return null;
           const parsed = JSON.parse(raw);
-          if (parsed && parsed.id && (Date.now() - (parsed.savedAt || 0) < PERSIST_24H_MS)) return parsed.id;
+          if (parsed && parsed.id) return parsed.id;
           localStorage.removeItem(DEVICE_24H_KEY);
         } catch (e) {}
         return null;
       }
 
-      let savedAdminPw = '2569';
+      const DEFAULT_ADMIN_PASSWORDS = {
+        super: '2569',
+        core: 'stage2569',
+        kahoot: 'kahoot2569',
+        wits: 'wits2569'
+      };
+      let savedAdminPasswords = { ...DEFAULT_ADMIN_PASSWORDS };
       try {
         const spw = localStorage.getItem(ADMIN_PW_STORAGE_KEY);
-        if (spw && spw.trim()) savedAdminPw = spw.trim();
+        if (spw && spw.trim()) {
+          if (spw.trim().startsWith('{')) {
+            const parsedPw = JSON.parse(spw);
+            savedAdminPasswords = { ...DEFAULT_ADMIN_PASSWORDS, ...parsedPw };
+          } else {
+            savedAdminPasswords.super = spw.trim();
+          }
+        }
       } catch (e) {}
 
       let mySessionGuestId = null;
@@ -911,7 +1076,8 @@
 
       const state = {
         targetTime: targetDateTime,
-        adminPassword: savedAdminPw,
+        adminPasswords: savedAdminPasswords,
+        adminPassword: savedAdminPasswords.super,
         activeModule: 'checkin',
         guests: [],
         prizes: [],
@@ -929,17 +1095,51 @@
         },
         winners: [],
         prizeAlerts: [],
-        votedGuests: {},
-        votingRevealed: false,
+        kahootGame: {
+          roundId: '',
+          phase: 'idle',
+          currentIdx: 0,
+          durationSec: 15,
+          timeLeft: 15,
+          timeUp: false,
+          autoRun: true,
+          autoDelaySec: 5,
+          prize: 'รางวัลแชมป์ Kahoot ประจำปีใหม่',
+          questions: [
+            {
+              q: 'ธีมงานเลี้ยงปีใหม่ของพวกเราปีนี้มีชื่อว่าอะไร?',
+              choices: ['I Love My (Dream) Job', 'Work Hard Play Harder', 'New Year New Boss', 'Dream Team 2027'],
+              answer: 0,
+              sec: 15
+            },
+            {
+              q: 'ข้อใดคือสกิลลับที่ชาวออฟฟิศทุกคนต้องมีติดตัว?',
+              choices: ['หลับตาในห้องประชุมได้', 'กด Alt+Tab ไวระดับแสง', 'ชงกาแฟโดยไม่ต้องมอง', 'ถูกทุกข้อ!'],
+              answer: 3,
+              sec: 15
+            },
+            {
+              q: 'ถ้าพรุ่งนี้ถูกหวยรางวัลที่ 1 สิ่งแรกที่คนส่วนใหญ่แอบคิดคืออะไร?',
+              choices: ['มาทำงานเช้ากว่าเดิม', 'ยื่นใบลาออกทันที', 'เลี้ยงหมูกระทะทั้งกอง', 'ปิดมือถือไปเที่ยวรอบโลก'],
+              answer: 2,
+              sec: 15
+            }
+          ],
+          answers: {},
+          scores: {},
+          lastRoundPoints: {}
+        },
         circularLoopId: '',
         circularLoopPath: [],
         circularCurrentIdx: 0,
         circularDrawnList: [],
         circularHasStarted: false,
+        adminLevel: 'none',
         deviceRole: 'guest_unselected',
         witsGame: {
           roundId: '',
           phase: 'idle',
+          currentIdx: 0,
           question: '',
           correctAnswer: null,
           prize: '',
@@ -947,6 +1147,31 @@
           durationSec: 15,
           timeLeft: 15,
           timeUp: false,
+          autoRun: true,
+          autoDelaySec: 5,
+          questions: [
+            {
+              q: 'ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?',
+              answer: 428,
+              prize: 'อั่งเปาพิเศษ 1,000 บาท',
+              rule: 'wits',
+              sec: 15
+            },
+            {
+              q: 'กาแฟเฉลี่ยที่คนทำงานออฟฟิศดื่มต่อคนใน 1 ปี (365 วัน) มีประมาณกี่แก้ว?',
+              answer: 280,
+              prize: 'บัตรกำนัลร้านกาแฟ',
+              rule: 'wits',
+              sec: 15
+            },
+            {
+              q: 'ปี 2569 มีวันหยุดราชการและวันหยุดเสาร์-อาทิตย์รวมกันทั้งหมดกี่วัน?',
+              answer: 121,
+              prize: 'ของขวัญพิเศษปีใหม่',
+              rule: 'closest',
+              sec: 20
+            }
+          ],
           submissions: {},
           winnerIds: []
         }
@@ -957,6 +1182,12 @@
       let lastAdminPopupId = null;
       let lastAnimatedSpinId = '';
       let witsTimerInterval = null;
+      const localWitsAutoNextDeadlines = {};
+      let witsAutoNextInterval = null;
+      const localKahootDeadlines = {};
+      let kahootTimerInterval = null;
+      const localKahootAutoNextDeadlines = {};
+      let kahootAutoNextInterval = null;
 
       function escapeHtml(str) {
         return String(str == null ? '' : str)
@@ -971,15 +1202,6 @@
         return Number.isFinite(num) ? num : NaN;
       }
 
-      function getVoteCount(candidateId) {
-        let count = 0;
-        const map = state.votedGuests || {};
-        Object.keys(map).forEach(voterId => {
-          if (map[voterId] === candidateId) count++;
-        });
-        return count;
-      }
-
       function isCircularLoopCompleted() {
         return Boolean(
           state.circularHasStarted &&
@@ -991,13 +1213,9 @@
       function purgeGuestDataById(guestId, pushRemote) {
         if (!guestId) return false;
         const existed = state.guests.some(g => g.id === guestId);
-        delete state.votedGuests[guestId];
-        Object.keys(state.votedGuests).forEach(v => {
-          if (state.votedGuests[v] === guestId) {
-            delete state.votedGuests[v];
-            if (pushRemote) fbWriteSubpath(`votes/${encodeURIComponent(v)}`, null, 'DELETE');
-          }
-        });
+        if (state.kahootGame.answers) delete state.kahootGame.answers[guestId];
+        if (state.kahootGame.scores) delete state.kahootGame.scores[guestId];
+        if (state.kahootGame.lastRoundPoints) delete state.kahootGame.lastRoundPoints[guestId];
         state.guests = state.guests.filter(g => g.id !== guestId);
         state.luckyDrawExclusions = state.luckyDrawExclusions.filter(id => id !== guestId);
         state.wheelManualExclusions = state.wheelManualExclusions.filter(id => id !== guestId);
@@ -1011,11 +1229,34 @@
 
         if (pushRemote) {
           fbWriteSubpath(`guests/${encodeURIComponent(guestId)}`, null, 'DELETE');
-          fbWriteSubpath(`votes/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`kahootAnswers/${encodeURIComponent(guestId)}`, null, 'DELETE');
           fbWriteSubpath(`witsSubmissions/${encodeURIComponent(guestId)}`, null, 'DELETE');
-          if (loopWasReset || state.deviceRole === 'all') fbPushCoreState('guest_purged');
+          if (loopWasReset || isAnyAdmin()) fbPushCoreState('guest_purged');
         }
         return existed;
+      }
+
+      function isAnyAdmin() {
+        return state.deviceRole === 'all' && state.adminLevel !== 'none';
+      }
+      function canManageSuper() {
+        return isAnyAdmin() && state.adminLevel === 'super';
+      }
+      function canManageCore() {
+        return isAnyAdmin() && (state.adminLevel === 'super' || state.adminLevel === 'core');
+      }
+      function canManageKahoot() {
+        return isAnyAdmin() && (state.adminLevel === 'super' || state.adminLevel === 'kahoot');
+      }
+      function canManageWits() {
+        return isAnyAdmin() && (state.adminLevel === 'super' || state.adminLevel === 'wits');
+      }
+      function getAdminLevelMeta(lvl) {
+        if (lvl === 'super') return { badge: '👑 Host หลัก (คุมทุกเกม)', short: '👑 Host หลัก', tab: null };
+        if (lvl === 'core') return { badge: '👑 Host เวทีกลาง (วงล้อ & แลกของขวัญ)', short: '👑 Host เวทีกลาง', tab: 'luckydraw' };
+        if (lvl === 'kahoot') return { badge: '⚡ Host เฉพาะ Kahoot', short: '⚡ Host Kahoot', tab: 'kahoot' };
+        if (lvl === 'wits') return { badge: '🔢 Host เฉพาะทายตัวเลข', short: '🔢 Host ทายตัวเลข', tab: 'witwager' };
+        return { badge: '👑 Host', short: '👑 Host', tab: null };
       }
 
       /* === PART 2: COUNTDOWN & FIREWORKS === */
@@ -1236,27 +1477,24 @@
         }
         lines.push('');
 
-        lines.push('👗 3. ผลโหวตการแต่งกายยอดเยี่ยม (Best Dressed):');
-        const enrichedVotes = state.guests.map(g => ({ name: g.name, votes: getVoteCount(g.id) })).sort((a, b) => b.votes - a.votes);
-        const topVote = enrichedVotes[0]?.votes || 0;
-        if (topVote === 0) {
-          lines.push('   - ยังไม่มีคะแนนโหวต');
+        lines.push('⚡ 3. สรุปคะแนนเกมควิซ Kahoot (Top 5):');
+        const khScores = state.guests
+          .map(g => ({ name: g.name, score: Number((state.kahootGame.scores || {})[g.id] || 0) }))
+          .sort((a, b) => b.score - a.score);
+        const topKh = khScores[0]?.score || 0;
+        if (topKh === 0) {
+          lines.push('   - ยังไม่มีคะแนนสะสม');
         } else {
-          const leaders = enrichedVotes.filter(c => c.votes === topVote);
-          if (leaders.length > 1) {
-            lines.push(`   👑 อันดับ 1 (ชนะเลิศร่วม ${leaders.length} คน • ${topVote} คะแนน): ${leaders.map(l => l.name).join(', ')}`);
-          } else {
-            lines.push(`   👑 อันดับ 1 ชนะเลิศ (${topVote} คะแนน): ${leaders[0].name}`);
-          }
-          enrichedVotes.filter(c => c.votes > 0).slice(0, 5).forEach((c, idx) => {
-            lines.push(`   • ${c.name}: ${c.votes} คะแนน`);
+          khScores.filter(c => c.score > 0).slice(0, 5).forEach((c, idx) => {
+            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}.`));
+            lines.push(`   ${medal} ${c.name}: ${c.score.toLocaleString('th-TH')} คะแนน`);
           });
         }
         return lines.join('\n');
       }
 
       function openLineSummaryModal() {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         lineSummaryTextarea.value = buildPartySummaryText();
         lineCopyFeedback.style.display = 'none';
         lineSummaryModal.classList.add('open');
@@ -1308,12 +1546,18 @@
       const adminPwInput = document.getElementById('admin-pw-input');
       const adminPwError = document.getElementById('admin-pw-error');
 
+      function matchAdminPasswordLevel(rawPw) {
+        const pw = String(rawPw || '').trim();
+        if (!pw) return null;
+        const pws = state.adminPasswords || DEFAULT_ADMIN_PASSWORDS;
+        if (pw === (pws.super || state.adminPassword)) return 'super';
+        if (pw === pws.core) return 'core';
+        if (pw === pws.kahoot) return 'kahoot';
+        if (pw === pws.wits) return 'wits';
+        return null;
+      }
+
       function openAdminPasswordModal() {
-        if (state.deviceRole === 'all') {
-          document.getElementById('gatekeeper-screen').style.display = 'none';
-          document.getElementById('party-lobby-screen').style.display = 'block';
-          return;
-        }
         adminPwInput.value = '';
         adminPwError.classList.remove('visible');
         adminPwModal.classList.add('open');
@@ -1322,7 +1566,8 @@
       document.getElementById('btn-cancel-admin-pw').addEventListener('click', () => adminPwModal.classList.remove('open'));
 
       function verifyAndEnterAdmin(pw, errEl) {
-        if (pw.trim() !== state.adminPassword) { errEl.classList.add('visible'); return; }
+        const matchedLevel = matchAdminPasswordLevel(pw);
+        if (!matchedLevel) { errEl.classList.add('visible'); return; }
         errEl.classList.remove('visible');
         adminPwModal.classList.remove('open');
         document.getElementById('gatekeeper-admin-pw').value = '';
@@ -1332,9 +1577,14 @@
           dropped = purgeGuestDataById(mySessionGuestId, true);
           setMySessionGuest(null);
         }
+        state.adminLevel = matchedLevel;
         state.deviceRole = 'all';
         document.getElementById('gatekeeper-screen').style.display = 'none';
         document.getElementById('party-lobby-screen').style.display = 'block';
+        const meta = getAdminLevelMeta(matchedLevel);
+        if (meta.tab) {
+          window.switchMainModule(meta.tab);
+        }
         renderAll();
         if (dropped) broadcastLocalOnly('admin_dropped_player');
       }
@@ -1346,26 +1596,49 @@
       document.getElementById('btn-gatekeeper-admin-login').addEventListener('click', () => verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')));
       document.getElementById('gatekeeper-admin-pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')); });
 
-      // Change Admin Password
+      // Change Admin Passwords (4 Tiers - Super Admin Only)
       const changePwModal = document.getElementById('change-pw-modal');
       document.getElementById('tb-change-pw-btn').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        ['old-admin-pw-input', 'new-admin-pw-input', 'confirm-admin-pw-input'].forEach(id => { document.getElementById(id).value = ''; });
+        if (!canManageSuper()) return;
+        const pws = state.adminPasswords || DEFAULT_ADMIN_PASSWORDS;
+        document.getElementById('old-admin-pw-input').value = '';
+        document.getElementById('pw-super-input').value = pws.super || '';
+        document.getElementById('pw-core-input').value = pws.core || '';
+        document.getElementById('pw-kahoot-input').value = pws.kahoot || '';
+        document.getElementById('pw-wits-input').value = pws.wits || '';
         document.getElementById('change-pw-error').classList.remove('visible');
         document.getElementById('change-pw-success').style.display = 'none';
         changePwModal.classList.add('open');
       });
       document.getElementById('btn-cancel-change-pw').addEventListener('click', () => changePwModal.classList.remove('open'));
       document.getElementById('btn-save-change-pw').addEventListener('click', () => {
+        if (!canManageSuper()) return;
         const oldV = document.getElementById('old-admin-pw-input').value.trim();
-        const newV = document.getElementById('new-admin-pw-input').value.trim();
-        const cfmV = document.getElementById('confirm-admin-pw-input').value.trim();
+        const vSuper = document.getElementById('pw-super-input').value.trim();
+        const vCore = document.getElementById('pw-core-input').value.trim();
+        const vKahoot = document.getElementById('pw-kahoot-input').value.trim();
+        const vWits = document.getElementById('pw-wits-input').value.trim();
         const err = document.getElementById('change-pw-error');
-        if (oldV !== state.adminPassword) { err.textContent = '❌ รหัสผ่านปัจจุบันไม่ถูกต้อง'; err.classList.add('visible'); return; }
-        if (!newV || newV !== cfmV) { err.textContent = '❌ รหัสผ่านใหม่ไม่ถูกต้องหรือไม่ตรงกัน'; err.classList.add('visible'); return; }
+        if (oldV !== (state.adminPasswords.super || state.adminPassword)) {
+          err.textContent = '❌ รหัสผ่านหลัก (Super Host) ปัจจุบันไม่ถูกต้อง';
+          err.classList.add('visible');
+          return;
+        }
+        if (!vSuper || !vCore || !vKahoot || !vWits) {
+          err.textContent = '❌ กรุณาระบุรหัสผ่านให้ครบทั้ง 4 ระดับ (ห้ามเว้นว่าง)';
+          err.classList.add('visible');
+          return;
+        }
+        const uniqueSet = new Set([vSuper, vCore, vKahoot, vWits]);
+        if (uniqueSet.size < 4) {
+          err.textContent = '❌ รหัสผ่านทั้ง 4 ระดับต้องไม่ซ้ำกัน';
+          err.classList.add('visible');
+          return;
+        }
         err.classList.remove('visible');
-        state.adminPassword = newV;
-        try { localStorage.setItem(ADMIN_PW_STORAGE_KEY, newV); } catch (e) {}
+        state.adminPasswords = { super: vSuper, core: vCore, kahoot: vKahoot, wits: vWits };
+        state.adminPassword = vSuper;
+        try { localStorage.setItem(ADMIN_PW_STORAGE_KEY, JSON.stringify(state.adminPasswords)); } catch (e) {}
         document.getElementById('change-pw-success').style.display = 'block';
         syncAdminCore('admin_pw_changed');
       });
@@ -1430,6 +1703,7 @@
           const guestObj = { id: newId, name, order: Date.now(), isIdle: false };
           state.guests.push(guestObj);
           setMySessionGuest(newId);
+          state.adminLevel = 'none';
           state.deviceRole = newId;
           guestInput.value = '';
           document.getElementById('gatekeeper-screen').style.display = 'none';
@@ -1514,9 +1788,22 @@
           document.getElementById('party-lobby-screen').style.display = 'none';
           document.getElementById('gatekeeper-screen').style.display = 'block';
         }
-        const isAdmin = state.deviceRole === 'all';
-        document.querySelectorAll('.admin-only-control').forEach(el => { el.style.display = isAdmin ? '' : 'none'; });
-        document.querySelectorAll('.participant-only-control').forEach(el => { el.style.display = !isAdmin ? '' : 'none'; });
+        if (state.deviceRole === 'all' && state.adminLevel === 'none') {
+          state.adminLevel = 'super';
+        }
+        const isAdmin = isAnyAdmin();
+        document.querySelectorAll('.admin-only-control').forEach(el => {
+          const scope = el.getAttribute('data-admin-scope') || 'super';
+          let allowed = false;
+          if (scope === 'super') allowed = canManageSuper();
+          else if (scope === 'core') allowed = canManageCore();
+          else if (scope === 'kahoot') allowed = canManageKahoot();
+          else if (scope === 'wits') allowed = canManageWits();
+          el.style.display = allowed ? '' : 'none';
+        });
+        document.querySelectorAll('.participant-only-control').forEach(el => {
+          el.style.display = !canManageCore() ? '' : 'none';
+        });
 
         const tbLbl = document.getElementById('tb-identity-label');
         const topAdminBtn = document.getElementById('tb-enter-admin-top-btn');
@@ -1526,21 +1813,26 @@
         const bannerTxt = document.getElementById('role-banner-text');
 
         if (isAdmin) {
-          tbLbl.textContent = '👑 Admin';
-          topAdminBtn.style.display = 'none';
+          const meta = getAdminLevelMeta(state.adminLevel);
+          tbLbl.textContent = meta.short;
+          topAdminBtn.style.display = 'inline-flex';
+          topAdminBtn.textContent = '🔄 สลับรหัส Host';
           leaveBtn.style.display = 'none';
           myPrizesBtn.style.display = 'none';
-          switchAdminBtn.style.display = 'none';
+          switchAdminBtn.style.display = 'inline-flex';
+          switchAdminBtn.textContent = '🔑 สลับรหัส Host';
           document.getElementById('role-banner-icon').textContent = '👑';
-          bannerTxt.innerHTML = 'โหมดผู้จัดงาน (<strong>Admin</strong>)';
+          bannerTxt.innerHTML = `โหมดผู้จัดงาน: <strong style="color:#fde68a;">${escapeHtml(meta.badge)}</strong>`;
         } else if (state.deviceRole !== 'guest_unselected') {
           const me = state.guests.find(g => g.id === state.deviceRole);
           const nm = me ? me.name : 'ผู้เข้าร่วม';
           const myWonList = (state.prizeAlerts || []).filter(a => a && Array.isArray(a.targetGuestIds) && a.targetGuestIds.includes(state.deviceRole));
           tbLbl.textContent = nm;
           topAdminBtn.style.display = 'inline-flex';
+          topAdminBtn.textContent = '👑 Host';
           leaveBtn.style.display = 'inline-flex';
           switchAdminBtn.style.display = 'inline-flex';
+          switchAdminBtn.textContent = '👑 โหมด Host';
           if (myWonList.length > 0) {
             myPrizesBtn.style.display = 'inline-flex';
             myPrizesBtn.textContent = `🏆 รางวัลของฉัน (${myWonList.length})`;
@@ -1552,6 +1844,7 @@
         } else {
           tbLbl.textContent = 'ยังไม่ลงชื่อ';
           topAdminBtn.style.display = 'inline-flex';
+          topAdminBtn.textContent = '👑 Host';
           leaveBtn.style.display = 'none';
           myPrizesBtn.style.display = 'none';
         }
@@ -1577,7 +1870,7 @@
         updateRoleVisibility();
         const grid = document.getElementById('main-guests-display-grid');
         grid.innerHTML = '';
-        const isAdmin = state.deviceRole === 'all';
+        const isAdmin = canManageCore();
 
         if (state.guests.length === 0) {
           grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">💡 ยังไม่มีรายชื่อผู้เข้าร่วมออนไลน์ในขณะนี้</div>';
@@ -1599,13 +1892,13 @@
         renderPrizes();
         syncWheelStageUI();
         drawLuckyWheel();
-        renderVotingCandidates();
+        renderKahootGame();
         renderWitsGame();
         updateCircularLoopUI();
       }
 
       window.removeGuest = function(id) {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         const g = state.guests.find(item => item.id === id);
         askSafetyConfirm('ลบรายชื่อผู้เข้าร่วม?', `ต้องการลบชื่อ "${g ? g.name : ''}" ออกจากห้องใช่หรือไม่?`, () => {
           purgeGuestDataById(id, true);
@@ -1658,7 +1951,7 @@
       }
 
       window.toggleWheelExcludeGuest = function(guestId) {
-        if (state.deviceRole !== 'all' || wheelIsSpinning) return;
+        if (!canManageCore() || wheelIsSpinning) return;
         const mIdx = state.wheelManualExclusions.indexOf(guestId);
         const wIdx = state.luckyDrawExclusions.indexOf(guestId);
         if (mIdx !== -1) {
@@ -1707,7 +2000,7 @@
       }
 
       drawPrizeSelect.addEventListener('change', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         state.selectedPrize = drawPrizeSelect.value;
         if (state.wheelStage.status !== 'spinning') state.wheelStage.status = 'idle';
         renderPrizes();
@@ -1716,7 +2009,7 @@
       function addCustomPrizeAction() {
         const inp = document.getElementById('draw-prize-input-field');
         const val = inp.value.trim();
-        if (state.deviceRole !== 'all' || !val) return;
+        if (!canManageCore() || !val) return;
         state.prizes.push(val);
         state.hadConfiguredPrizes = true;
         state.selectedPrize = val;
@@ -1729,14 +2022,14 @@
         if (e.key === 'Enter') { e.preventDefault(); addCustomPrizeAction(); }
       });
       window.removePrizeByIndex = function(idx) {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         const rem = state.prizes.splice(idx, 1)[0];
         if (state.selectedPrize === rem) state.selectedPrize = state.prizes[0] || '';
         renderPrizes();
         syncAdminCore('prize_removed');
       };
       document.getElementById('btn-clear-all-prizes').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         askSafetyConfirm('ล้างรายการของรางวัลทั้งหมด?', 'รายการของรางวัลที่ตั้งไว้ในวงล้อจะถูกล้างออกทั้งหมด', () => {
           state.prizes = [];
           state.hadConfiguredPrizes = false;
@@ -1746,7 +2039,7 @@
         });
       });
       document.getElementById('btn-restore-wheel-names').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         state.luckyDrawExclusions = [];
         state.wheelStage = { spinId: '', status: 'idle', finalAngle: wheelAngle, winnerId: '', winnerName: '', prizeName: '' };
         renderWheelExclusionChips();
@@ -1809,7 +2102,7 @@
         } else if (ws.status !== 'spinning') {
           wrap.classList.remove('rolling', 'winner');
           txt.style.color = 'var(--brand)';
-          txt.textContent = 'รอผู้จัดงาน (Admin) กดหมุนวงล้อ';
+          txt.textContent = 'รอผู้จัดงาน (Host) กดหมุนวงล้อ';
           hint.textContent = 'เมื่อหมุนได้ผู้ชนะ ป๊อปอัพจะเด้งแจ้งเตือนบนหน้าจอมือถือของผู้โชคดีทันที!';
         }
       }
@@ -1846,7 +2139,7 @@
             wheelAngle = targetAngle;
             mainStageDrawBtn.disabled = false;
 
-            if (state.deviceRole === 'all' && state.wheelStage.spinId === wsSnapshot.spinId && state.wheelStage.status === 'spinning') {
+            if (canManageCore() && state.wheelStage.spinId === wsSnapshot.spinId && state.wheelStage.status === 'spinning') {
               state.wheelStage.status = 'winner';
               state.winners.unshift({
                 name: wsSnapshot.winnerName,
@@ -1876,7 +2169,7 @@
 
       mainStageDrawBtn.addEventListener('click', () => {
         const pool = getActiveWheelPool();
-        if (state.deviceRole !== 'all' || wheelIsSpinning || !pool.length) return;
+        if (!canManageCore() || wheelIsSpinning || !pool.length) return;
 
         const N = pool.length;
         const slice = (Math.PI * 2) / N;
@@ -1908,13 +2201,13 @@
         const lineBtn = document.getElementById('btn-open-line-summary-card');
         document.getElementById('stats-winners-count').textContent = state.winners.length;
         list.innerHTML = '';
-        if (lineBtn) lineBtn.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
+        if (lineBtn) lineBtn.style.display = canManageCore() ? 'inline-flex' : 'none';
         if (!state.winners.length) {
           empty.style.display = 'block'; list.style.display = 'none'; clr.style.display = 'none';
           return;
         }
         empty.style.display = 'none'; list.style.display = 'flex';
-        clr.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
+        clr.style.display = canManageCore() ? 'inline-flex' : 'none';
         state.winners.forEach(w => {
           const li = document.createElement('li');
           li.className = 'item-row';
@@ -1923,7 +2216,7 @@
         });
       }
       document.getElementById('clear-winners-btn').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         askSafetyConfirm('ล้างประวัติผู้โชคดีทั้งหมด?', 'ประวัติรายชื่อผู้ได้รับรางวัลทั้งหมดจะถูกล้างออก', () => {
           state.winners = [];
           state.prizeAlerts = [];
@@ -1942,7 +2235,7 @@
       }
 
       document.getElementById('btn-start-circular-game').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         if (state.guests.length < 2) {
           document.getElementById('gift-loop-setup-hint').innerHTML = '<span style="color:var(--danger);">❌ ต้องมีผู้เข้าร่วมอย่างน้อย 2 คนขึ้นไป</span>';
           return;
@@ -2001,7 +2294,7 @@
 
         inprog.style.display = 'block';
         comp.style.display = 'none';
-        emgBox.style.display = state.deviceRole === 'all' ? 'block' : 'none';
+        emgBox.style.display = canManageCore() ? 'block' : 'none';
 
         const path = state.circularLoopPath;
         const idx = state.circularCurrentIdx;
@@ -2021,7 +2314,7 @@
         drawBtn.textContent = isMyTurn
           ? `🎁 กดสุ่มรับของขวัญของคุณ (${giver.name})`
           : `🔒 รอมือถือของ ${giver.name} กดสุ่ม...`;
-        emgBtn.textContent = `⏭️ Admin กดสุ่มแทนคิวที่ค้าง (${giver.name}) (กรณีฉุกเฉิน)`;
+        emgBtn.textContent = `⏭️ Host กดสุ่มแทนคิวที่ค้าง (${giver.name}) (กรณีฉุกเฉิน)`;
       }
 
       // กดคลิกเดียว: สุ่มของขวัญ + เด้งป๊อปอัพรางวัลให้คนกด + เลื่อนคิวปลดล็อกให้คนถัดไปทันที!
@@ -2052,12 +2345,12 @@
       });
 
       document.getElementById('btn-admin-emergency-loop').addEventListener('click', () => {
-        if (state.deviceRole !== 'all' || !state.circularHasStarted || isCircularLoopCompleted()) return;
+        if (!canManageCore() || !state.circularHasStarted || isCircularLoopCompleted()) return;
         execOneClickLoopDraw();
       });
 
       document.getElementById('btn-loop-restart').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageCore()) return;
         askSafetyConfirm('เริ่มวงจรแลกของขวัญรอบใหม่?', 'ตารางสรุปสายพานแลกของขวัญรอบปัจจุบันจะถูกรีเซ็ต', () => {
           resetCircularLoop();
           updateCircularLoopUI();
@@ -2065,138 +2358,566 @@
         });
       });
 
-      // Best Dressed Voting (ซ่อนผลโหวตจนกว่า Admin จะกดแสดงผล + ป้ายชนะเลิศร่วม Tie Score & ปุ่มรีเซ็ตโหวต)
-      document.getElementById('btn-toggle-vote-reveal').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        state.votingRevealed = !state.votingRevealed;
-        triggerHapticVibration(state.votingRevealed ? [120, 60, 180] : 40);
-        if (state.votingRevealed) triggerGrandConfetti();
-        renderVotingCandidates();
-        syncAdminCore('voting_reveal_toggled');
-      });
+      // === KAHOOT SPEED QUIZ ENGINE (4 CHOICES + SPEED SCORE + AUTO-RUN + LEADERBOARD) ===
+      const KAHOOT_SHAPES = ['▲', '◆', '●', '■'];
+      const KAHOOT_LETTERS = ['A', 'B', 'C', 'D'];
 
-      document.getElementById('btn-reset-votes').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        askSafetyConfirm('รีเซ็ตคะแนนโหวตทั้งหมด?', 'คะแนนโหวตการแต่งกายทั้งหมดจะถูกล้างเป็น 0 และกลับสู่โหมดซ่อนผลโหวตเพื่อเปิดรอบใหม่', () => {
-          state.votedGuests = {};
-          state.votingRevealed = false;
-          fbMirror.votes = {};
-          fbWriteSubpath('votes', null, 'DELETE');
-          renderVotingCandidates();
-          syncAdminCore('votes_reset');
-        });
-      });
-
-      function renderVotingCandidates() {
-        const list = document.getElementById('best-dressed-vote-list');
-        const toggleBtn = document.getElementById('btn-toggle-vote-reveal');
-        const statusBanner = document.getElementById('voting-blind-status-banner');
-        const statusText = document.getElementById('voting-blind-status-text');
-        const totalCastBadge = document.getElementById('voting-total-cast-badge');
-
-        const totalGuests = state.guests.length;
-        const totalCast = state.guests.filter(g => state.votedGuests && state.votedGuests[g.id] !== undefined).length;
-        if (totalCastBadge) totalCastBadge.textContent = `โหวตแล้ว ${totalCast} / ${totalGuests} คน`;
-
-        if (toggleBtn) {
-          if (state.votingRevealed) {
-            toggleBtn.textContent = '🙈 ซ่อนผลโหวตอีกครั้ง';
-            toggleBtn.className = 'btn btn-secondary admin-only-control';
-          } else {
-            toggleBtn.textContent = '📣 แสดงผลโหวตขึ้นจอ';
-            toggleBtn.className = 'btn btn-primary admin-only-control';
-          }
-          toggleBtn.style.display = state.deviceRole === 'all' ? 'inline-flex' : 'none';
-        }
-
-        if (statusBanner && statusText) {
-          if (state.votingRevealed) {
-            statusBanner.style.background = 'rgba(16, 185, 129, 0.14)';
-            statusBanner.style.borderColor = 'var(--success)';
-            statusText.innerHTML = '🎉 <strong>เปิดเผยผลโหวตการแต่งกายยอดเยี่ยมแล้ว!</strong>';
-          } else {
-            statusBanner.style.background = 'rgba(56, 189, 248, 0.12)';
-            statusBanner.style.borderColor = 'rgba(56, 189, 248, 0.35)';
-            statusText.innerHTML = '🔒 <strong>โหมดลงคะแนนลับ:</strong> ซ่อนผลคะแนนโหวตชั่วคราว (ป้องกันการชี้นำ) จนกว่า Admin จะกดแสดงผล';
-          }
-        }
-
-        list.innerHTML = '';
-        if (!state.guests.length) {
-          list.innerHTML = '<div class="empty-state">ยังไม่มีรายชื่อผู้เข้าร่วมออนไลน์ในขณะนี้</div>';
-          return;
-        }
-        const enriched = state.guests.map(g => ({ ...g, votes: getVoteCount(g.id) }));
-        // ซ่อนผลโหวต = เรียงตามลำดับลงชื่อเข้างานปกติ (ไม่เรียงตามคะแนน เพื่อไม่ให้รู้ว่าใครนำ!)
-        const displayList = state.votingRevealed
-          ? [...enriched].sort((a, b) => b.votes - a.votes)
-          : enriched;
-
-        const maxVotesInRoom = Math.max(0, ...enriched.map(c => c.votes));
-        const topScore = state.votingRevealed ? maxVotesInRoom : 0;
-        const topLeadersCount = topScore > 0 ? enriched.filter(c => c.votes === topScore).length : 0;
-        const maxV = Math.max(1, topScore);
-
-        const vid = state.deviceRole;
-        const isAdmin = vid === 'all';
-        const hasVoted = !isAdmin && vid !== 'guest_unselected' && state.votedGuests[vid] !== undefined;
-
-        displayList.forEach(c => {
-          const pct = state.votingRevealed ? Math.round((c.votes / maxV) * 100) : 0;
-          const isTop = state.votingRevealed && topScore > 0 && c.votes === topScore;
-          let leaderBadge = '';
-          if (isTop) {
-            leaderBadge = topLeadersCount > 1
-              ? ` <span class="slot-prize-badge" style="margin:0 0 0 6px;padding:2px 8px;font-size:10px;">🏆 อันดับ 1 (ชนะเลิศร่วม)</span>`
-              : ` <span class="slot-prize-badge" style="margin:0 0 0 6px;padding:2px 8px;font-size:10px;">👑 อันดับ 1 ผู้นำโหวต</span>`;
-          }
-
-          const scoreLabel = state.votingRevealed
-            ? `<span style="color:var(--brand);">${c.votes} คะแนน</span>`
-            : `<span style="color:var(--muted);font-size:11px;">🙈 ซ่อนผลโหวต</span>`;
-
-          let act = '';
-          if (isAdmin) {
-            act = `<span style="font-size:11px;color:var(--muted);padding:6px 10px;border:1px dashed var(--border);border-radius:8px;">👁️ Admin ดูผลเท่านั้น</span>`;
-          } else if (vid === 'guest_unselected') {
-            act = `<button type="button" class="btn btn-secondary" disabled>กรุณาลงชื่อก่อน</button>`;
-          } else if (vid === c.id) {
-            act = `<button type="button" class="btn btn-secondary" style="opacity:0.5;border-style:dashed;" disabled>🚫 ห้ามโหวตตัวเอง</button>`;
-          } else if (state.votingRevealed) {
-            act = state.votedGuests[vid] === c.id
-              ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
-              : `<button type="button" class="btn btn-secondary" style="opacity:0.45;" disabled>🔒 ปิดโหวตแล้ว</button>`;
-          } else if (hasVoted) {
-            act = state.votedGuests[vid] === c.id
-              ? `<button type="button" class="btn btn-primary" disabled>💖 โหวตให้คนนี้แล้ว</button>`
-              : `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🔄 เปลี่ยนมาโหวตคนนี้</button>`;
-          } else {
-            act = `<button type="button" class="btn btn-secondary" onclick="castVote('${escapeHtml(c.id)}')">🗳️ โหวตให้คนนี้</button>`;
-          }
-
-          const row = document.createElement('div');
-          row.className = 'vote-item-row' + (isTop ? ' is-leader' : '');
-          row.innerHTML = `<div class="vote-item-info"><div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;gap:6px;flex-wrap:wrap;"><span>👗 ${escapeHtml(c.name)}${vid === c.id ? ' <small style="color:#fde68a;">(คุณ)</small>' : ''}${leaderBadge}</span>${scoreLabel}</div><div class="vote-bar-outer"><div class="vote-bar-inner" style="width:${state.votingRevealed && c.votes > 0 ? pct : 0}%;"></div></div></div>${act}`;
-          list.appendChild(row);
-        });
+      function clearAllKahootTimers() {
+        if (kahootTimerInterval) { clearInterval(kahootTimerInterval); kahootTimerInterval = null; }
+        if (kahootAutoNextInterval) { clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null; }
       }
 
-      window.castVote = function(cid) {
-        const vid = state.deviceRole;
-        if (state.votingRevealed || !vid || vid === 'all' || vid === 'guest_unselected' || vid === cid || state.votedGuests[vid] === cid) return;
-        if (state.guests.some(g => g.id === cid)) {
-          state.votedGuests[vid] = cid;
-          triggerHapticVibration(35);
-          renderVotingCandidates();
-          fbWriteSubpath(`votes/${encodeURIComponent(vid)}`, cid, 'PUT');
-          broadcastLocalOnly('vote_cast');
+      function getLocalKahootRemainingMs(kg) {
+        if (!kg || kg.phase !== 'asking') return 0;
+        if (kg.timeUp) return 0;
+        const rid = kg.roundId || 'kh_default';
+        const durMs = (kg.durationSec || 15) * 1000;
+        if (!localKahootDeadlines[rid]) {
+          localKahootDeadlines[rid] = Date.now() + durMs;
+        }
+        return Math.max(0, localKahootDeadlines[rid] - Date.now());
+      }
+
+      function getLocalKahootAutoNextRemainingMs(kg) {
+        if (!kg || kg.phase !== 'revealed' || !kg.autoRun) return 0;
+        const rid = (kg.roundId || 'kh_default') + '_next';
+        const delayMs = (Number(kg.autoDelaySec) || 5) * 1000;
+        if (!localKahootAutoNextDeadlines[rid]) {
+          localKahootAutoNextDeadlines[rid] = Date.now() + delayMs;
+        }
+        return Math.max(0, localKahootAutoNextDeadlines[rid] - Date.now());
+      }
+
+      function ensureKahootCountdownLoop() {
+        if (kahootTimerInterval) { clearInterval(kahootTimerInterval); kahootTimerInterval = null; }
+        const kg = state.kahootGame;
+        if (kg.phase !== 'asking' || kg.timeUp) return;
+
+        getLocalKahootRemainingMs(kg);
+
+        kahootTimerInterval = setInterval(() => {
+          if (state.kahootGame.phase !== 'asking') {
+            clearInterval(kahootTimerInterval);
+            kahootTimerInterval = null;
+            return;
+          }
+          const remMs = getLocalKahootRemainingMs(state.kahootGame);
+          const remSec = Math.ceil(remMs / 1000);
+          state.kahootGame.timeLeft = remSec;
+
+          const tc = document.getElementById('kahoot-timer-circle');
+          if (tc) {
+            tc.textContent = String(remSec);
+            tc.classList.toggle('urgent', remSec <= 5);
+          }
+
+          if (remMs <= 0) {
+            clearInterval(kahootTimerInterval);
+            kahootTimerInterval = null;
+            state.kahootGame.timeUp = true;
+            state.kahootGame.timeLeft = 0;
+            if (canManageKahoot() && state.kahootGame.autoRun) {
+              revealKahootCurrentQuestion();
+            } else {
+              renderKahootGame();
+              if (canManageKahoot()) syncAdminCore('kahoot_timeup');
+            }
+          }
+        }, 200);
+      }
+
+      function ensureKahootAutoNextLoop() {
+        if (kahootAutoNextInterval) { clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null; }
+        const kg = state.kahootGame;
+        if (kg.phase !== 'revealed' || !kg.autoRun) return;
+
+        getLocalKahootAutoNextRemainingMs(kg);
+
+        kahootAutoNextInterval = setInterval(() => {
+          const curKg = state.kahootGame;
+          if (curKg.phase !== 'revealed' || !curKg.autoRun) {
+            clearInterval(kahootAutoNextInterval);
+            kahootAutoNextInterval = null;
+            return;
+          }
+          const remMs = getLocalKahootAutoNextRemainingMs(curKg);
+          const remSec = Math.ceil(remMs / 1000);
+          const secEl = document.getElementById('kahoot-autonext-sec');
+          if (secEl) secEl.textContent = String(remSec);
+
+          if (remMs <= 0) {
+            clearInterval(kahootAutoNextInterval);
+            kahootAutoNextInterval = null;
+            if (canManageKahoot() && curKg.phase === 'revealed' && curKg.autoRun) {
+              if (curKg.currentIdx + 1 < curKg.questions.length) {
+                curKg.currentIdx++;
+                startKahootCurrentQuestion();
+              } else {
+                finishKahootAndAward();
+              }
+            }
+          }
+        }, 200);
+      }
+
+      function startKahootCurrentQuestion() {
+        if (!canManageKahoot()) return;
+        clearAllKahootTimers();
+        const kg = state.kahootGame;
+        if (kg.phase === 'finished' && kg.currentIdx >= kg.questions.length - 1) {
+          kg.currentIdx = 0;
+        }
+        const qObj = kg.questions[kg.currentIdx];
+        if (!qObj) return;
+        const dur = Number(qObj.sec) || 15;
+        const newRid = 'kh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+        localKahootDeadlines[newRid] = Date.now() + (dur * 1000);
+
+        const chkAuto = document.getElementById('chk-kahoot-autorun');
+        const selDelay = document.getElementById('kahoot-autodelay-select');
+        if (chkAuto) kg.autoRun = chkAuto.checked;
+        if (selDelay) kg.autoDelaySec = Number(selDelay.value) || 5;
+
+        kg.roundId = newRid;
+        kg.phase = 'asking';
+        kg.durationSec = dur;
+        kg.timeLeft = dur;
+        kg.timeUp = false;
+        kg.prize = document.getElementById('kahoot-prize-input').value.trim() || 'รางวัลแชมป์ Kahoot ประจำปีใหม่';
+        kg.answers = {};
+        kg.lastRoundPoints = {};
+
+        fbMirror.kahootAnswers = {};
+        fbWriteSubpath('kahootAnswers', null, 'DELETE');
+        renderKahootGame();
+        ensureKahootCountdownLoop();
+        syncAdminCore('kahoot_start_q');
+      }
+
+      function revealKahootCurrentQuestion() {
+        if (!canManageKahoot() || state.kahootGame.phase !== 'asking') return;
+        clearAllKahootTimers();
+        const kg = state.kahootGame;
+        const qObj = kg.questions[kg.currentIdx];
+        if (!qObj) return;
+        const durMs = (kg.durationSec || 15) * 1000;
+        const newLastPts = {};
+
+        state.guests.forEach(g => {
+          const ansObj = kg.answers[g.id];
+          if (ansObj && ansObj.roundId === kg.roundId && Number(ansObj.choice) === Number(qObj.answer)) {
+            const ratio = Math.min(1, Math.max(0, Number(ansObj.remMs || 0) / durMs));
+            const pts = Math.round(500 + 500 * ratio);
+            newLastPts[g.id] = pts;
+            kg.scores[g.id] = Number(kg.scores[g.id] || 0) + pts;
+          } else {
+            newLastPts[g.id] = 0;
+          }
+        });
+
+        kg.lastRoundPoints = newLastPts;
+        kg.phase = 'revealed';
+        kg.timeUp = true;
+        kg.timeLeft = 0;
+
+        if (kg.autoRun) {
+          const nextKey = (kg.roundId || 'kh_default') + '_next';
+          localKahootAutoNextDeadlines[nextKey] = Date.now() + ((Number(kg.autoDelaySec) || 5) * 1000);
+        }
+
+        triggerGrandConfetti();
+        renderKahootGame();
+        if (kg.autoRun) ensureKahootAutoNextLoop();
+        syncAdminCore('kahoot_reveal_q');
+      }
+
+      function finishKahootAndAward() {
+        if (!canManageKahoot()) return;
+        clearAllKahootTimers();
+        const kg = state.kahootGame;
+        kg.prize = document.getElementById('kahoot-prize-input').value.trim() || 'รางวัลแชมป์ Kahoot ประจำปีใหม่';
+        const ranked = state.guests
+          .map(g => ({ id: g.id, name: g.name, score: Number((kg.scores || {})[g.id] || 0) }))
+          .sort((a, b) => b.score - a.score);
+        const topScore = ranked[0]?.score || 0;
+        if (topScore <= 0) {
+          kg.phase = 'finished';
+          renderKahootGame();
+          syncAdminCore('kahoot_finished');
+          return;
+        }
+        const champs = ranked.filter(r => r.score === topScore);
+        kg.phase = 'finished';
+        champs.forEach(w => {
+          state.winners.unshift({
+            name: w.name,
+            prize: `${kg.prize} (${w.score.toLocaleString('th-TH')} คะแนน)`,
+            timestamp: new Date().toLocaleTimeString('th-TH')
+          });
+        });
+        triggerWinnerNotification(
+          champs.map(c => c.id),
+          champs.map(c => c.name).join(', '),
+          kg.prize,
+          'แชมป์ควิซตอบไว Kahoot'
+        );
+        renderWinners();
+        renderKahootGame();
+        syncAdminCore('kahoot_champion_awarded');
+      }
+
+      document.getElementById('btn-kahoot-toggle-editor').addEventListener('click', () => {
+        const box = document.getElementById('kahoot-editor-box');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      });
+
+      document.getElementById('chk-kahoot-autorun').addEventListener('change', (e) => {
+        if (!canManageKahoot()) return;
+        state.kahootGame.autoRun = e.target.checked;
+        if (!state.kahootGame.autoRun) {
+          if (kahootAutoNextInterval) { clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null; }
+        } else if (state.kahootGame.phase === 'revealed') {
+          const nextKey = (state.kahootGame.roundId || 'kh_default') + '_next';
+          localKahootAutoNextDeadlines[nextKey] = Date.now() + ((Number(state.kahootGame.autoDelaySec) || 5) * 1000);
+          ensureKahootAutoNextLoop();
+        }
+        renderKahootGame();
+        syncAdminCore('kahoot_autorun_toggled');
+      });
+
+      document.getElementById('kahoot-autodelay-select').addEventListener('change', (e) => {
+        if (!canManageKahoot()) return;
+        state.kahootGame.autoDelaySec = Number(e.target.value) || 5;
+        syncAdminCore('kahoot_autodelay_changed');
+      });
+
+      document.getElementById('btn-kahoot-pause-auto').addEventListener('click', () => {
+        if (!canManageKahoot()) return;
+        if (kahootAutoNextInterval) { clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null; }
+        state.kahootGame.autoRun = false;
+        const chk = document.getElementById('chk-kahoot-autorun');
+        if (chk) chk.checked = false;
+        renderKahootGame();
+        syncAdminCore('kahoot_autorun_paused');
+      });
+
+      document.getElementById('btn-kahoot-add-q').addEventListener('click', () => {
+        if (!canManageKahoot()) return;
+        const qTxt = document.getElementById('kh-new-q').value.trim();
+        const c0 = document.getElementById('kh-new-c0').value.trim();
+        const c1 = document.getElementById('kh-new-c1').value.trim();
+        const c2 = document.getElementById('kh-new-c2').value.trim();
+        const c3 = document.getElementById('kh-new-c3').value.trim();
+        const ans = Number(document.getElementById('kh-new-ans').value);
+        const sec = Number(document.getElementById('kh-new-sec').value) || 15;
+        const err = document.getElementById('kh-editor-error');
+        if (!qTxt || !c0 || !c1 || !c2 || !c3) {
+          err.classList.add('visible');
+          return;
+        }
+        err.classList.remove('visible');
+        state.kahootGame.questions.push({ q: qTxt, choices: [c0, c1, c2, c3], answer: ans, sec });
+        state.kahootGame.currentIdx = state.kahootGame.questions.length - 1;
+        ['kh-new-q', 'kh-new-c0', 'kh-new-c1', 'kh-new-c2', 'kh-new-c3'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('kahoot-editor-box').style.display = 'none';
+        renderKahootGame();
+        syncAdminCore('kahoot_q_added');
+      });
+
+      window.selectKahootQuestion = function(idx) {
+        if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
+        if (idx >= 0 && idx < state.kahootGame.questions.length) {
+          clearAllKahootTimers();
+          state.kahootGame.currentIdx = idx;
+          if (state.kahootGame.phase === 'revealed' || state.kahootGame.phase === 'finished') {
+            state.kahootGame.phase = 'idle';
+          }
+          renderKahootGame();
+          syncAdminCore('kahoot_q_selected');
         }
       };
 
-      /* === PART 6: WITS & WAGERS (15s ROUND TIMER & CLEAN NUMBER PARSING) === */
+      window.deleteKahootQuestion = function(ev, idx) {
+        ev.stopPropagation();
+        if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
+        if (state.kahootGame.questions.length <= 1) return;
+        state.kahootGame.questions.splice(idx, 1);
+        if (state.kahootGame.currentIdx >= state.kahootGame.questions.length) {
+          state.kahootGame.currentIdx = Math.max(0, state.kahootGame.questions.length - 1);
+        }
+        renderKahootGame();
+        syncAdminCore('kahoot_q_deleted');
+      };
+
+      document.getElementById('btn-kahoot-start-q').addEventListener('click', startKahootCurrentQuestion);
+      document.getElementById('btn-kahoot-reveal-q').addEventListener('click', revealKahootCurrentQuestion);
+      document.getElementById('btn-kahoot-finish-award').addEventListener('click', finishKahootAndAward);
+
+      window.submitKahootChoice = function(choiceIdx) {
+        const kg = state.kahootGame;
+        const gid = state.deviceRole;
+        if (kg.phase !== 'asking' || kg.timeUp || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
+        if (kg.answers[gid] && kg.answers[gid].roundId === kg.roundId) return;
+        const remMs = getLocalKahootRemainingMs(kg);
+        if (remMs <= 0) {
+          kg.timeUp = true;
+          renderKahootGame();
+          return;
+        }
+        const payload = { choice: choiceIdx, remMs, roundId: kg.roundId };
+        kg.answers[gid] = payload;
+        triggerHapticVibration(40);
+        renderKahootGame();
+        fbWriteSubpath(`kahootAnswers/${encodeURIComponent(gid)}`, payload, 'PUT');
+        broadcastLocalOnly('kahoot_answer');
+      };
+
+      document.getElementById('btn-kahoot-next-q').addEventListener('click', () => {
+        if (!canManageKahoot()) return;
+        clearAllKahootTimers();
+        const kg = state.kahootGame;
+        if (kg.currentIdx + 1 < kg.questions.length) {
+          kg.currentIdx++;
+        }
+        if (kg.autoRun) {
+          startKahootCurrentQuestion();
+        } else {
+          kg.phase = 'idle';
+          kg.timeUp = false;
+          renderKahootGame();
+          syncAdminCore('kahoot_next_q');
+        }
+      });
+
+      document.getElementById('btn-kahoot-reset-all').addEventListener('click', () => {
+        if (!canManageKahoot()) return;
+        askSafetyConfirm('รีเซ็ตคะแนนเกม Kahoot ทั้งหมด?', 'คะแนนสะสมของผู้เล่นทุกคนจะถูกล้างเป็น 0 เพื่อเริ่มเกมใหม่ (คลังคำถามยังอยู่ครบ)', () => {
+          clearAllKahootTimers();
+          state.kahootGame.roundId = '';
+          state.kahootGame.phase = 'idle';
+          state.kahootGame.currentIdx = 0;
+          state.kahootGame.timeUp = false;
+          state.kahootGame.answers = {};
+          state.kahootGame.scores = {};
+          state.kahootGame.lastRoundPoints = {};
+          fbMirror.kahootAnswers = {};
+          fbWriteSubpath('kahootAnswers', null, 'DELETE');
+          renderKahootGame();
+          syncAdminCore('kahoot_reset');
+        });
+      });
+
+      function buildKahootLeaderboardHtml(kg, myId) {
+        const ranked = state.guests
+          .map(g => ({
+            id: g.id,
+            name: g.name,
+            score: Number((kg.scores || {})[g.id] || 0),
+            lastPts: Number((kg.lastRoundPoints || {})[g.id] || 0)
+          }))
+          .sort((a, b) => b.score - a.score);
+
+        if (!ranked.length) return '<div class="empty-state" style="margin-top:10px;">ยังไม่มีผู้เข้าร่วมออนไลน์</div>';
+        const hasAnyScore = ranked.some(r => r.score > 0);
+        if (!hasAnyScore && kg.phase === 'idle') return '';
+
+        const rows = ranked.slice(0, 10).map((r, i) => {
+          const medal = i === 0 && r.score > 0 ? '🥇' : (i === 1 && r.score > 0 ? '🥈' : (i === 2 && r.score > 0 ? '🥉' : `#${i + 1}`));
+          const plusTag = (kg.phase === 'revealed' && r.lastPts > 0)
+            ? ` <span style="color:var(--success);font-size:11px;font-weight:700;">(+${r.lastPts})</span>`
+            : '';
+          return `<div class="kahoot-lb-row${i === 0 && r.score > 0 ? ' is-top1' : ''}${r.id === myId ? ' is-me' : ''}">
+            <span style="font-weight:600;">${medal} ${escapeHtml(r.name)}${r.id === myId ? ' <small style="color:#38bdf8;">(คุณ)</small>' : ''}</span>
+            <span style="color:var(--brand);font-weight:800;">${r.score.toLocaleString('th-TH')} คะแนน${plusTag}</span>
+          </div>`;
+        }).join('');
+
+        return `<div style="margin-top:14px;">
+          <div class="meta-caption" style="font-weight:700;color:#fde68a;margin-bottom:6px;">🏆 ตารางคะแนนสะสม (Top 10):</div>
+          <div class="kahoot-lb-list">${rows}</div>
+        </div>`;
+      }
+
+      function renderKahootGame() {
+        const kg = state.kahootGame;
+        const isAdmin = canManageKahoot();
+        const stage = document.getElementById('kahoot-stage-container');
+        if (!stage) return;
+
+        if (kg.phase === 'asking') {
+          const remMs = getLocalKahootRemainingMs(kg);
+          kg.timeLeft = Math.ceil(remMs / 1000);
+          if (remMs <= 0) kg.timeUp = true;
+        }
+
+        // Render Admin Question Bank List & Button Visibility
+        if (isAdmin) {
+          const chkAuto = document.getElementById('chk-kahoot-autorun');
+          const selDelay = document.getElementById('kahoot-autodelay-select');
+          if (chkAuto) chkAuto.checked = Boolean(kg.autoRun);
+          if (selDelay) selDelay.value = String(kg.autoDelaySec || 5);
+
+          const qListEl = document.getElementById('kahoot-question-bank-list');
+          if (qListEl) {
+            qListEl.innerHTML = kg.questions.map((item, idx) => `
+              <div class="kahoot-q-item${idx === kg.currentIdx ? ' is-active' : ''}" onclick="selectKahootQuestion(${idx})">
+                <div style="min-width:0;flex:1;">
+                  <strong style="color:${idx === kg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
+                  <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • เฉลย ${KAHOOT_LETTERS[item.answer] || 'A'})</span>
+                </div>
+                ${kg.questions.length > 1 ? `<button type="button" class="btn btn-ghost-danger" style="min-height:24px;padding:2px 7px;font-size:10px;" onclick="deleteKahootQuestion(event, ${idx})">✕</button>` : ''}
+              </div>
+            `).join('');
+          }
+
+          const btnStart = document.getElementById('btn-kahoot-start-q');
+          const btnRev = document.getElementById('btn-kahoot-reveal-q');
+          const btnNext = document.getElementById('btn-kahoot-next-q');
+          const btnPause = document.getElementById('btn-kahoot-pause-auto');
+          if (btnStart && btnRev && btnNext && btnPause) {
+            const startFrom = (kg.phase === 'finished' && kg.currentIdx >= kg.questions.length - 1) ? 1 : (kg.currentIdx + 1);
+            btnStart.textContent = kg.autoRun
+              ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${kg.questions.length})!`
+              : `📢 เริ่มคำถามข้อที่ ${startFrom}!`;
+            btnStart.style.display = (kg.phase === 'idle' || kg.phase === 'finished') ? 'inline-flex' : 'none';
+            btnRev.style.display = kg.phase === 'asking' ? 'inline-flex' : 'none';
+            btnNext.style.display = (kg.phase === 'revealed' && kg.currentIdx + 1 < kg.questions.length) ? 'inline-flex' : 'none';
+            btnPause.style.display = (kg.autoRun && (kg.phase === 'asking' || kg.phase === 'revealed')) ? 'inline-flex' : 'none';
+          }
+        }
+
+        const qObj = kg.questions[kg.currentIdx];
+        const totalGuests = state.guests.length;
+        const ansCount = state.guests.filter(g => kg.answers[g.id] && kg.answers[g.id].roundId === kg.roundId).length;
+        const lbHtml = buildKahootLeaderboardHtml(kg, state.deviceRole);
+
+        if (kg.phase === 'finished') {
+          const ranked = state.guests
+            .map(g => ({ id: g.id, name: g.name, score: Number((kg.scores || {})[g.id] || 0) }))
+            .sort((a, b) => b.score - a.score);
+          const topScore = ranked[0]?.score || 0;
+          const champs = topScore > 0 ? ranked.filter(r => r.score === topScore) : [];
+          stage.innerHTML = `
+            <div class="wits-question-banner" style="border-color:var(--brand);background:radial-gradient(circle at 50% 0%, rgba(245,158,11,0.28), rgba(16,185,129,0.14));">
+              <div style="font-size:44px;line-height:1.1;">🏆⚡🎉</div>
+              <h3 style="margin:6px 0 4px;font-size:20px;color:#fde68a;">สรุปแชมป์ควิซ Kahoot!</h3>
+              <p style="margin:0;font-size:14px;color:#fff;">
+                ${champs.length ? `ผู้ชนะเลิศ: <strong style="color:var(--brand);font-size:17px;">${escapeHtml(champs.map(c => c.name).join(', '))}</strong> (${topScore.toLocaleString('th-TH')} คะแนน)` : 'ยังไม่มีผู้ทำคะแนนในรอบนี้'}
+              </p>
+              <div style="margin-top:6px;font-size:12px;color:#a7f3d0;">🎁 รางวัล: ${escapeHtml(kg.prize)}</div>
+            </div>
+            ${lbHtml}`;
+          return;
+        }
+
+        if (kg.phase === 'idle' || !qObj) {
+          stage.innerHTML = `
+            <div class="empty-state">
+              <div style="font-size:36px;margin-bottom:6px;">⚡🎮</div>
+              <strong style="color:#fff;">${isAdmin ? `พร้อมปล่อยคำถามข้อที่ ${kg.currentIdx + 1} / ${kg.questions.length}${kg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}` : (isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกม Kahoot • ดูภาพรวมได้อย่างเดียว)' : 'รอผู้จัดงาน (Host) กดปล่อยคำถาม Kahoot')}</strong>
+              <p style="margin:4px 0 0;font-size:12px;">${isAdmin && qObj ? `คำถามเริ่มต้น: "${escapeHtml(qObj.q)}"` : 'เตรียมนิ้วให้พร้อม! ยิ่งตอบถูกและตอบไว ยิ่งได้คะแนนเยอะ!'}</p>
+            </div>
+            ${lbHtml}`;
+          return;
+        }
+
+        const activePlayerId = (state.deviceRole && !canManageKahoot() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+        const myAnsObj = (!isAdmin && activePlayerId && kg.answers[activePlayerId]?.roundId === kg.roundId)
+          ? kg.answers[activePlayerId]
+          : null;
+
+        // Count how many chose each option (shown on reveal)
+        const choiceCounts = [0, 0, 0, 0];
+        state.guests.forEach(g => {
+          const a = kg.answers[g.id];
+          if (a && a.roundId === kg.roundId && a.choice >= 0 && a.choice <= 3) choiceCounts[a.choice]++;
+        });
+
+        const choicesHtml = qObj.choices.map((cText, idx) => {
+          let cls = `kahoot-choice-btn kahoot-c${idx}`;
+          let disabledAttr = '';
+          let rightMeta = '';
+
+          if (kg.phase === 'asking') {
+            if (isAdmin || !activePlayerId || myAnsObj || kg.timeUp) {
+              disabledAttr = 'disabled';
+            }
+            if (myAnsObj) {
+              if (myAnsObj.choice === idx) cls += ' is-selected';
+              else cls += ' is-dimmed';
+            } else if (kg.timeUp && !isAdmin) {
+              cls += ' is-dimmed';
+            }
+          } else if (kg.phase === 'revealed') {
+            disabledAttr = 'disabled';
+            if (idx === Number(qObj.answer)) cls += ' is-correct';
+            else cls += ' is-dimmed';
+            if (myAnsObj && myAnsObj.choice === idx) cls += ' is-selected';
+            rightMeta = `<span style="margin-left:auto;font-size:12px;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:99px;">${idx === Number(qObj.answer) ? '✅ ' : ''}${choiceCounts[idx]} คน</span>`;
+          }
+
+          return `<button type="button" class="${cls}" ${disabledAttr} onclick="submitKahootChoice(${idx})">
+            <span class="kahoot-shape">${KAHOOT_SHAPES[idx]}</span>
+            <span style="flex:1;line-height:1.25;">${escapeHtml(cText)}</span>
+            ${rightMeta}
+          </button>`;
+        }).join('');
+
+        let personalBanner = '';
+        if (!isAdmin && activePlayerId) {
+          if (kg.phase === 'asking') {
+            if (myAnsObj) {
+              personalBanner = `<div style="background:rgba(56,189,248,0.16);border:1px solid #38bdf8;border-radius:10px;padding:10px;text-align:center;font-size:13px;color:#bae6fd;margin-bottom:10px;">✅ <strong>ส่งคำตอบแล้ว!</strong> (เลือกข้อ ${KAHOOT_LETTERS[myAnsObj.choice]}) รอลุ้นเฉลยพร้อมกัน...</div>`;
+            } else if (kg.timeUp) {
+              personalBanner = `<div style="background:rgba(244,63,94,0.16);border:1px solid var(--danger);border-radius:10px;padding:10px;text-align:center;font-size:13px;color:#fda4af;margin-bottom:10px;">⌛ <strong>หมดเวลาแล้ว!</strong> คุณไม่ได้ตอบในข้อนี้</div>`;
+            }
+          } else if (kg.phase === 'revealed') {
+            const pts = Number((kg.lastRoundPoints || {})[activePlayerId] || 0);
+            if (pts > 0) {
+              personalBanner = `<div style="background:rgba(16,185,129,0.18);border:1px solid var(--success);border-radius:10px;padding:10px;text-align:center;font-size:14px;color:#a7f3d0;margin-bottom:10px;font-weight:700;">🎉 ตอบถูกต้อง! รับไป +${pts.toLocaleString('th-TH')} คะแนน!</div>`;
+            } else {
+              personalBanner = `<div style="background:rgba(244,63,94,0.14);border:1px solid var(--danger);border-radius:10px;padding:10px;text-align:center;font-size:13px;color:#fda4af;margin-bottom:10px;">😅 ${myAnsObj ? 'เสียดาย ตอบผิด!' : 'ไม่ได้ตอบข้อนี้'} (+0 คะแนน)</div>`;
+            }
+          }
+        }
+
+        let autoNextBanner = '';
+        if (kg.phase === 'revealed' && kg.autoRun) {
+          const nextRemSec = Math.ceil(getLocalKahootAutoNextRemainingMs(kg) / 1000);
+          const isLastQ = kg.currentIdx + 1 >= kg.questions.length;
+          autoNextBanner = `<div style="background:rgba(168,85,247,0.16);border:1px solid rgba(168,85,247,0.45);border-radius:10px;padding:8px 12px;text-align:center;font-size:12px;color:#e9d5ff;margin-bottom:10px;font-weight:600;">
+            🤖 ${isLastQ ? 'กำลังประกาศผลแชมป์อัตโนมัติ' : `กำลังไปคำถามข้อที่ ${kg.currentIdx + 2} อัตโนมัติ`} ในอีก <strong id="kahoot-autonext-sec" style="color:#fde68a;font-size:14px;">${nextRemSec}</strong> วินาที...
+          </div>`;
+        }
+
+        stage.innerHTML = `
+          <div class="wits-question-banner">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+              <span class="slot-prize-badge" style="margin:0;">⚡ ข้อที่ ${kg.currentIdx + 1} / ${kg.questions.length}${kg.autoRun ? ' • 🤖 Auto' : ''}</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:12px;color:#fde68a;font-weight:700;">${kg.phase === 'revealed' ? 'เฉลยแล้ว' : (kg.timeUp ? 'หมดเวลา!' : 'เวลาที่เหลือ:')}</span>
+                <div class="game-timer-circle${kg.timeUp || kg.timeLeft <= 5 ? ' urgent' : ''}" id="kahoot-timer-circle">${kg.phase === 'revealed' ? '✓' : (kg.timeUp ? '0' : kg.timeLeft)}</div>
+              </div>
+            </div>
+            <h3 style="margin:6px 0;font-size:17px;font-weight:800;color:#fff;">❓ ${escapeHtml(qObj.q)}</h3>
+            <p style="margin:0;font-size:12px;color:#cbd5e1;">ตอบแล้ว <strong style="color:var(--brand);">${ansCount} / ${totalGuests}</strong> คน</p>
+          </div>
+          ${autoNextBanner}
+          ${personalBanner}
+          <div class="kahoot-choice-grid">${choicesHtml}</div>
+          ${kg.phase === 'revealed' ? lbHtml : ''}
+        `;
+      }
+
+      /* === PART 6: WITS & WAGERS (QUESTION BANK + CUSTOM TIMER + AUTO-RUN) === */
       const chkAns = document.getElementById('chk-show-secret-ans');
       const witsAnsIn = document.getElementById('wits-answer-input');
       chkAns.addEventListener('change', () => { witsAnsIn.type = chkAns.checked ? 'text' : 'password'; });
+
+      function clearAllWitsTimers() {
+        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
+        if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
+      }
 
       function getLocalRoundRemainingSec(wg) {
         if (!wg || wg.phase !== 'asking') return 0;
@@ -2208,8 +2929,18 @@
         return Math.max(0, Math.ceil((localRoundDeadlines[rid] - Date.now()) / 1000));
       }
 
+      function getLocalWitsAutoNextRemainingMs(wg) {
+        if (!wg || wg.phase !== 'revealed' || !wg.autoRun) return 0;
+        const rid = (wg.roundId || 'wits_default') + '_next';
+        const delayMs = (Number(wg.autoDelaySec) || 5) * 1000;
+        if (!localWitsAutoNextDeadlines[rid]) {
+          localWitsAutoNextDeadlines[rid] = Date.now() + delayMs;
+        }
+        return Math.max(0, localWitsAutoNextDeadlines[rid] - Date.now());
+      }
+
       function ensureWitsCountdownLoop() {
-        if (witsTimerInterval) clearInterval(witsTimerInterval);
+        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
         const wg = state.witsGame;
         if (wg.phase !== 'asking' || wg.timeUp) return;
 
@@ -2228,61 +2959,92 @@
           if (rem <= 0) {
             clearInterval(witsTimerInterval); witsTimerInterval = null;
             state.witsGame.timeUp = true; state.witsGame.timeLeft = 0;
-            renderWitsGame();
-            if (state.deviceRole === 'all') syncAdminCore('wits_timeup');
+            if (canManageWits() && state.witsGame.autoRun) {
+              revealWitsCurrentQuestion();
+            } else {
+              renderWitsGame();
+              if (canManageWits()) syncAdminCore('wits_timeup');
+            }
           }
         }, 250);
       }
 
-      document.getElementById('btn-wits-broadcast').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        const q = document.getElementById('wits-question-input').value.trim();
-        const num = parseCleanNumber(witsAnsIn.value);
-        const err = document.getElementById('wits-host-error');
-        if (!q || !Number.isFinite(num)) { err.classList.add('visible'); return; }
-        err.classList.remove('visible');
-        if (!chkAns.checked) witsAnsIn.type = 'password';
+      function ensureWitsAutoNextLoop() {
+        if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
+        const wg = state.witsGame;
+        if (wg.phase !== 'revealed' || !wg.autoRun) return;
 
+        getLocalWitsAutoNextRemainingMs(wg);
+
+        witsAutoNextInterval = setInterval(() => {
+          const curWg = state.witsGame;
+          if (curWg.phase !== 'revealed' || !curWg.autoRun) {
+            clearInterval(witsAutoNextInterval);
+            witsAutoNextInterval = null;
+            return;
+          }
+          const remMs = getLocalWitsAutoNextRemainingMs(curWg);
+          const remSec = Math.ceil(remMs / 1000);
+          const secEl = document.getElementById('wits-autonext-sec');
+          if (secEl) secEl.textContent = String(remSec);
+
+          if (remMs <= 0) {
+            clearInterval(witsAutoNextInterval);
+            witsAutoNextInterval = null;
+            if (canManageWits() && curWg.phase === 'revealed' && curWg.autoRun) {
+              if (curWg.currentIdx + 1 < curWg.questions.length) {
+                curWg.currentIdx++;
+                startWitsCurrentQuestion();
+              } else {
+                curWg.phase = 'finished';
+                renderWitsGame();
+                syncAdminCore('wits_all_finished');
+              }
+            }
+          }
+        }, 200);
+      }
+
+      function startWitsCurrentQuestion() {
+        if (!canManageWits()) return;
+        clearAllWitsTimers();
+        const wg = state.witsGame;
+        if (wg.phase === 'finished' && wg.currentIdx >= wg.questions.length - 1) {
+          wg.currentIdx = 0;
+        }
+        const qObj = wg.questions[wg.currentIdx];
+        if (!qObj) return;
+        const dur = Number(qObj.sec) || 15;
         const newRoundId = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
-        localRoundDeadlines[newRoundId] = Date.now() + 15000;
+        localRoundDeadlines[newRoundId] = Date.now() + (dur * 1000);
 
-        state.witsGame = {
-          roundId: newRoundId,
-          phase: 'asking',
-          question: q,
-          correctAnswer: num,
-          prize: document.getElementById('wits-prize-input').value.trim() || 'ของรางวัลพิเศษปีใหม่',
-          rule: document.getElementById('wits-rule-select').value,
-          durationSec: 15,
-          timeLeft: 15,
-          timeUp: false,
-          submissions: {},
-          winnerIds: []
-        };
+        const chkAuto = document.getElementById('chk-wits-autorun');
+        const selDelay = document.getElementById('wits-autodelay-select');
+        if (chkAuto) wg.autoRun = chkAuto.checked;
+        if (selDelay) wg.autoDelaySec = Number(selDelay.value) || 5;
+
+        wg.roundId = newRoundId;
+        wg.phase = 'asking';
+        wg.question = qObj.q;
+        wg.correctAnswer = Number(qObj.answer);
+        wg.prize = qObj.prize || 'ของรางวัลพิเศษปีใหม่';
+        wg.rule = qObj.rule || 'wits';
+        wg.durationSec = dur;
+        wg.timeLeft = dur;
+        wg.timeUp = false;
+        wg.submissions = {};
+        wg.winnerIds = [];
+
+        fbMirror.witsSubmissions = {};
         fbWriteSubpath('witsSubmissions', null, 'DELETE');
         renderWitsGame();
         ensureWitsCountdownLoop();
         syncAdminCore('wits_question');
-      });
+      }
 
-      window.submitWitsGuess = function() {
-        const wg = state.witsGame, gid = state.deviceRole;
-        if (wg.phase !== 'asking' || wg.timeUp || !gid || gid === 'all' || gid === 'guest_unselected') return;
-        if (getLocalRoundRemainingSec(wg) <= 0) { wg.timeUp = true; renderWitsGame(); return; }
-        const inp = document.getElementById('wits-my-guess-input');
-        if (!inp) return;
-        const val = parseCleanNumber(inp.value);
-        if (!Number.isFinite(val)) { inp.style.borderColor = 'var(--danger)'; inp.focus(); return; }
-
-        wg.submissions[gid] = val;
-        renderWitsGame();
-        fbWriteSubpath(`witsSubmissions/${encodeURIComponent(gid)}`, val, 'PUT');
-        broadcastLocalOnly('wits_guess');
-      };
-
-      document.getElementById('btn-wits-reveal').addEventListener('click', () => {
-        if (state.deviceRole !== 'all' || state.witsGame.phase !== 'asking') return;
-        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
+      function revealWitsCurrentQuestion() {
+        if (!canManageWits() || state.witsGame.phase !== 'asking') return;
+        clearAllWitsTimers();
         const wg = state.witsGame, target = wg.correctAnswer;
         const entries = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').map(g => ({ id: g.id, name: g.name, guess: wg.submissions[g.id] }));
 
@@ -2297,76 +3059,243 @@
             winners = entries.filter(e => Math.abs(e.guess - target) === minD);
           }
         }
-        wg.phase = 'revealed'; wg.timeUp = true; wg.winnerIds = winners.map(w => w.id);
+        wg.phase = 'revealed';
+        wg.timeUp = true;
+        wg.timeLeft = 0;
+        wg.winnerIds = winners.map(w => w.id);
         winners.forEach(w => {
           state.winners.unshift({ name: w.name, prize: `${wg.prize} (ทาย ${w.guess.toLocaleString('th-TH')} / เฉลย ${target.toLocaleString('th-TH')})`, timestamp: new Date().toLocaleTimeString('th-TH') });
         });
         if (winners.length) triggerWinnerNotification(winners.map(w => w.id), winners.map(w => w.name).join(', '), wg.prize, 'ชนะเกมทายตัวเลข Wits & Wagers');
-        renderWinners(); renderWitsGame();
-        syncAdminCore('wits_reveal');
-      });
 
-      function resetWitsGameStateAndClear(clearInputFields) {
-        if (witsTimerInterval) { clearInterval(witsTimerInterval); witsTimerInterval = null; }
-        state.witsGame = {
-          roundId: '',
-          phase: 'idle',
-          question: '',
-          correctAnswer: null,
-          prize: '',
-          rule: document.getElementById('wits-rule-select')?.value || 'wits',
-          durationSec: 15,
-          timeLeft: 15,
-          timeUp: false,
-          submissions: {},
-          winnerIds: []
-        };
-        if (clearInputFields) {
-          document.getElementById('wits-question-input').value = '';
-          document.getElementById('wits-answer-input').value = '';
-          document.getElementById('wits-prize-input').value = '';
-          document.getElementById('wits-host-error').classList.remove('visible');
+        if (wg.autoRun) {
+          const nextKey = (wg.roundId || 'wits_default') + '_next';
+          localWitsAutoNextDeadlines[nextKey] = Date.now() + ((Number(wg.autoDelaySec) || 5) * 1000);
         }
-        fbMirror.witsSubmissions = {};
-        fbWriteSubpath('witsSubmissions', null, 'DELETE');
+
+        renderWinners();
         renderWitsGame();
-        syncAdminCore('wits_reset');
+        if (wg.autoRun) ensureWitsAutoNextLoop();
+        syncAdminCore('wits_reveal');
       }
 
-      document.getElementById('btn-wits-newround').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        resetWitsGameStateAndClear(false);
+      document.getElementById('btn-wits-toggle-editor').addEventListener('click', () => {
+        const box = document.getElementById('wits-editor-box');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
       });
 
+      document.getElementById('chk-wits-autorun').addEventListener('change', (e) => {
+        if (!canManageWits()) return;
+        state.witsGame.autoRun = e.target.checked;
+        if (!state.witsGame.autoRun) {
+          if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
+        } else if (state.witsGame.phase === 'revealed') {
+          const nextKey = (state.witsGame.roundId || 'wits_default') + '_next';
+          localWitsAutoNextDeadlines[nextKey] = Date.now() + ((Number(state.witsGame.autoDelaySec) || 5) * 1000);
+          ensureWitsAutoNextLoop();
+        }
+        renderWitsGame();
+        syncAdminCore('wits_autorun_toggled');
+      });
+
+      document.getElementById('wits-autodelay-select').addEventListener('change', (e) => {
+        if (!canManageWits()) return;
+        state.witsGame.autoDelaySec = Number(e.target.value) || 5;
+        syncAdminCore('wits_autodelay_changed');
+      });
+
+      document.getElementById('btn-wits-pause-auto').addEventListener('click', () => {
+        if (!canManageWits()) return;
+        if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
+        state.witsGame.autoRun = false;
+        const chk = document.getElementById('chk-wits-autorun');
+        if (chk) chk.checked = false;
+        renderWitsGame();
+        syncAdminCore('wits_autorun_paused');
+      });
+
+      document.getElementById('btn-wits-add-q').addEventListener('click', () => {
+        if (!canManageWits()) return;
+        const q = document.getElementById('wits-question-input').value.trim();
+        const num = parseCleanNumber(witsAnsIn.value);
+        const prize = document.getElementById('wits-prize-input').value.trim() || 'ของรางวัลพิเศษปีใหม่';
+        const rule = document.getElementById('wits-rule-select').value || 'wits';
+        const sec = Number(document.getElementById('wits-sec-select').value) || 15;
+        const err = document.getElementById('wits-host-error');
+        if (!q || !Number.isFinite(num)) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        if (!chkAns.checked) witsAnsIn.type = 'password';
+
+        state.witsGame.questions.push({ q, answer: num, prize, rule, sec });
+        state.witsGame.currentIdx = state.witsGame.questions.length - 1;
+        document.getElementById('wits-question-input').value = '';
+        witsAnsIn.value = '';
+        document.getElementById('wits-editor-box').style.display = 'none';
+        renderWitsGame();
+        syncAdminCore('wits_q_added');
+      });
+
+      window.selectWitsQuestion = function(idx) {
+        if (!canManageWits() || state.witsGame.phase === 'asking') return;
+        if (idx >= 0 && idx < state.witsGame.questions.length) {
+          clearAllWitsTimers();
+          state.witsGame.currentIdx = idx;
+          if (state.witsGame.phase === 'revealed' || state.witsGame.phase === 'finished') {
+            state.witsGame.phase = 'idle';
+          }
+          renderWitsGame();
+          syncAdminCore('wits_q_selected');
+        }
+      };
+
+      window.deleteWitsQuestion = function(ev, idx) {
+        ev.stopPropagation();
+        if (!canManageWits() || state.witsGame.phase === 'asking') return;
+        if (state.witsGame.questions.length <= 1) return;
+        state.witsGame.questions.splice(idx, 1);
+        if (state.witsGame.currentIdx >= state.witsGame.questions.length) {
+          state.witsGame.currentIdx = Math.max(0, state.witsGame.questions.length - 1);
+        }
+        renderWitsGame();
+        syncAdminCore('wits_q_deleted');
+      };
+
+      document.getElementById('btn-wits-broadcast').addEventListener('click', startWitsCurrentQuestion);
+      document.getElementById('btn-wits-reveal').addEventListener('click', revealWitsCurrentQuestion);
+
+      document.getElementById('btn-wits-next-q').addEventListener('click', () => {
+        if (!canManageWits()) return;
+        clearAllWitsTimers();
+        const wg = state.witsGame;
+        if (wg.currentIdx + 1 < wg.questions.length) {
+          wg.currentIdx++;
+        }
+        if (wg.autoRun) {
+          startWitsCurrentQuestion();
+        } else {
+          wg.phase = 'idle';
+          wg.timeUp = false;
+          renderWitsGame();
+          syncAdminCore('wits_next_q');
+        }
+      });
+
+      window.submitWitsGuess = function() {
+        const wg = state.witsGame, gid = state.deviceRole;
+        if (wg.phase !== 'asking' || wg.timeUp || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
+        if (getLocalRoundRemainingSec(wg) <= 0) { wg.timeUp = true; renderWitsGame(); return; }
+        const inp = document.getElementById('wits-my-guess-input');
+        if (!inp) return;
+        const val = parseCleanNumber(inp.value);
+        if (!Number.isFinite(val)) { inp.style.borderColor = 'var(--danger)'; inp.focus(); return; }
+
+        wg.submissions[gid] = val;
+        triggerHapticVibration(40);
+        renderWitsGame();
+        fbWriteSubpath(`witsSubmissions/${encodeURIComponent(gid)}`, val, 'PUT');
+        broadcastLocalOnly('wits_guess');
+      };
+
       document.getElementById('btn-wits-clear-game').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
-        askSafetyConfirm('ล้างข้อมูลเกมทายตัวเลข?', 'ข้อมูลคำถาม เฉลย และคำตอบที่เล่นไปแล้วในรอบนี้จะถูกล้างออกทั้งหมดเพื่อเริ่มใหม่', () => {
-          resetWitsGameStateAndClear(true);
+        if (!canManageWits()) return;
+        askSafetyConfirm('รีเซ็ตรอบเกมทายตัวเลข?', 'สถานะรอบปัจจุบันและคำตอบที่เล่นไปแล้วจะถูกล้างเพื่อกลับไปเริ่มข้อที่ 1 ใหม่ (คลังคำถามยังอยู่ครบ)', () => {
+          clearAllWitsTimers();
+          state.witsGame.roundId = '';
+          state.witsGame.phase = 'idle';
+          state.witsGame.currentIdx = 0;
+          state.witsGame.question = '';
+          state.witsGame.correctAnswer = null;
+          state.witsGame.prize = '';
+          state.witsGame.timeUp = false;
+          state.witsGame.submissions = {};
+          state.witsGame.winnerIds = [];
+          fbMirror.witsSubmissions = {};
+          fbWriteSubpath('witsSubmissions', null, 'DELETE');
+          renderWitsGame();
+          syncAdminCore('wits_reset');
         });
       });
 
       function renderWitsGame() {
-        const wg = state.witsGame, isAdmin = state.deviceRole === 'all';
+        const wg = state.witsGame, isAdmin = canManageWits();
         const banner = document.getElementById('wits-active-banner');
+        const autoNextBanner = document.getElementById('wits-autonext-banner');
         const stage = document.getElementById('wits-stage-container');
         const btnBroad = document.getElementById('btn-wits-broadcast');
         const btnRev = document.getElementById('btn-wits-reveal');
-        const btnNew = document.getElementById('btn-wits-newround');
+        const btnNext = document.getElementById('btn-wits-next-q');
+        const btnPause = document.getElementById('btn-wits-pause-auto');
 
         if (wg.phase === 'asking') {
           wg.timeLeft = getLocalRoundRemainingSec(wg);
           if (wg.timeLeft <= 0) wg.timeUp = true;
         }
+
+        // Render Admin Question Bank List & Controls
+        if (isAdmin) {
+          const chkAuto = document.getElementById('chk-wits-autorun');
+          const selDelay = document.getElementById('wits-autodelay-select');
+          if (chkAuto) chkAuto.checked = Boolean(wg.autoRun);
+          if (selDelay) selDelay.value = String(wg.autoDelaySec || 5);
+
+          const qListEl = document.getElementById('wits-question-bank-list');
+          if (qListEl) {
+            qListEl.innerHTML = wg.questions.map((item, idx) => {
+              const ruleTag = item.rule === 'closest' ? 'ใกล้สุด' : 'ไม่เกินจริง';
+              return `
+                <div class="kahoot-q-item${idx === wg.currentIdx ? ' is-active' : ''}" onclick="selectWitsQuestion(${idx})">
+                  <div style="min-width:0;flex:1;">
+                    <strong style="color:${idx === wg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
+                    <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ${ruleTag} • 🎁 ${escapeHtml(item.prize || '-')})</span>
+                  </div>
+                  ${wg.questions.length > 1 ? `<button type="button" class="btn btn-ghost-danger" style="min-height:24px;padding:2px 7px;font-size:10px;" onclick="deleteWitsQuestion(event, ${idx})">✕</button>` : ''}
+                </div>`;
+            }).join('');
+          }
+
+          if (btnBroad && btnRev && btnNext && btnPause) {
+            const startFrom = (wg.phase === 'finished' && wg.currentIdx >= wg.questions.length - 1) ? 1 : (wg.currentIdx + 1);
+            btnBroad.textContent = wg.autoRun
+              ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${wg.questions.length})!`
+              : `📢 เริ่มคำถามข้อที่ ${startFrom}!`;
+            btnBroad.style.display = (wg.phase === 'idle' || wg.phase === 'finished') ? 'inline-flex' : 'none';
+            btnRev.style.display = wg.phase === 'asking' ? 'inline-flex' : 'none';
+            btnNext.style.display = (wg.phase === 'revealed' && wg.currentIdx + 1 < wg.questions.length) ? 'inline-flex' : 'none';
+            btnPause.style.display = (wg.autoRun && (wg.phase === 'asking' || wg.phase === 'revealed')) ? 'inline-flex' : 'none';
+          }
+        }
+
         const total = state.guests.length;
         const ansCount = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').length;
         const forfeitCount = wg.timeUp ? Math.max(0, total - ansCount) : 0;
 
+        if (autoNextBanner) {
+          if (wg.phase === 'revealed' && wg.autoRun) {
+            const nextRemSec = Math.ceil(getLocalWitsAutoNextRemainingMs(wg) / 1000);
+            const isLastQ = wg.currentIdx + 1 >= wg.questions.length;
+            autoNextBanner.style.display = 'block';
+            autoNextBanner.innerHTML = `🤖 ${isLastQ ? 'กำลังสรุปจบเกมอัตโนมัติ' : `กำลังไปคำถามข้อที่ ${wg.currentIdx + 2} อัตโนมัติ`} ในอีก <strong id="wits-autonext-sec" style="color:#fde68a;font-size:14px;">${nextRemSec}</strong> วินาที...`;
+          } else {
+            autoNextBanner.style.display = 'none';
+          }
+        }
+
+        if (wg.phase === 'finished') {
+          banner.style.display = 'none';
+          stage.innerHTML = `
+            <div class="wits-question-banner" style="border-color:var(--brand);background:radial-gradient(circle at 50% 0%, rgba(245,158,11,0.28), rgba(16,185,129,0.14));">
+              <div style="font-size:44px;line-height:1.1;">🏆🔢🎉</div>
+              <h3 style="margin:6px 0 4px;font-size:20px;color:#fde68a;">เล่นครบทุกข้อในคลัง Wits &amp; Wagers แล้ว!</h3>
+              <p style="margin:0;font-size:13px;color:#cbd5e1;">ตรวจสอบรายชื่อผู้โชคดีทั้งหมดได้ที่แถบประวัติผู้โชคดี หรือเพิ่มคำถามใหม่เพื่อเล่นต่อได้เลย</p>
+            </div>`;
+          return;
+        }
+
         if (wg.phase === 'idle') {
           banner.style.display = 'none';
-          btnBroad.style.display = 'inline-flex'; btnRev.style.display = 'none'; btnNew.style.display = 'none';
         } else if (wg.phase === 'asking') {
           banner.style.display = 'block';
-          document.getElementById('wits-banner-prize').textContent = `🎁 รางวัล: ${wg.prize}`;
+          document.getElementById('wits-banner-prize').textContent = `🔢 ข้อที่ ${wg.currentIdx + 1}/${wg.questions.length}${wg.autoRun ? ' • 🤖 Auto' : ''} • 🎁 ${wg.prize}`;
           document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
           document.getElementById('wits-timer-status-lbl').textContent = wg.timeUp ? 'หมดเวลา!' : 'เวลาที่เหลือ:';
           const tc = document.getElementById('wits-timer-circle');
@@ -2374,26 +3303,26 @@
           tc.classList.toggle('urgent', wg.timeUp || wg.timeLeft <= 5);
           document.getElementById('wits-banner-progress').innerHTML = wg.timeUp
             ? `ปิดรับคำตอบแล้ว • ตอบทัน <strong style="color:var(--success);">${ansCount}</strong> คน • สละสิทธิ์ <strong style="color:var(--danger);">${forfeitCount}</strong> คน`
-            : `ตอบแล้ว <strong style="color:var(--brand);">${ansCount} / ${total}</strong> คน`;
-          btnBroad.style.display = 'inline-flex';
-          btnRev.style.display = isAdmin ? 'inline-flex' : 'none';
-          btnRev.disabled = !(ansCount > 0 || wg.timeUp);
-          btnNew.style.display = 'none';
+            : `ตอบแล้ว <strong style="color:var(--brand);">${ansCount} / ${total}</strong> คน • กติกา: ${wg.rule === 'closest' ? 'ใกล้เคียงสุด' : 'ใกล้สุดไม่เกินจริง'}`;
         } else {
           banner.style.display = 'block';
-          document.getElementById('wits-banner-prize').textContent = `🏆 เฉลย: ${Number(wg.correctAnswer).toLocaleString('th-TH')}`;
+          document.getElementById('wits-banner-prize').textContent = `🏆 ข้อที่ ${wg.currentIdx + 1}/${wg.questions.length} • เฉลย: ${Number(wg.correctAnswer).toLocaleString('th-TH')}`;
           document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
           document.getElementById('wits-timer-status-lbl').textContent = 'สถานะ:';
-          document.getElementById('wits-timer-circle').textContent = 'จบ';
+          document.getElementById('wits-timer-circle').textContent = '✓';
+          document.getElementById('wits-timer-circle').classList.remove('urgent');
           const winNames = state.guests.filter(g => wg.winnerIds.includes(g.id)).map(g => g.name).join(', ');
           document.getElementById('wits-banner-progress').innerHTML = winNames
             ? `🎉 ผู้ชนะรับรางวัล <strong>${escapeHtml(wg.prize)}</strong>: <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`
             : '<span style="color:#fca5a5;">ไม่มีผู้ได้รับรางวัลในรอบนี้ (สละสิทธิ์ทั้งหมด)</span>';
-          btnBroad.style.display = 'none'; btnRev.style.display = 'none';
-          btnNew.style.display = isAdmin ? 'inline-flex' : 'none';
         }
 
         if (isAdmin) {
+          if (wg.phase === 'idle') {
+            const qObj = wg.questions[wg.currentIdx];
+            stage.innerHTML = `<div class="empty-state"><div style="font-size:34px;margin-bottom:6px;">🔢🎮</div><strong style="color:#fff;">พร้อมปล่อยคำถามข้อที่ ${wg.currentIdx + 1} / ${wg.questions.length}${wg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}</strong><p style="margin:4px 0 0;font-size:12px;">${qObj ? `คำถามเริ่มต้น: "${escapeHtml(qObj.q)}" (${qObj.sec || 15} วิ)` : 'กรุณาเพิ่มคำถามในคลัง'}</p></div>`;
+            return;
+          }
           if (!state.guests.length) { stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้เข้าร่วมออนไลน์ในขณะนี้</div>'; return; }
           stage.innerHTML = '<div class="meta-caption" style="margin-bottom:6px;">📋 สถานะการตอบของผู้เข้าร่วมทั้งหมด:</div><div class="wits-status-grid">' +
             state.guests.map(g => {
@@ -2416,8 +3345,9 @@
           return;
         }
 
-        const me = state.guests.find(g => g.id === state.deviceRole);
-        if (!me) { stage.innerHTML = '<div class="empty-state">กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อร่วมเล่น</div>'; return; }
+        const activePlayerId = (state.deviceRole && !canManageWits() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+        const me = activePlayerId ? state.guests.find(g => g.id === activePlayerId) : null;
+        if (!me) { stage.innerHTML = `<div class="empty-state">${isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกมทายตัวเลข • ดูภาพรวมได้อย่างเดียว)' : 'กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อร่วมเล่น'}</div>`; return; }
         const has = typeof wg.submissions[me.id] === 'number';
         const myVal = wg.submissions[me.id];
         const isW = wg.phase === 'revealed' && wg.winnerIds.includes(me.id);
@@ -2433,19 +3363,19 @@
 
         let inner = '';
         if (wg.phase === 'idle') {
-          inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:34px;margin-bottom:6px;">📡</div><strong>หน้าจอมือถือพร้อมเล่น</strong><p style="font-size:12px;color:var(--muted);margin:6px 0 0;">เมื่อ Admin ส่งคำถาม คุณมีเวลา 15 วินาทีในการกรอกตัวเลข</p></div>`;
+          inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:34px;margin-bottom:6px;">📡</div><strong>หน้าจอมือถือพร้อมเล่น</strong><p style="font-size:12px;color:var(--muted);margin:6px 0 0;">รอ Host ปล่อยคำถามทายตัวเลข เตรียมกรอกตัวเลขให้ทันเวลา!</p></div>`;
         } else if (wg.phase === 'asking') {
           if (has) {
             inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">✅</div><strong style="color:#38bdf8;">ส่งคำตอบเรียบร้อย!</strong><div style="margin-top:6px;font-size:13px;">คำตอบของคุณ: <strong style="color:#fde68a;">${Number(myVal).toLocaleString('th-TH')}</strong></div><p style="font-size:11px;color:var(--muted);margin-top:8px;">รอฟังเฉลยพร้อมกัน...</p></div>`;
           } else if (wg.timeUp) {
-            inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">⌛🚫</div><strong style="color:#fda4af;">หมดเวลา 15 วินาที!</strong><p style="font-size:12px;color:#fecdd3;margin:6px 0 0;">ไม่ได้ส่งคำตอบ • ถือว่าสละสิทธิ์ในข้อนี้</p></div>`;
+            inner = `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">⌛🚫</div><strong style="color:#fda4af;">หมดเวลาแล้ว!</strong><p style="font-size:12px;color:#fecdd3;margin:6px 0 0;">ไม่ได้ส่งคำตอบ • ถือว่าสละสิทธิ์ในข้อนี้</p></div>`;
           } else {
             inner = `<form onsubmit="event.preventDefault();submitWitsGuess();return false;" style="display:flex;flex-direction:column;justify-content:space-between;flex:1;margin:0;"><div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;"><span id="wits-phone-live-prize" style="color:var(--brand);font-weight:600;">🎁 ${escapeHtml(wg.prize)}</span><span style="color:#fde68a;font-weight:700;">⏱️ <span id="wits-phone-live-sec">${wg.timeLeft}</span> วิ</span></div><input type="text" inputmode="decimal" enterkeyhint="send" id="wits-my-guess-input" data-round-id="${escapeHtml(wg.roundId)}" class="phone-num-input" placeholder="กรอกตัวเลข..." onkeydown="if(event.key==='Enter'){event.preventDefault();submitWitsGuess();}"></div><button type="submit" class="btn btn-primary" style="width:100%;">🚀 ส่งคำตอบตัวเลขทันที</button></form>`;
           }
         } else {
           const targetNum = Number(wg.correctAnswer);
           const ansStr = targetNum.toLocaleString('th-TH');
-          const myStr = has ? Number(myVal).toLocaleString('th-TH') : 'สละสิทธิ์ (หมดเวลา 15 วิ)';
+          const myStr = has ? Number(myVal).toLocaleString('th-TH') : 'สละสิทธิ์ (หมดเวลา)';
           let diffSummaryHtml = '';
           if (has) {
             const diffNum = Math.abs(Number(myVal) - targetNum);
@@ -2469,7 +3399,7 @@
       let fbEventSource = null;
       let fbPollTimer = null;
       let fbInitialLoaded = false;
-      const fbMirror = { guests: {}, votes: {}, witsSubmissions: {}, core: null };
+      const fbMirror = { guests: {}, kahootAnswers: {}, witsSubmissions: {}, core: null };
 
       try {
         const params = new URLSearchParams(window.location.search);
@@ -2503,7 +3433,8 @@
 
       function buildCoreStateObject() {
         return {
-          adminPassword: state.adminPassword,
+          adminPassword: state.adminPasswords.super || state.adminPassword,
+          adminPasswords: state.adminPasswords,
           prizes: state.prizes,
           hadConfiguredPrizes: state.hadConfiguredPrizes,
           selectedPrize: state.selectedPrize,
@@ -2512,7 +3443,19 @@
           wheelStage: state.wheelStage,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
-          votingRevealed: Boolean(state.votingRevealed),
+          kahootMeta: {
+            roundId: state.kahootGame.roundId,
+            phase: state.kahootGame.phase,
+            currentIdx: state.kahootGame.currentIdx,
+            durationSec: state.kahootGame.durationSec || 15,
+            timeUp: Boolean(state.kahootGame.timeUp),
+            autoRun: Boolean(state.kahootGame.autoRun),
+            autoDelaySec: Number(state.kahootGame.autoDelaySec) || 5,
+            prize: state.kahootGame.prize,
+            questions: state.kahootGame.questions,
+            scores: state.kahootGame.scores,
+            lastRoundPoints: state.kahootGame.lastRoundPoints
+          },
           circularLoop: {
             loopId: state.circularLoopId,
             path: state.circularLoopPath,
@@ -2523,12 +3466,16 @@
           witsMeta: {
             roundId: state.witsGame.roundId,
             phase: state.witsGame.phase,
+            currentIdx: state.witsGame.currentIdx,
             question: state.witsGame.question,
             correctAnswer: state.witsGame.correctAnswer,
             prize: state.witsGame.prize,
             rule: state.witsGame.rule,
             durationSec: state.witsGame.durationSec || 15,
-            timeUp: state.witsGame.timeUp,
+            timeUp: Boolean(state.witsGame.timeUp),
+            autoRun: Boolean(state.witsGame.autoRun),
+            autoDelaySec: Number(state.witsGame.autoDelaySec) || 5,
+            questions: state.witsGame.questions,
             winnerIds: state.witsGame.winnerIds
           }
         };
@@ -2553,7 +3500,7 @@
           } else {
             const src = val && typeof val === 'object' ? val : {};
             target.guests = src.guests && typeof src.guests === 'object' ? src.guests : {};
-            target.votes = src.votes && typeof src.votes === 'object' ? src.votes : {};
+            target.kahootAnswers = src.kahootAnswers && typeof src.kahootAnswers === 'object' ? src.kahootAnswers : {};
             target.witsSubmissions = src.witsSubmissions && typeof src.witsSubmissions === 'object' ? src.witsSubmissions : {};
             target.core = src.core || null;
           }
@@ -2581,7 +3528,7 @@
           .filter(g => g && g.id && g.name)
           .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-        state.votedGuests = fbMirror.votes && typeof fbMirror.votes === 'object' ? { ...fbMirror.votes } : {};
+        const khAnsMap = fbMirror.kahootAnswers && typeof fbMirror.kahootAnswers === 'object' ? { ...fbMirror.kahootAnswers } : {};
 
         const subMap = fbMirror.witsSubmissions && typeof fbMirror.witsSubmissions === 'object' ? fbMirror.witsSubmissions : {};
         const cleanSubs = {};
@@ -2592,7 +3539,13 @@
 
         const c = fbMirror.core;
         if (c && typeof c === 'object') {
-          if (typeof c.adminPassword === 'string' && c.adminPassword) state.adminPassword = c.adminPassword;
+          if (c.adminPasswords && typeof c.adminPasswords === 'object') {
+            state.adminPasswords = { ...DEFAULT_ADMIN_PASSWORDS, ...c.adminPasswords };
+            state.adminPassword = state.adminPasswords.super;
+          } else if (typeof c.adminPassword === 'string' && c.adminPassword) {
+            state.adminPassword = c.adminPassword;
+            state.adminPasswords.super = c.adminPassword;
+          }
           state.prizes = Array.isArray(c.prizes) ? c.prizes : [];
           state.hadConfiguredPrizes = Boolean(c.hadConfiguredPrizes);
           state.selectedPrize = typeof c.selectedPrize === 'string' ? c.selectedPrize : '';
@@ -2601,7 +3554,32 @@
           if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
           state.winners = Array.isArray(c.winners) ? c.winners : [];
           state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
-          state.votingRevealed = Boolean(c.votingRevealed);
+          if (c.kahootMeta && typeof c.kahootMeta === 'object') {
+            const prevKhRid = state.kahootGame.roundId;
+            const prevKhPhase = state.kahootGame.phase;
+            state.kahootGame = {
+              ...state.kahootGame,
+              roundId: c.kahootMeta.roundId || '',
+              phase: c.kahootMeta.phase || 'idle',
+              currentIdx: typeof c.kahootMeta.currentIdx === 'number' ? c.kahootMeta.currentIdx : 0,
+              durationSec: c.kahootMeta.durationSec || 15,
+              timeUp: Boolean(c.kahootMeta.timeUp),
+              autoRun: typeof c.kahootMeta.autoRun === 'boolean' ? c.kahootMeta.autoRun : state.kahootGame.autoRun,
+              autoDelaySec: Number(c.kahootMeta.autoDelaySec) || 5,
+              prize: c.kahootMeta.prize || 'รางวัลแชมป์ Kahoot ประจำปีใหม่',
+              questions: Array.isArray(c.kahootMeta.questions) && c.kahootMeta.questions.length ? c.kahootMeta.questions : state.kahootGame.questions,
+              scores: c.kahootMeta.scores && typeof c.kahootMeta.scores === 'object' ? c.kahootMeta.scores : {},
+              lastRoundPoints: c.kahootMeta.lastRoundPoints && typeof c.kahootMeta.lastRoundPoints === 'object' ? c.kahootMeta.lastRoundPoints : {},
+              answers: khAnsMap
+            };
+            if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
+              ensureKahootCountdownLoop();
+            } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
+              ensureKahootAutoNextLoop();
+            }
+          } else {
+            state.kahootGame.answers = khAnsMap;
+          }
           if (c.circularLoop && typeof c.circularLoop === 'object') {
             state.circularLoopId = c.circularLoop.loopId || '';
             state.circularLoopPath = Array.isArray(c.circularLoop.path) ? c.circularLoop.path : [];
@@ -2616,23 +3594,30 @@
               ...state.witsGame,
               roundId: c.witsMeta.roundId || '',
               phase: c.witsMeta.phase || 'idle',
+              currentIdx: typeof c.witsMeta.currentIdx === 'number' ? c.witsMeta.currentIdx : 0,
               question: c.witsMeta.question || '',
               correctAnswer: c.witsMeta.correctAnswer ?? null,
               prize: c.witsMeta.prize || '',
               rule: c.witsMeta.rule || 'wits',
               durationSec: c.witsMeta.durationSec || 15,
               timeUp: Boolean(c.witsMeta.timeUp),
+              autoRun: typeof c.witsMeta.autoRun === 'boolean' ? c.witsMeta.autoRun : state.witsGame.autoRun,
+              autoDelaySec: Number(c.witsMeta.autoDelaySec) || 5,
+              questions: Array.isArray(c.witsMeta.questions) && c.witsMeta.questions.length ? c.witsMeta.questions : state.witsGame.questions,
               winnerIds: Array.isArray(c.witsMeta.winnerIds) ? c.witsMeta.winnerIds : [],
               submissions: cleanSubs
             };
             if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRoundId !== state.witsGame.roundId)) {
               ensureWitsCountdownLoop();
+            } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRoundId !== state.witsGame.roundId)) {
+              ensureWitsAutoNextLoop();
             }
           } else {
             state.witsGame.submissions = cleanSubs;
           }
         } else {
           state.witsGame.submissions = cleanSubs;
+          state.kahootGame.answers = khAnsMap;
         }
         renderAll();
         checkPendingWinnerPopups();
@@ -2723,7 +3708,7 @@
       }
 
       document.getElementById('tb-firebase-btn').addEventListener('click', () => {
-        if (state.deviceRole !== 'all') return;
+        if (!canManageSuper()) return;
         document.getElementById('firebase-db-url-input').value = firebaseConfig.dbUrl || '';
         document.getElementById('firebase-room-id-input').value = firebaseConfig.roomId || 'happynewyear2569';
         fbStatus.style.display = firebaseConfig.dbUrl ? 'block' : 'none';
@@ -2784,11 +3769,11 @@
       function broadcastLocalOnly(reason) {
         const ts = Date.now();
         const payload = {
-          adminPassword: state.adminPassword, guests: state.guests, prizes: state.prizes,
+          adminPassword: state.adminPassword, adminPasswords: state.adminPasswords, guests: state.guests, prizes: state.prizes,
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
           wheelStage: state.wheelStage, winners: state.winners, prizeAlerts: state.prizeAlerts,
-          votedGuests: state.votedGuests, votingRevealed: state.votingRevealed,
+          kahootGame: state.kahootGame,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
           circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
           circularHasStarted: state.circularHasStarted, witsGame: state.witsGame
@@ -2798,7 +3783,13 @@
       }
 
       function applyLocalSyncState(p) {
-        if (typeof p.adminPassword === 'string' && p.adminPassword) state.adminPassword = p.adminPassword;
+        if (p.adminPasswords && typeof p.adminPasswords === 'object') {
+          state.adminPasswords = { ...DEFAULT_ADMIN_PASSWORDS, ...p.adminPasswords };
+          state.adminPassword = state.adminPasswords.super;
+        } else if (typeof p.adminPassword === 'string' && p.adminPassword) {
+          state.adminPassword = p.adminPassword;
+          state.adminPasswords.super = p.adminPassword;
+        }
         if (Array.isArray(p.guests)) state.guests = p.guests;
         if (Array.isArray(p.prizes)) state.prizes = p.prizes;
         if (typeof p.hadConfiguredPrizes === 'boolean') state.hadConfiguredPrizes = p.hadConfiguredPrizes;
@@ -2808,8 +3799,15 @@
         if (p.wheelStage) state.wheelStage = p.wheelStage;
         if (Array.isArray(p.winners)) state.winners = p.winners;
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
-        if (p.votedGuests) state.votedGuests = p.votedGuests;
-        if (typeof p.votingRevealed === 'boolean') state.votingRevealed = p.votingRevealed;
+        if (p.kahootGame) {
+          const prevKhPhase = state.kahootGame.phase, prevKhRid = state.kahootGame.roundId;
+          state.kahootGame = p.kahootGame;
+          if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
+            ensureKahootCountdownLoop();
+          } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
+            ensureKahootAutoNextLoop();
+          }
+        }
         if (typeof p.circularLoopId === 'string') state.circularLoopId = p.circularLoopId;
         if (Array.isArray(p.circularLoopPath)) state.circularLoopPath = p.circularLoopPath;
         if (typeof p.circularCurrentIdx === 'number') state.circularCurrentIdx = p.circularCurrentIdx;
@@ -2820,6 +3818,8 @@
           state.witsGame = p.witsGame;
           if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRid !== state.witsGame.roundId)) {
             ensureWitsCountdownLoop();
+          } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRid !== state.witsGame.roundId)) {
+            ensureWitsAutoNextLoop();
           }
         }
         renderAll();
