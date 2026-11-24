@@ -2431,7 +2431,10 @@
         const kg = state.kahootGame;
         if (kg.phase !== 'revealed' || !kg.autoRun) return;
 
-        getLocalKahootAutoNextRemainingMs(kg);
+        const nextKey = (kg.roundId || 'kh_default') + '_next';
+        if (!localKahootAutoNextDeadlines[nextKey]) {
+          localKahootAutoNextDeadlines[nextKey] = Date.now() + ((Number(kg.autoDelaySec) || 5) * 1000);
+        }
 
         kahootAutoNextInterval = setInterval(() => {
           const curKg = state.kahootGame;
@@ -2455,6 +2458,8 @@
               } else {
                 finishKahootAndAward();
               }
+            } else {
+              renderKahootGame();
             }
           }
         }, 200);
@@ -3114,25 +3119,48 @@
         syncAdminCore('wits_autorun_paused');
       });
 
-      document.getElementById('btn-wits-add-q').addEventListener('click', () => {
+      function handleAddWitsQuestion() {
         if (!canManageWits()) return;
-        const q = document.getElementById('wits-question-input').value.trim();
-        const num = parseCleanNumber(witsAnsIn.value);
-        const prize = document.getElementById('wits-prize-input').value.trim() || 'ของรางวัลพิเศษปีใหม่';
-        const rule = document.getElementById('wits-rule-select').value || 'wits';
-        const sec = Number(document.getElementById('wits-sec-select').value) || 15;
+        const qInp = document.getElementById('wits-question-input');
+        const q = (qInp ? qInp.value : '').trim();
+        const rawAns = (witsAnsIn ? witsAnsIn.value : '').replace(/[๐-๙]/g, d => String('๐๑๒๓๔๕๖๗๘๙'.indexOf(d)));
+        const num = parseCleanNumber(rawAns);
+        const prize = (document.getElementById('wits-prize-input')?.value || '').trim() || 'ของรางวัลพิเศษปีใหม่';
+        const rule = document.getElementById('wits-rule-select')?.value || 'wits';
+        const sec = Number(document.getElementById('wits-sec-select')?.value) || 15;
         const err = document.getElementById('wits-host-error');
-        if (!q || !Number.isFinite(num)) { err.classList.add('visible'); return; }
-        err.classList.remove('visible');
-        if (!chkAns.checked) witsAnsIn.type = 'password';
 
+        if (!q) {
+          if (err) { err.textContent = '❌ กรุณากรอกคำถามทายตัวเลขก่อน'; err.classList.add('visible'); }
+          qInp?.focus();
+          return;
+        }
+        if (!Number.isFinite(num)) {
+          if (err) { err.textContent = '❌ กรุณาระบุคำตอบเฉลยเป็นตัวเลข (เช่น 120 หรือ 1,500)'; err.classList.add('visible'); }
+          witsAnsIn?.focus();
+          return;
+        }
+        if (err) err.classList.remove('visible');
+        if (chkAns && !chkAns.checked && witsAnsIn) witsAnsIn.type = 'password';
+
+        if (!Array.isArray(state.witsGame.questions)) state.witsGame.questions = [];
         state.witsGame.questions.push({ q, answer: num, prize, rule, sec });
         state.witsGame.currentIdx = state.witsGame.questions.length - 1;
-        document.getElementById('wits-question-input').value = '';
-        witsAnsIn.value = '';
-        document.getElementById('wits-editor-box').style.display = 'none';
+        if (state.witsGame.phase === 'finished') state.witsGame.phase = 'idle';
+
+        if (qInp) qInp.value = '';
+        if (witsAnsIn) witsAnsIn.value = '';
+        const edBox = document.getElementById('wits-editor-box');
+        if (edBox) edBox.style.display = 'none';
+
+        triggerHapticVibration(40);
         renderWitsGame();
         syncAdminCore('wits_q_added');
+      }
+
+      document.getElementById('btn-wits-add-q').addEventListener('click', handleAddWitsQuestion);
+      witsAnsIn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); handleAddWitsQuestion(); }
       });
 
       window.selectWitsQuestion = function(idx) {
@@ -3309,8 +3337,8 @@
           document.getElementById('wits-banner-prize').textContent = `🏆 ข้อที่ ${wg.currentIdx + 1}/${wg.questions.length} • เฉลย: ${Number(wg.correctAnswer).toLocaleString('th-TH')}`;
           document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
           document.getElementById('wits-timer-status-lbl').textContent = 'สถานะ:';
-          document.getElementById('wits-timer-circle').textContent = '✓';
-          document.getElementById('wits-timer-circle').classList.remove('urgent');
+          const tcRev = document.getElementById('wits-timer-circle');
+          if (tcRev) { tcRev.textContent = '✓'; tcRev.classList.remove('urgent'); }
           const winNames = state.guests.filter(g => wg.winnerIds.includes(g.id)).map(g => g.name).join(', ');
           document.getElementById('wits-banner-progress').innerHTML = winNames
             ? `🎉 ผู้ชนะรับรางวัล <strong>${escapeHtml(wg.prize)}</strong>: <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`
@@ -3572,6 +3600,12 @@
               lastRoundPoints: c.kahootMeta.lastRoundPoints && typeof c.kahootMeta.lastRoundPoints === 'object' ? c.kahootMeta.lastRoundPoints : {},
               answers: khAnsMap
             };
+            if (state.kahootGame.phase !== 'revealed' && kahootAutoNextInterval) {
+              clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null;
+            }
+            if (state.kahootGame.phase !== 'asking' && kahootTimerInterval) {
+              clearInterval(kahootTimerInterval); kahootTimerInterval = null;
+            }
             if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
               ensureKahootCountdownLoop();
             } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
@@ -3607,6 +3641,12 @@
               winnerIds: Array.isArray(c.witsMeta.winnerIds) ? c.witsMeta.winnerIds : [],
               submissions: cleanSubs
             };
+            if (state.witsGame.phase !== 'revealed' && witsAutoNextInterval) {
+              clearInterval(witsAutoNextInterval); witsAutoNextInterval = null;
+            }
+            if (state.witsGame.phase !== 'asking' && witsTimerInterval) {
+              clearInterval(witsTimerInterval); witsTimerInterval = null;
+            }
             if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRoundId !== state.witsGame.roundId)) {
               ensureWitsCountdownLoop();
             } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRoundId !== state.witsGame.roundId)) {
@@ -3802,6 +3842,12 @@
         if (p.kahootGame) {
           const prevKhPhase = state.kahootGame.phase, prevKhRid = state.kahootGame.roundId;
           state.kahootGame = p.kahootGame;
+          if (state.kahootGame.phase !== 'revealed' && kahootAutoNextInterval) {
+            clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null;
+          }
+          if (state.kahootGame.phase !== 'asking' && kahootTimerInterval) {
+            clearInterval(kahootTimerInterval); kahootTimerInterval = null;
+          }
           if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
             ensureKahootCountdownLoop();
           } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
@@ -3816,6 +3862,12 @@
         if (p.witsGame) {
           const prevPhase = state.witsGame.phase, prevRid = state.witsGame.roundId;
           state.witsGame = p.witsGame;
+          if (state.witsGame.phase !== 'revealed' && witsAutoNextInterval) {
+            clearInterval(witsAutoNextInterval); witsAutoNextInterval = null;
+          }
+          if (state.witsGame.phase !== 'asking' && witsTimerInterval) {
+            clearInterval(witsTimerInterval); witsTimerInterval = null;
+          }
           if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRid !== state.witsGame.roundId)) {
             ensureWitsCountdownLoop();
           } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRid !== state.witsGame.roundId)) {
