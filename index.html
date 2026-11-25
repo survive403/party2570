@@ -705,34 +705,37 @@
             </div>
           </div>
 
-          <!-- View 3: Circular Single-Loop Gift Exchange (ปลดล็อกคิวถัดไปทันทีในคลิกเดียว + เด้งป๊อปอัพเตือนคิว!) -->
+          <!-- View 3: Circular Single-Loop Gift Exchange (วงกลมเดี่ยว • ส่งต่อคิวออโต้) -->
           <div class="panel-card view-section" style="display: none;" id="view-section-giftdraw">
             <div class="panel-title-bar">
-              <h2 class="panel-title">🎁 จับสลากแลกของขวัญ (วงกลมเดี่ยว)</h2>
-              <span class="meta-caption">⚡ กดปุ๊บปลดล็อกคิวคนถัดไปทันที</span>
+              <h2 class="panel-title">🎁 จับสลากแลกของขวัญ</h2>
+              <span class="meta-caption">🔄 วงกลมเดี่ยว • ส่งต่อคิวออโต้</span>
             </div>
 
             <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">
-              เมื่อถึงคิวใครจะมีป๊อปอัพเด้งเตือนบนมือถือ พอกดสุ่มปุ๊บจะรู้ผลทันทีว่าได้ของขวัญของใคร <strong>พร้อมปลดล็อกคิวให้คนถัดไปกดต่อทันทีในคลิกเดียว!</strong>
+              ถึงคิวใครจะมีป๊อปอัพเตือนบนมือถือ กดสุ่มปุ๊บรู้ผลทันทีและส่งต่อคิวให้คนถัดไปอัตโนมัติ
             </p>
 
             <div id="gift-loop-setup-view">
-              <div class="admin-only-control" data-admin-scope="core" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px;">
+              <div class="admin-only-control" data-admin-scope="core" id="gift-exclusion-panel" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
-                  <span style="font-size: 11px; font-weight: 700; color: #fde68a;">🚫 ตัดชื่อผู้ไม่ประสงค์ร่วมจับสลากแลกของขวัญ (ยังอยู่ในรายชื่อผู้เข้าร่วมงานและเล่นเกมอื่นได้):</span>
-                  <button type="button" class="btn btn-secondary" id="btn-gift-include-all" style="min-height: 26px; padding: 2px 8px; font-size: 10px;">✅ รวมทุกคนกลับเข้าวงจร</button>
+                  <span style="font-size: 11px; font-weight: 700; color: #fde68a;">🚫 ยกเว้นผู้ไม่แลกของขวัญ (ไม่กระทบรายชื่อห้องและเกมอื่น):</span>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary" id="btn-gift-include-all" style="min-height: 26px; padding: 2px 8px; font-size: 10px;">✅ รวมทุกคนกลับเข้าวงจร</button>
+                    <button type="button" class="btn btn-ghost-danger" id="btn-gift-exclude-all" style="min-height: 26px; padding: 2px 8px; font-size: 10px;">🚫 ตัดทุกคนออก</button>
+                  </div>
                 </div>
                 <div class="wheel-exclude-list" id="gift-exclusion-chips-container"></div>
               </div>
               <div class="gift-reveal-box admin-only-control" data-admin-scope="core" id="btn-start-circular-game">
                 <div style="font-size: 44px;">🔄</div>
-                <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 แตะเพื่อเริ่มสร้างวงจรแลกของขวัญ (เฉพาะ Host)</h3>
-                <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ผู้เข้าร่วมแลกของขวัญ <strong id="gift-eligible-count">0</strong> / <span class="guest-counter-val">0</span> คน (ต้องมีอย่างน้อย 2 คน)</p>
+                <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 กดเริ่มวงจรแลกของขวัญ</h3>
+                <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ร่วมแลก <strong id="gift-eligible-count">0</strong> / <span class="guest-counter-val">0</span> คน • ขั้นต่ำ 2 คน</p>
               </div>
               <div class="empty-state participant-only-control">
                 <div style="font-size: 36px; margin-bottom: 6px;">⏳🎁</div>
                 <strong style="color: #fff;">รอผู้จัดงาน (Host) กดเริ่มวงจรแลกของขวัญ</strong>
-                <p style="margin: 4px 0 0; font-size: 12px;">เมื่อถึงคิวของคุณ จะมีป๊อปอัพเด้งแจ้งเตือนและปลดล็อกปุ่มให้กดบนมือถือเครื่องนี้ทันที</p>
+                <p style="margin: 4px 0 0; font-size: 12px;">เมื่อถึงคิวของคุณ จะมีป๊อปอัพแจ้งเตือนและเปิดปุ่มให้กดบนมือถือทันที</p>
               </div>
             </div>
 
@@ -768,7 +771,11 @@
                 <div style="font-size: 42px;">👑💝</div>
                 <h3 style="color: var(--brand); font-size: 19px; margin: 6px 0;">แลกของขวัญครบวงกลมสมบูรณ์แล้ว!</h3>
                 <div id="gift-loop-complete-summary" style="text-align: left; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; margin: 10px auto; max-width: 420px; max-height: 240px; overflow-y: auto; font-size: 13px;"></div>
-                <button class="btn btn-secondary admin-only-control" data-admin-scope="core" id="btn-loop-restart" type="button">🔄 เริ่มวงจรแลกของขวัญรอบใหม่ (Host)</button>
+                <p id="gift-loop-copy-feedback" style="display: none; color: var(--success); font-size: 12px; font-weight: 600; margin: 6px 0;">✅ คัดลอกผลแลกของขวัญเรียบร้อย!</p>
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                  <button class="btn btn-primary" id="btn-loop-copy-result" type="button" style="min-height: 38px; padding: 6px 14px; font-size: 12px;">📋 คัดลอกผลแลกของขวัญ</button>
+                  <button class="btn btn-secondary admin-only-control" data-admin-scope="core" id="btn-loop-restart" type="button" style="min-height: 38px; padding: 6px 14px; font-size: 12px;">🔄 เริ่มวงจรแลกของขวัญรอบใหม่</button>
+                </div>
               </div>
             </div>
           </div>
@@ -2408,9 +2415,13 @@
       function renderGiftExclusionChips() {
         const box = document.getElementById('gift-exclusion-chips-container');
         const eligEl = document.getElementById('gift-eligible-count');
+        const exPanel = document.getElementById('gift-exclusion-panel');
         const exList = Array.isArray(state.giftExchangeExclusions) ? state.giftExchangeExclusions : [];
         const pool = getActiveGiftExchangePool();
         if (eligEl) eligEl.textContent = String(pool.length);
+        if (exPanel) {
+          exPanel.style.display = (canManageCore() && !state.circularHasStarted) ? '' : 'none';
+        }
         if (!box) return;
         box.innerHTML = '';
         if (!state.guests.length) {
@@ -2423,7 +2434,7 @@
           btn.type = 'button';
           btn.className = 'wheel-exclude-chip' + (isOptOut ? ' is-excluded' : '');
           if (isOptOut) {
-            btn.innerHTML = `🚫 ${escapeHtml(g.name)} <small>(ไม่ร่วมแลก)</small>`;
+            btn.innerHTML = `🚫 ${escapeHtml(g.name)} <small>• งดแลก</small>`;
             btn.title = 'แตะเพื่อดึงกลับเข้าร่วมจับสลากแลกของขวัญ';
           } else {
             btn.innerHTML = `✅ ${escapeHtml(g.name)}`;
@@ -2453,11 +2464,33 @@
         syncAdminCore('gift_exclude_cleared');
       });
 
+      document.getElementById('btn-gift-exclude-all')?.addEventListener('click', () => {
+        if (!canManageCore() || state.circularHasStarted) return;
+        state.giftExchangeExclusions = state.guests.map(g => g.id);
+        triggerHapticVibration(30);
+        renderGiftExclusionChips();
+        syncAdminCore('gift_exclude_all');
+      });
+
+      document.getElementById('btn-loop-copy-result')?.addEventListener('click', async () => {
+        if (!state.circularDrawnList || !state.circularDrawnList.length) return;
+        const txt = '🎁 สรุปสายพานแลกของขวัญ\n' +
+          state.circularDrawnList.map((d, i) => `คิวที่ ${i + 1}: ${d.giver} ได้ของขวัญของ ➔ ${d.receiver}`).join('\n');
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(txt);
+          }
+        } catch (e) {}
+        const fb = document.getElementById('gift-loop-copy-feedback');
+        if (fb) fb.style.display = 'block';
+        triggerHapticVibration(35);
+      });
+
       document.getElementById('btn-start-circular-game').addEventListener('click', () => {
         if (!canManageCore()) return;
         const eligibleGuests = getActiveGiftExchangePool();
         if (eligibleGuests.length < 2) {
-          document.getElementById('gift-loop-setup-hint').innerHTML = `<span style="color:var(--danger);">❌ ต้องมีผู้ร่วมจับสลากอย่างน้อย 2 คนขึ้นไป (ปัจจุบันร่วมแลก <strong id="gift-eligible-count">${eligibleGuests.length}</strong> / <span class="guest-counter-val">${state.guests.length}</span> คน)</span>`;
+          document.getElementById('gift-loop-setup-hint').innerHTML = `<span style="color:var(--danger);">❌ ต้องมีผู้ร่วมแลกอย่างน้อย 2 คน (ปัจจุบันร่วมแลก <strong id="gift-eligible-count">${eligibleGuests.length}</strong> / <span class="guest-counter-val">${state.guests.length}</span> คน)</span>`;
           return;
         }
         const pool = eligibleGuests.map(g => ({ id: g.id, name: g.name }));
@@ -2508,6 +2541,9 @@
         if (completed) {
           inprog.style.display = 'none';
           comp.style.display = 'block';
+          if (emgBox) emgBox.style.display = 'none';
+          const copyFb = document.getElementById('gift-loop-copy-feedback');
+          if (copyFb) copyFb.style.display = 'none';
           document.getElementById('gift-loop-complete-summary').innerHTML = '<strong>สรุปสายพานแลกของขวัญครบวงกลม:</strong><br>' +
             state.circularDrawnList.map((d, i) => `➡️ คิวที่ ${i + 1}: <strong>${escapeHtml(d.giver)}</strong> ได้ของขวัญของ <strong>${escapeHtml(d.receiver)}</strong>`).join('<br>');
           return;
@@ -2515,7 +2551,7 @@
 
         inprog.style.display = 'block';
         comp.style.display = 'none';
-        emgBox.style.display = canManageCore() ? 'block' : 'none';
+        emgBox.style.display = (canManageCore() && state.circularHasStarted && !completed) ? 'block' : 'none';
 
         const path = state.circularLoopPath;
         const idx = state.circularCurrentIdx;
@@ -2529,12 +2565,12 @@
         banner.style.color = isMyTurn ? '#a7f3d0' : '#bae6fd';
         banner.innerHTML = isMyTurn
           ? `🔓 <strong>ถึงคิวมือถือของคุณ (${escapeHtml(giver.name)}) แล้ว!</strong> กดปุ่มด้านล่างเพื่อสุ่มรับของขวัญได้เลย`
-          : `🔒 <strong>ล็อกเฉพาะเจ้าของคิว:</strong> รอมือถือของ <strong>${escapeHtml(giver.name)}</strong> กดสุ่ม`;
+          : `⏳ <strong>รอมือถือของ ${escapeHtml(giver.name)} กดสุ่ม...</strong>`;
 
         drawBtn.disabled = !isMyTurn;
         drawBtn.textContent = isMyTurn
           ? `🎁 กดสุ่มรับของขวัญของคุณ (${giver.name})`
-          : `🔒 รอมือถือของ ${giver.name} กดสุ่ม...`;
+          : `⏳ รอมือถือของ ${giver.name} กดสุ่ม...`;
         emgBtn.textContent = `⏭️ Host กดสุ่มแทนคิวที่ค้าง (${giver.name}) (กรณีฉุกเฉิน)`;
       }
 
