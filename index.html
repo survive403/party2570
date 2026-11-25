@@ -901,7 +901,7 @@
                 </div>
                 <div id="wits-bulk-box" style="display:none;background:#070b14;border:1px dashed #a855f7;border-radius:10px;padding:10px;margin-bottom:8px;">
                   <div style="font-size:11px;color:#e9d5ff;margin-bottom:6px;line-height:1.4;">
-                    รูปแบบต่อข้อ (คั่นด้วย <code>|</code>): <code>คำถาม | เลขเฉลย | ของรางวัล(ไม่ใส่=ค่าเริ่มต้น) | วินาที(ไม่ใส่=15) | กติกา(wits หรือ closest)</code>
+                    รูปแบบต่อข้อ (คั่นด้วย <code>|</code>): <code>คำถาม | เลขเฉลย | ของรางวัล | วินาที(15) | กติกา(wits/closest) | โหมด(practice/oneshot/standard) | จำนวนลำดับ(1-10)</code>
                   </div>
                   <textarea id="wits-bulk-textarea" class="textarea" rows="4" style="font-size:13px;" placeholder="เช่น: ปีนี้มีกี่สัปดาห์? | 52 | อั่งเปา 500 บาท | 15 | wits"></textarea>
                   <p id="wits-bulk-error" class="error-msg">-</p>
@@ -957,6 +957,25 @@
                       </select>
                     </div>
                   </div>
+                  <div style="display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 8px;">
+                    <div>
+                      <label class="field-label" for="wits-qmode-select">ประเภทข้อคำถาม</label>
+                      <select id="wits-qmode-select" class="select">
+                        <option value="oneshot" selected>🏅 เล่นจริง: One Shot (เรียงลำดับเลือกของ &amp; บันทึกรางวัล)</option>
+                        <option value="practice">🧪 ข้อทดลองเล่น (ซ้อมมือก่อน — ไม่บันทึกลงประวัติรางวัล)</option>
+                        <option value="standard">🎯 เล่นจริง: ผู้ชนะ 1 เดียว (ไม่เปิดตารางจัดลำดับ)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="field-label" for="wits-qrank-select">แสดงลำดับ (ข้อนี้)</label>
+                      <select id="wits-qrank-select" class="select">
+                        <option value="1">1 ลำดับ</option>
+                        <option value="3" selected>3 ลำดับ</option>
+                        <option value="5">5 ลำดับ</option>
+                        <option value="10">10 ลำดับ</option>
+                      </select>
+                    </div>
+                  </div>
                   <p id="wits-host-error" class="error-msg">กรุณากรอกคำถามและระบุคำตอบเฉลยเป็นตัวเลขให้ครบถ้วน</p>
                   <button type="button" class="btn btn-primary" id="btn-wits-add-q">+ บันทึกคำถามเข้าคลัง</button>
                 </div>
@@ -975,6 +994,23 @@
                     <option value="5" selected>5 วินาที</option>
                     <option value="8">8 วินาที</option>
                     <option value="10">10 วินาที</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- One-Shot Ranking & Display Limit Settings -->
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <label class="checkbox-label" style="color: #a7f3d0; font-weight: 600;">
+                  <input type="checkbox" id="chk-wits-oneshot-rank" checked>
+                  🏅 โหมดจัดอันดับ One Shot (เรียงความถูกต้อง + ความไว 1-10 ให้เลือกของตามลำดับ)
+                </label>
+                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);">
+                  <span>แสดงอันดับ:</span>
+                  <select id="wits-rank-limit-select" class="select" style="width: auto; min-height: 32px; padding: 4px 10px; font-size: 12px;">
+                    <option value="1">1 ลำดับ</option>
+                    <option value="3" selected>3 ลำดับ</option>
+                    <option value="5">5 ลำดับ</option>
+                    <option value="10">10 ลำดับ</option>
                   </select>
                 </div>
               </div>
@@ -1184,31 +1220,40 @@
           timeUp: false,
           autoRun: true,
           autoDelaySec: 5,
+          oneShotRankEnabled: true,
+          rankDisplayLimit: 3,
           questions: [
             {
-              q: 'ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?',
+              q: '[ทดลองเล่น] ปีนี้พวกเราชาวออฟฟิศประชุมออนไลน์รวมกันทั้งหมดกี่ชั่วโมง?',
               answer: 428,
-              prize: 'อั่งเปาพิเศษ 1,000 บาท',
+              prize: 'รอบซ้อมมือ (ไม่แจกรางวัล)',
               rule: 'wits',
-              sec: 15
+              sec: 15,
+              qMode: 'practice',
+              rankLimit: 3
             },
             {
               q: 'กาแฟเฉลี่ยที่คนทำงานออฟฟิศดื่มต่อคนใน 1 ปี (365 วัน) มีประมาณกี่แก้ว?',
               answer: 280,
-              prize: 'บัตรกำนัลร้านกาแฟ',
+              prize: 'สิทธิ์เลือกของขวัญปีใหม่',
               rule: 'wits',
-              sec: 15
+              sec: 15,
+              qMode: 'oneshot',
+              rankLimit: 3
             },
             {
               q: 'ปี 2569 มีวันหยุดราชการและวันหยุดเสาร์-อาทิตย์รวมกันทั้งหมดกี่วัน?',
               answer: 121,
-              prize: 'ของขวัญพิเศษปีใหม่',
+              prize: 'สิทธิ์เลือกของขวัญรอบพิเศษ',
               rule: 'closest',
-              sec: 20
+              sec: 20,
+              qMode: 'oneshot',
+              rankLimit: 5
             }
           ],
           submissions: {},
-          winnerIds: []
+          winnerIds: [],
+          rankedEntries: []
         }
       };
 
@@ -3325,17 +3370,23 @@
         if (chkAuto) wg.autoRun = chkAuto.checked;
         if (selDelay) wg.autoDelaySec = Number(selDelay.value) || 5;
 
+        const qMode = qObj.qMode || 'oneshot';
+        const qRankLimit = Math.max(1, Math.min(10, Number(qObj.rankLimit) || Number(document.getElementById('wits-rank-limit-select')?.value) || 3));
         wg.roundId = newRoundId;
         wg.phase = 'asking';
         wg.question = qObj.q;
         wg.correctAnswer = Number(qObj.answer);
         wg.prize = qObj.prize || 'ของรางวัลพิเศษปีใหม่';
         wg.rule = qObj.rule || 'wits';
+        wg.qMode = qMode;
         wg.durationSec = dur;
         wg.timeLeft = dur;
         wg.timeUp = false;
+        wg.oneShotRankEnabled = (qMode === 'oneshot' || qMode === 'practice');
+        wg.rankDisplayLimit = qRankLimit;
         wg.submissions = {};
         wg.winnerIds = [];
+        wg.rankedEntries = [];
 
         fbMirror.witsSubmissions = {};
         fbWriteSubpath('witsSubmissions', null, 'DELETE');
@@ -3344,47 +3395,94 @@
         syncAdminCore('wits_question');
       }
 
+      function getWitsSubSubmittedAt(subEntry) {
+        if (subEntry && typeof subEntry === 'object' && typeof subEntry.submittedAt === 'number' && Number.isFinite(subEntry.submittedAt)) return subEntry.submittedAt;
+        return 0;
+      }
+
+      function sortWitsEntriesByAccuracyAndSpeed(entries, target, rule) {
+        const under = rule === 'wits' ? entries.filter(e => e.guess <= target) : [];
+        const pool = under.length ? under : entries;
+        const isUnderMode = under.length > 0;
+        return [...pool].sort((a, b) => {
+          const accDiff = isUnderMode
+            ? ((target - a.guess) - (target - b.guess))
+            : (Math.abs(a.guess - target) - Math.abs(b.guess - target));
+          if (accDiff !== 0) return accDiff;
+          if (b.remMs !== a.remMs) return b.remMs - a.remMs;
+          return (a.submittedAt || 0) - (b.submittedAt || 0);
+        });
+      }
+
       function revealWitsCurrentQuestion() {
         if (!canManageWits() || state.witsGame.phase !== 'asking') return;
         clearAllWitsTimers();
         const wg = state.witsGame, target = wg.correctAnswer;
+        const qObj = wg.questions[wg.currentIdx] || {};
+        const qMode = wg.qMode || qObj.qMode || 'oneshot';
+        const qRankLimit = Math.max(1, Math.min(10, Number(qObj.rankLimit) || Number(wg.rankDisplayLimit) || 3));
+        wg.qMode = qMode;
+        wg.oneShotRankEnabled = (qMode === 'oneshot' || qMode === 'practice');
+        wg.rankDisplayLimit = qRankLimit;
+
         const entries = state.guests
           .filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id])))
           .map(g => ({
             id: g.id,
             name: g.name,
             guess: getWitsSubValue(wg.submissions[g.id]),
-            remMs: getWitsSubRemMs(wg.submissions[g.id])
+            remMs: getWitsSubRemMs(wg.submissions[g.id]),
+            submittedAt: getWitsSubSubmittedAt(wg.submissions[g.id])
           }));
 
+        const sorted = entries.length ? sortWitsEntriesByAccuracyAndSpeed(entries, target, wg.rule) : [];
+        wg.rankedEntries = sorted.map((item, i) => ({
+          rank: i + 1,
+          id: item.id,
+          name: item.name,
+          guess: item.guess,
+          remMs: item.remMs,
+          diff: Math.abs(item.guess - target)
+        }));
+
         let winners = [];
-        if (entries.length) {
-          const under = wg.rule === 'wits' ? entries.filter(e => e.guess <= target) : [];
-          let tiedBest = [];
-          if (under.length) {
-            const best = Math.max(...under.map(e => e.guess));
-            tiedBest = under.filter(e => e.guess === best);
+        if (sorted.length) {
+          if (qMode === 'oneshot' || qMode === 'practice') {
+            winners = sorted.slice(0, qRankLimit);
           } else {
-            const minD = Math.min(...entries.map(e => Math.abs(e.guess - target)));
-            tiedBest = entries.filter(e => Math.abs(e.guess - target) === minD);
-          }
-          if (tiedBest.length > 1) {
-            // กติกาเพิ่มเติม: หากตอบถูก/ใกล้เคียงเท่ากันมากกว่า 1 คน ให้เฉพาะคนที่ตอบไวที่สุด (remMs สูงสุด) เท่านั้นที่ได้รางวัล
-            tiedBest.sort((a, b) => (b.remMs - a.remMs) || ((a.submittedAt || 0) - (b.submittedAt || 0)));
-            winners = [tiedBest[0]];
-          } else {
-            winners = tiedBest;
+            const topItem = sorted[0];
+            const isUnderMode = wg.rule === 'wits' && entries.some(e => e.guess <= target);
+            const tiedBest = sorted.filter(e => isUnderMode
+              ? e.guess === topItem.guess
+              : Math.abs(e.guess - target) === Math.abs(topItem.guess - target));
+            winners = tiedBest.length > 1 ? [tiedBest[0]] : tiedBest;
           }
         }
         wg.phase = 'revealed';
         wg.timeUp = true;
         wg.timeLeft = 0;
         wg.winnerIds = winners.map(w => w.id);
-        winners.forEach(w => {
-          state.winners.unshift({ name: w.name, prize: `${wg.prize} (ทาย ${w.guess.toLocaleString('th-TH')} / เฉลย ${target.toLocaleString('th-TH')})`, timestamp: new Date().toLocaleTimeString('th-TH') });
-        });
+
         playRevealChimeSound();
-        if (winners.length) triggerWinnerNotification(winners.map(w => w.id), winners.map(w => w.name).join(', '), wg.prize, 'ชนะเกมทายตัวเลข Wits & Wagers');
+        // บันทึกลงประวัติผู้โชคดีและเด้งป๊อปอัพรางวัลเฉพาะข้อเล่นจริงเท่านั้น (ข้อทดลองเล่น/ซ้อมมือจะไม่ปะปนในประวัติ)
+        if (qMode !== 'practice') {
+          winners.forEach((w, idx) => {
+            const rankLabel = qMode === 'oneshot' ? `อันดับ #${idx + 1} สิทธิ์เลือกของก่อน • ` : '';
+            state.winners.unshift({
+              name: w.name,
+              prize: `${rankLabel}${wg.prize} (ทาย ${w.guess.toLocaleString('th-TH')} / เฉลย ${target.toLocaleString('th-TH')})`,
+              timestamp: new Date().toLocaleTimeString('th-TH')
+            });
+          });
+          if (winners.length) {
+            triggerWinnerNotification(
+              winners.map(w => w.id),
+              winners.map(w => w.name).join(', '),
+              wg.prize,
+              qMode === 'oneshot' ? 'ติดอันดับ One Shot ทายตัวเลข' : 'ชนะเกมทายตัวเลข Wits & Wagers'
+            );
+          }
+        }
 
         if (wg.autoRun) {
           const nextKey = (wg.roundId || 'wits_default') + '_next';
@@ -3406,6 +3504,8 @@
         const prizeInp = document.getElementById('wits-prize-input');
         const ruleSel = document.getElementById('wits-rule-select');
         const secSel = document.getElementById('wits-sec-select');
+        const modeSel = document.getElementById('wits-qmode-select');
+        const rankSel = document.getElementById('wits-qrank-select');
         if (titleEl) titleEl.textContent = '✏️ เพิ่มคำถามทายตัวเลขใหม่เข้าคลัง';
         if (saveBtn) saveBtn.textContent = '+ บันทึกคำถามเข้าคลัง';
         if (err) err.classList.remove('visible');
@@ -3417,6 +3517,8 @@
         if (prizeInp) prizeInp.value = 'ของรางวัลพิเศษปีใหม่';
         if (ruleSel) ruleSel.value = 'wits';
         if (secSel) secSel.value = '15';
+        if (modeSel) modeSel.value = 'oneshot';
+        if (rankSel) rankSel.value = '3';
       }
 
       document.getElementById('btn-wits-toggle-editor').addEventListener('click', () => {
@@ -3473,7 +3575,10 @@
           const prizeTxt = parts[2] || 'ของรางวัลพิเศษปีใหม่';
           const secVal = Math.max(5, Math.min(120, Number(parts[3]) || 15));
           const ruleVal = (parts[4] || '').toLowerCase() === 'closest' ? 'closest' : 'wits';
-          added.push({ q: qTxt, answer: num, prize: prizeTxt, rule: ruleVal, sec: secVal });
+          const rawMode = (parts[5] || 'oneshot').toLowerCase();
+          const qModeVal = (rawMode === 'practice' || rawMode === 'ทดลอง' || rawMode === 'ซ้อม') ? 'practice' : (rawMode === 'standard' ? 'standard' : 'oneshot');
+          const rankLimitVal = Math.max(1, Math.min(10, Number(parts[6]) || 3));
+          added.push({ q: qTxt, answer: num, prize: prizeTxt, rule: ruleVal, sec: secVal, qMode: qModeVal, rankLimit: rankLimitVal });
         }
         if (err) err.classList.remove('visible');
         if (!Array.isArray(state.witsGame.questions)) state.witsGame.questions = [];
@@ -3512,6 +3617,20 @@
         syncAdminCore('wits_autodelay_changed');
       });
 
+      document.getElementById('chk-wits-oneshot-rank').addEventListener('change', (e) => {
+        if (!canManageWits()) return;
+        state.witsGame.oneShotRankEnabled = e.target.checked;
+        renderWitsGame();
+        syncAdminCore('wits_oneshot_rank_toggled');
+      });
+
+      document.getElementById('wits-rank-limit-select').addEventListener('change', (e) => {
+        if (!canManageWits()) return;
+        state.witsGame.rankDisplayLimit = Math.max(1, Math.min(10, Number(e.target.value) || 3));
+        renderWitsGame();
+        syncAdminCore('wits_rank_limit_changed');
+      });
+
       document.getElementById('btn-wits-pause-auto').addEventListener('click', () => {
         if (!canManageWits()) return;
         if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
@@ -3531,6 +3650,8 @@
         const prize = (document.getElementById('wits-prize-input')?.value || '').trim() || 'ของรางวัลพิเศษปีใหม่';
         const rule = document.getElementById('wits-rule-select')?.value || 'wits';
         const sec = Number(document.getElementById('wits-sec-select')?.value) || 15;
+        const qMode = document.getElementById('wits-qmode-select')?.value || 'oneshot';
+        const rankLimit = Math.max(1, Math.min(10, Number(document.getElementById('wits-qrank-select')?.value) || 3));
         const err = document.getElementById('wits-host-error');
 
         if (!q) {
@@ -3546,7 +3667,7 @@
         if (err) err.classList.remove('visible');
 
         if (!Array.isArray(state.witsGame.questions)) state.witsGame.questions = [];
-        const newObj = { q, answer: num, prize, rule, sec };
+        const newObj = { q, answer: num, prize, rule, sec, qMode, rankLimit };
         if (witsEditingIdx !== null && witsEditingIdx >= 0 && witsEditingIdx < state.witsGame.questions.length) {
           state.witsGame.questions[witsEditingIdx] = newObj;
           state.witsGame.currentIdx = witsEditingIdx;
@@ -3586,6 +3707,10 @@
         document.getElementById('wits-prize-input').value = item.prize || 'ของรางวัลพิเศษปีใหม่';
         document.getElementById('wits-rule-select').value = item.rule || 'wits';
         document.getElementById('wits-sec-select').value = String(item.sec || 15);
+        const modeSel = document.getElementById('wits-qmode-select');
+        const rankSel = document.getElementById('wits-qrank-select');
+        if (modeSel) modeSel.value = item.qMode || 'oneshot';
+        if (rankSel) rankSel.value = String(item.rankLimit || 3);
         document.getElementById('wits-host-error').classList.remove('visible');
         const box = document.getElementById('wits-editor-box');
         box.style.display = 'block';
@@ -3723,6 +3848,10 @@
           const selDelay = document.getElementById('wits-autodelay-select');
           if (chkAuto) chkAuto.checked = Boolean(wg.autoRun);
           if (selDelay) selDelay.value = String(wg.autoDelaySec || 5);
+          const chkRank = document.getElementById('chk-wits-oneshot-rank');
+          const selLimit = document.getElementById('wits-rank-limit-select');
+          if (chkRank) chkRank.checked = wg.oneShotRankEnabled !== false;
+          if (selLimit) selLimit.value = String(wg.rankDisplayLimit || 3);
 
           const qListEl = document.getElementById('wits-question-bank-list');
           if (qListEl) {
@@ -3731,11 +3860,18 @@
             } else {
               qListEl.innerHTML = wg.questions.map((item, idx) => {
                 const ruleTag = item.rule === 'closest' ? 'ใกล้สุด' : 'ไม่เกินจริง';
+                const qm = item.qMode || 'oneshot';
+                const rl = Math.max(1, Math.min(10, Number(item.rankLimit) || 3));
+                const modeBadge = qm === 'practice'
+                  ? `<span style="background:rgba(56,189,248,0.18);color:#7dd3fc;padding:1px 6px;border-radius:99px;font-size:10px;font-weight:700;">🧪 ทดลองเล่น (1-${rl})</span>`
+                  : (qm === 'oneshot'
+                    ? `<span style="background:rgba(16,185,129,0.18);color:#6ee7b7;padding:1px 6px;border-radius:99px;font-size:10px;font-weight:700;">🏅 One Shot (1-${rl})</span>`
+                    : `<span style="background:rgba(245,158,11,0.18);color:#fde68a;padding:1px 6px;border-radius:99px;font-size:10px;font-weight:700;">🎯 ผู้ชนะ 1 เดียว</span>`);
                 return `
                   <div class="kahoot-q-item${idx === wg.currentIdx ? ' is-active' : ''}" onclick="selectWitsQuestion(${idx})">
                     <div style="min-width:0;flex:1;">
-                      <strong style="color:${idx === wg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
-                      <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ${ruleTag} • 🎁 ${escapeHtml(item.prize || '-')})</span>
+                      <strong style="color:${idx === wg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)} ${modeBadge}
+                      <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ${ruleTag})</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                       <button type="button" class="btn btn-secondary" title="เลื่อนขึ้น" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === 0 || wg.phase === 'asking' ? 'disabled' : ''} onclick="moveWitsQuestion(event, ${idx}, -1)">▲</button>
@@ -3794,7 +3930,8 @@
           banner.style.display = 'none';
         } else if (wg.phase === 'asking') {
           banner.style.display = 'block';
-          document.getElementById('wits-banner-prize').textContent = `🔢 ข้อที่ ${wg.currentIdx + 1}/${wg.questions.length}${wg.autoRun ? ' • 🤖 Auto' : ''} • 🎁 ${wg.prize}`;
+          const askModeTag = wg.qMode === 'practice' ? '🧪 รอบทดลองเล่น (ซ้อมมือ)' : `🎁 ${wg.prize}`;
+          document.getElementById('wits-banner-prize').textContent = `🔢 ข้อที่ ${wg.currentIdx + 1}/${wg.questions.length}${wg.autoRun ? ' • 🤖 Auto' : ''} • ${askModeTag}`;
           document.getElementById('wits-banner-question').textContent = `❓ "${wg.question}"`;
           document.getElementById('wits-timer-status-lbl').textContent = wg.timeUp ? 'หมดเวลา!' : 'เวลาที่เหลือ:';
           const tc = document.getElementById('wits-timer-circle');
@@ -3810,10 +3947,14 @@
           document.getElementById('wits-timer-status-lbl').textContent = 'สถานะ:';
           const tcRev = document.getElementById('wits-timer-circle');
           if (tcRev) { tcRev.textContent = '✓'; tcRev.classList.remove('urgent'); }
-          const winNames = state.guests.filter(g => wg.winnerIds.includes(g.id)).map(g => g.name).join(', ');
+          const winNames = (wg.winnerIds || []).map(wid => state.guests.find(g => g.id === wid)?.name).filter(Boolean).join(', ');
           document.getElementById('wits-banner-progress').innerHTML = winNames
-            ? `🎉 ผู้ชนะรับรางวัล <strong>${escapeHtml(wg.prize)}</strong>: <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`
-            : '<span style="color:#fca5a5;">ไม่มีผู้ได้รับรางวัลในรอบนี้ (สละสิทธิ์ทั้งหมด)</span>';
+            ? (wg.qMode === 'practice'
+              ? `🧪 จบรอบทดลองเล่น (ไม่บันทึกประวัติรางวัล) • ตัวอย่างลำดับ: <strong style="color:#7dd3fc;">${escapeHtml(winNames)}</strong>`
+              : (wg.qMode === 'oneshot'
+                ? `🏅 จัดลำดับสิทธิ์เลือกของก่อน (${wg.winnerIds.length} ลำดับ): <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`
+                : `🎉 ผู้ชนะรับรางวัล <strong>${escapeHtml(wg.prize)}</strong>: <strong style="color:#fde68a;">${escapeHtml(winNames)}</strong>`))
+            : '<span style="color:#fca5a5;">ไม่มีผู้ตอบในรอบนี้ (สละสิทธิ์ทั้งหมด)</span>';
         }
 
         if (isAdmin) {
@@ -3840,7 +3981,7 @@
                 }
               }
               return `<div class="wits-status-pill${isW ? ' is-win' : ''}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(g.name)}</span><span>${st}</span></div>`;
-            }).join('') + '</div>';
+            }).join('') + '</div>' + (wg.phase === 'revealed' ? buildWitsOneShotLeaderboardHtml(wg, null) : '');
           return;
         }
 
@@ -3889,7 +4030,29 @@
             ? `<div style="text-align:center;margin:auto 0;"><div style="font-size:42px;">🏆🎉</div><h3 style="color:#fde68a;margin:4px 0;">ยินดีด้วย! คุณได้รางวัล!</h3><div style="background:rgba(245,158,11,0.2);border:1px solid var(--brand);border-radius:8px;padding:6px 10px;margin:8px 0;font-size:13px;font-weight:700;">🎁 ${escapeHtml(wg.prize)}</div><div style="font-size:12px;">เลขที่ทาย: <strong>${myStr}</strong> • เฉลย: <strong>${ansStr}</strong></div>${diffSummaryHtml}</div>`
             : `<div style="text-align:center;margin:auto 0;"><div style="font-size:36px;">${has ? '😅💨' : '⌛🚫'}</div><h3 style="color:#cbd5e1;margin:4px 0;">${has ? 'อดเลยรอบนี้!' : 'สละสิทธิ์รอบนี้'}</h3><div style="font-size:12px;color:var(--muted);margin-top:6px;">ของคุณ: <strong>${myStr}</strong> • เฉลยจริง: <strong style="color:var(--brand);">${ansStr}</strong></div>${diffSummaryHtml}</div>`;
         }
-        stage.innerHTML = `<div class="mini-phone${isW ? ' phone-winner' : ''}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:10px;"><span>📱 ${escapeHtml(me.name)}</span><span style="color:var(--success);">● ออนไลน์</span></div>${inner}</div>`;
+        stage.innerHTML = `<div class="mini-phone${isW ? ' phone-winner' : ''}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:10px;"><span>📱 ${escapeHtml(me.name)}</span><span style="color:var(--success);">● ออนไลน์</span></div>${inner}</div>` + (wg.phase === 'revealed' ? buildWitsOneShotLeaderboardHtml(wg, me.id) : '');
+
+      function buildWitsOneShotLeaderboardHtml(wg, myId) {
+        const list = Array.isArray(wg.rankedEntries) ? wg.rankedEntries : [];
+        if (!list.length) return '';
+        const limit = wg.oneShotRankEnabled ? Math.max(1, Math.min(10, Number(wg.rankDisplayLimit) || 3)) : 1;
+        const shown = list.slice(0, limit);
+        const rows = shown.map((item, idx) => {
+          const rankNum = idx + 1;
+          const medal = rankNum === 1 ? '🥇' : (rankNum === 2 ? '🥈' : (rankNum === 3 ? '🥉' : `#${rankNum}`));
+          const secUsed = ((Number(wg.durationSec || 15) * 1000 - Math.max(0, Number(item.remMs || 0))) / 1000).toFixed(1);
+          const isTop = rankNum === 1;
+          const isMine = myId && item.id === myId;
+          return `<div class="kahoot-lb-row${isTop ? ' is-top1' : ''}${isMine ? ' is-me' : ''}">
+            <span style="font-weight:600;">${medal} อันดับ ${rankNum}: ${escapeHtml(item.name)}${isMine ? ' <small style="color:#38bdf8;">(คุณ)</small>' : ''}</span>
+            <span style="color:var(--brand);font-weight:700;font-size:12px;">ทาย ${Number(item.guess).toLocaleString('th-TH')} • ห่าง ${Number(item.diff).toLocaleString('th-TH')} • ${secUsed} วิ</span>
+          </div>`;
+        }).join('');
+        return `<div style="margin-top:14px;">
+          <div class="meta-caption" style="font-weight:700;color:#fde68a;margin-bottom:6px;">🏅 ลำดับผู้ตอบถูกต้องและไวที่สุด (แสดง ${shown.length} / ${list.length} ลำดับ — เลือกของตามลำดับ):</div>
+          <div class="kahoot-lb-list">${rows}</div>
+        </div>`;
+      }
       }
 
       /* === PART 7: ATOMIC FIREBASE SYNC (WITH 401/403 RULES CHECK) + BROADCASTCHANNEL === */
@@ -3975,9 +4138,13 @@
             timeUp: Boolean(state.witsGame.timeUp),
             autoRun: Boolean(state.witsGame.autoRun),
             autoDelaySec: Number(state.witsGame.autoDelaySec) || 5,
+            qMode: state.witsGame.qMode || 'oneshot',
+            oneShotRankEnabled: Boolean(state.witsGame.oneShotRankEnabled),
+            rankDisplayLimit: Number(state.witsGame.rankDisplayLimit) || 3,
             questions: state.witsGame.questions,
             questionsCount: state.witsGame.questions.length,
-            winnerIds: state.witsGame.winnerIds
+            winnerIds: state.witsGame.winnerIds,
+            rankedEntries: state.witsGame.rankedEntries || []
           }
         };
       }
@@ -4116,8 +4283,12 @@
               timeUp: Boolean(c.witsMeta.timeUp),
               autoRun: typeof c.witsMeta.autoRun === 'boolean' ? c.witsMeta.autoRun : state.witsGame.autoRun,
               autoDelaySec: Number(c.witsMeta.autoDelaySec) || 5,
+              qMode: c.witsMeta.qMode || 'oneshot',
+              oneShotRankEnabled: typeof c.witsMeta.oneShotRankEnabled === 'boolean' ? c.witsMeta.oneShotRankEnabled : true,
+              rankDisplayLimit: Number(c.witsMeta.rankDisplayLimit) || 3,
               questions: c.witsMeta.questionsCount === 0 ? [] : (Array.isArray(c.witsMeta.questions) ? c.witsMeta.questions : state.witsGame.questions),
               winnerIds: Array.isArray(c.witsMeta.winnerIds) ? c.witsMeta.winnerIds : [],
+              rankedEntries: Array.isArray(c.witsMeta.rankedEntries) ? c.witsMeta.rankedEntries : [],
               submissions: cleanSubs
             };
             if (state.witsGame.phase !== 'revealed' && witsAutoNextInterval) {
