@@ -717,10 +717,17 @@
             </p>
 
             <div id="gift-loop-setup-view">
+              <div class="admin-only-control" data-admin-scope="core" style="background: #0b1222; border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+                  <span style="font-size: 11px; font-weight: 700; color: #fde68a;">🚫 ตัดชื่อผู้ไม่ประสงค์ร่วมจับสลากแลกของขวัญ (ยังอยู่ในรายชื่อผู้เข้าร่วมงานและเล่นเกมอื่นได้):</span>
+                  <button type="button" class="btn btn-secondary" id="btn-gift-include-all" style="min-height: 26px; padding: 2px 8px; font-size: 10px;">✅ รวมทุกคนกลับเข้าวงจร</button>
+                </div>
+                <div class="wheel-exclude-list" id="gift-exclusion-chips-container"></div>
+              </div>
               <div class="gift-reveal-box admin-only-control" data-admin-scope="core" id="btn-start-circular-game">
                 <div style="font-size: 44px;">🔄</div>
                 <h3 style="margin: 8px 0 4px; font-size: 16px; font-weight: 700;">👑 แตะเพื่อเริ่มสร้างวงจรแลกของขวัญ (เฉพาะ Host)</h3>
-                <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ผู้เข้าร่วมขณะนี้ <span class="guest-counter-val">0</span> คน (ต้องมีอย่างน้อย 2 คน)</p>
+                <p id="gift-loop-setup-hint" style="font-size: 12px; color: var(--muted); margin: 0;">ผู้เข้าร่วมแลกของขวัญ <strong id="gift-eligible-count">0</strong> / <span class="guest-counter-val">0</span> คน (ต้องมีอย่างน้อย 2 คน)</p>
               </div>
               <div class="empty-state participant-only-control">
                 <div style="font-size: 36px; margin-bottom: 6px;">⏳🎁</div>
@@ -1156,6 +1163,7 @@
         selectedPrize: '',
         luckyDrawExclusions: [],
         wheelManualExclusions: [],
+        giftExchangeExclusions: [],
         wheelStage: {
           spinId: '',
           status: 'idle',
@@ -1307,6 +1315,7 @@
         state.guests = state.guests.filter(g => g.id !== guestId);
         state.luckyDrawExclusions = state.luckyDrawExclusions.filter(id => id !== guestId);
         state.wheelManualExclusions = state.wheelManualExclusions.filter(id => id !== guestId);
+        state.giftExchangeExclusions = state.giftExchangeExclusions.filter(id => id !== guestId);
         if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
 
         let loopWasReset = false;
@@ -2391,13 +2400,67 @@
         state.circularDrawnList = [];
       }
 
-      document.getElementById('btn-start-circular-game').addEventListener('click', () => {
-        if (!canManageCore()) return;
-        if (state.guests.length < 2) {
-          document.getElementById('gift-loop-setup-hint').innerHTML = '<span style="color:var(--danger);">❌ ต้องมีผู้เข้าร่วมอย่างน้อย 2 คนขึ้นไป</span>';
+      function getActiveGiftExchangePool() {
+        const exList = Array.isArray(state.giftExchangeExclusions) ? state.giftExchangeExclusions : [];
+        return state.guests.filter(g => !exList.includes(g.id));
+      }
+
+      function renderGiftExclusionChips() {
+        const box = document.getElementById('gift-exclusion-chips-container');
+        const eligEl = document.getElementById('gift-eligible-count');
+        const exList = Array.isArray(state.giftExchangeExclusions) ? state.giftExchangeExclusions : [];
+        const pool = getActiveGiftExchangePool();
+        if (eligEl) eligEl.textContent = String(pool.length);
+        if (!box) return;
+        box.innerHTML = '';
+        if (!state.guests.length) {
+          box.innerHTML = '<span style="font-size: 11px; color: var(--muted);">ยังไม่มีรายชื่อผู้เข้าร่วมในขณะนี้</span>';
           return;
         }
-        const pool = [...state.guests].map(g => ({ id: g.id, name: g.name }));
+        state.guests.forEach(g => {
+          const isOptOut = exList.includes(g.id);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'wheel-exclude-chip' + (isOptOut ? ' is-excluded' : '');
+          if (isOptOut) {
+            btn.innerHTML = `🚫 ${escapeHtml(g.name)} <small>(ไม่ร่วมแลก)</small>`;
+            btn.title = 'แตะเพื่อดึงกลับเข้าร่วมจับสลากแลกของขวัญ';
+          } else {
+            btn.innerHTML = `✅ ${escapeHtml(g.name)}`;
+            btn.title = 'แตะเพื่อตัดออกจากการจับสลากแลกของขวัญ (ไม่กระทบเกมอื่น)';
+          }
+          btn.onclick = () => window.toggleGiftExcludeGuest(g.id);
+          box.appendChild(btn);
+        });
+      }
+
+      window.toggleGiftExcludeGuest = function(guestId) {
+        if (!canManageCore() || state.circularHasStarted) return;
+        if (!Array.isArray(state.giftExchangeExclusions)) state.giftExchangeExclusions = [];
+        const idx = state.giftExchangeExclusions.indexOf(guestId);
+        if (idx !== -1) state.giftExchangeExclusions.splice(idx, 1);
+        else state.giftExchangeExclusions.push(guestId);
+        triggerHapticVibration(35);
+        renderGiftExclusionChips();
+        syncAdminCore('gift_exclude_toggled');
+      };
+
+      document.getElementById('btn-gift-include-all')?.addEventListener('click', () => {
+        if (!canManageCore() || state.circularHasStarted) return;
+        state.giftExchangeExclusions = [];
+        triggerHapticVibration(30);
+        renderGiftExclusionChips();
+        syncAdminCore('gift_exclude_cleared');
+      });
+
+      document.getElementById('btn-start-circular-game').addEventListener('click', () => {
+        if (!canManageCore()) return;
+        const eligibleGuests = getActiveGiftExchangePool();
+        if (eligibleGuests.length < 2) {
+          document.getElementById('gift-loop-setup-hint').innerHTML = `<span style="color:var(--danger);">❌ ต้องมีผู้ร่วมจับสลากอย่างน้อย 2 คนขึ้นไป (ปัจจุบันร่วมแลก <strong id="gift-eligible-count">${eligibleGuests.length}</strong> / <span class="guest-counter-val">${state.guests.length}</span> คน)</span>`;
+          return;
+        }
+        const pool = eligibleGuests.map(g => ({ id: g.id, name: g.name }));
         for (let i = pool.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -2413,6 +2476,7 @@
       });
 
       function updateCircularLoopUI() {
+        renderGiftExclusionChips();
         const setup = document.getElementById('gift-loop-setup-view');
         const active = document.getElementById('gift-loop-active-view');
         const completed = isCircularLoopCompleted();
@@ -4102,6 +4166,7 @@
           selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions,
           wheelManualExclusions: state.wheelManualExclusions,
+          giftExchangeExclusions: state.giftExchangeExclusions,
           wheelStage: state.wheelStage,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
@@ -4224,6 +4289,7 @@
           state.selectedPrize = typeof c.selectedPrize === 'string' ? c.selectedPrize : '';
           state.luckyDrawExclusions = Array.isArray(c.luckyDrawExclusions) ? c.luckyDrawExclusions : [];
           state.wheelManualExclusions = Array.isArray(c.wheelManualExclusions) ? c.wheelManualExclusions : [];
+          state.giftExchangeExclusions = Array.isArray(c.giftExchangeExclusions) ? c.giftExchangeExclusions : [];
           if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
           state.winners = Array.isArray(c.winners) ? c.winners : [];
           state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
@@ -4463,6 +4529,7 @@
           adminPassword: state.adminPassword, adminPasswords: state.adminPasswords, guests: state.guests, prizes: state.prizes,
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
+          giftExchangeExclusions: state.giftExchangeExclusions,
           wheelStage: state.wheelStage, winners: state.winners, prizeAlerts: state.prizeAlerts,
           kahootGame: state.kahootGame,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
@@ -4487,6 +4554,7 @@
         if (typeof p.selectedPrize === 'string') state.selectedPrize = p.selectedPrize;
         if (Array.isArray(p.luckyDrawExclusions)) state.luckyDrawExclusions = p.luckyDrawExclusions;
         if (Array.isArray(p.wheelManualExclusions)) state.wheelManualExclusions = p.wheelManualExclusions;
+        if (Array.isArray(p.giftExchangeExclusions)) state.giftExchangeExclusions = p.giftExchangeExclusions;
         if (p.wheelStage) state.wheelStage = p.wheelStage;
         if (Array.isArray(p.winners)) state.winners = p.winners;
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
