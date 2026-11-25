@@ -514,6 +514,7 @@
           👥 <strong id="tb-joined-count">0</strong> คน
         </span>
         <button id="tb-refresh-sync-btn" class="toolbar-btn" type="button" title="แตะเพื่อดึงข้อมูลสดล่าสุด">🔄 รีเฟรช</button>
+        <button id="tb-sound-toggle-btn" class="toolbar-btn green-status" type="button" title="เปิด/ปิดเสียงเตือนนับถอยหลังและเสียงเฉลย">🔊 เสียง</button>
         <button id="tb-enter-admin-top-btn" class="toolbar-btn orange-status" type="button">👑 Host</button>
         <button id="tb-line-export-btn" class="toolbar-btn green-status admin-only-control" data-admin-scope="core" type="button" style="display: none;">📋 สรุปส่ง LINE</button>
         <button id="tb-firebase-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;">☁️ Firebase</button>
@@ -784,13 +785,30 @@
 
               <!-- Question Bank Selector -->
               <div style="margin-bottom: 10px;">
-                <span class="field-label" style="margin-bottom: 4px;">คลังคำถามทั้งหมด (แตะเพื่อเลือกข้อที่จะเล่น):</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                  <span class="field-label" style="margin:0;">คลังคำถามทั้งหมด (แตะเพื่อเลือกข้อที่จะเล่น):</span>
+                  <button type="button" class="btn btn-secondary" id="btn-kahoot-toggle-bulk" style="min-height:26px;padding:2px 8px;font-size:11px;border-color:#a855f7;color:#e9d5ff;">📥 นำเข้าคำถามรวดเดียว</button>
+                </div>
+                <div id="kahoot-bulk-box" style="display:none;background:#070b14;border:1px dashed #a855f7;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="font-size:11px;color:#e9d5ff;margin-bottom:6px;line-height:1.4;">
+                    รูปแบบต่อข้อ (คั่นด้วย <code>|</code>): <code>คำถาม | ตัวเลือกA | ตัวเลือกB | ตัวเลือกC | ตัวเลือกD | เฉลย(A-D หรือ 1-4) | วินาที(ไม่ใส่=15)</code>
+                  </div>
+                  <textarea id="kh-bulk-textarea" class="textarea" rows="4" style="font-size:13px;" placeholder="เช่น: เมืองหลวงของไทยคืออะไร? | เชียงใหม่ | ภูเก็ต | กรุงเทพฯ | ขอนแก่น | C | 15"></textarea>
+                  <p id="kh-bulk-error" class="error-msg">-</p>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button type="button" class="btn btn-secondary" id="btn-kahoot-cancel-bulk" style="min-height:34px;padding:6px 12px;font-size:12px;">ปิด</button>
+                    <button type="button" class="btn btn-primary" id="btn-kahoot-do-bulk" style="flex:1;min-height:34px;padding:6px 12px;font-size:12px;">📥 นำเข้าคำถามทั้งหมด</button>
+                  </div>
+                </div>
                 <div class="kahoot-q-list" id="kahoot-question-bank-list"></div>
               </div>
 
-              <!-- Add New Question Collapsible Form -->
+              <!-- Add / Edit Question Collapsible Form -->
               <div id="kahoot-editor-box" style="display: none; background: #070b14; border: 1px dashed var(--brand); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-                <strong style="font-size: 12px; color: #fde68a; display: block; margin-bottom: 8px;">✏️ เพิ่มคำถามใหม่เข้าคลัง</strong>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+                  <strong id="kh-editor-title" style="font-size: 12px; color: #fde68a;">✏️ เพิ่มคำถามใหม่เข้าคลัง</strong>
+                  <button type="button" class="btn btn-ghost-danger" id="btn-kahoot-cancel-edit" style="min-height: 26px; padding: 2px 8px; font-size: 11px;">✕ ยกเลิก</button>
+                </div>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                   <input type="text" id="kh-new-q" class="input" placeholder="พิมพ์คำถาม...">
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px;">
@@ -877,13 +895,30 @@
 
               <!-- Question Bank Selector -->
               <div style="margin-bottom: 10px;">
-                <span class="field-label" style="margin-bottom: 4px;">คลังคำถามทายตัวเลขทั้งหมด (แตะเพื่อเลือกข้อเริ่มต้น):</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                  <span class="field-label" style="margin:0;">คลังคำถามทายตัวเลขทั้งหมด (แตะเพื่อเลือกข้อเริ่มต้น):</span>
+                  <button type="button" class="btn btn-secondary" id="btn-wits-toggle-bulk" style="min-height:26px;padding:2px 8px;font-size:11px;border-color:#a855f7;color:#e9d5ff;">📥 นำเข้าคำถามรวดเดียว</button>
+                </div>
+                <div id="wits-bulk-box" style="display:none;background:#070b14;border:1px dashed #a855f7;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="font-size:11px;color:#e9d5ff;margin-bottom:6px;line-height:1.4;">
+                    รูปแบบต่อข้อ (คั่นด้วย <code>|</code>): <code>คำถาม | เลขเฉลย | ของรางวัล(ไม่ใส่=ค่าเริ่มต้น) | วินาที(ไม่ใส่=15) | กติกา(wits หรือ closest)</code>
+                  </div>
+                  <textarea id="wits-bulk-textarea" class="textarea" rows="4" style="font-size:13px;" placeholder="เช่น: ปีนี้มีกี่สัปดาห์? | 52 | อั่งเปา 500 บาท | 15 | wits"></textarea>
+                  <p id="wits-bulk-error" class="error-msg">-</p>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button type="button" class="btn btn-secondary" id="btn-wits-cancel-bulk" style="min-height:34px;padding:6px 12px;font-size:12px;">ปิด</button>
+                    <button type="button" class="btn btn-primary" id="btn-wits-do-bulk" style="flex:1;min-height:34px;padding:6px 12px;font-size:12px;">📥 นำเข้าคำถามทั้งหมด</button>
+                  </div>
+                </div>
                 <div class="kahoot-q-list" id="wits-question-bank-list"></div>
               </div>
 
-              <!-- Add New Question Collapsible Form -->
+              <!-- Add / Edit Question Collapsible Form -->
               <div id="wits-editor-box" style="display: none; background: #070b14; border: 1px dashed var(--brand); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-                <strong style="font-size: 12px; color: #fde68a; display: block; margin-bottom: 8px;">✏️ เพิ่มคำถามทายตัวเลขใหม่เข้าคลัง</strong>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+                  <strong id="wits-editor-title" style="font-size: 12px; color: #fde68a;">✏️ เพิ่มคำถามทายตัวเลขใหม่เข้าคลัง</strong>
+                  <button type="button" class="btn btn-ghost-danger" id="btn-wits-cancel-edit" style="min-height: 26px; padding: 2px 8px; font-size: 11px;">✕ ยกเลิก</button>
+                </div>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                   <div>
                     <label class="field-label" for="wits-question-input">คำถาม</label>
@@ -1179,6 +1214,14 @@
 
       const localRoundDeadlines = {};
       let pendingModalAlertIds = [];
+
+      function autoDismissWinnerModalForNextRound() {
+        if (pendingModalAlertIds.length > 0) {
+          addSeenIds(SEEN_ALERTS_KEY, pendingModalAlertIds);
+          pendingModalAlertIds = [];
+        }
+        winnerPopupModal.classList.remove('open');
+      }
       let lastAdminPopupId = null;
       let lastAnimatedSpinId = '';
       let witsTimerInterval = null;
@@ -1302,7 +1345,59 @@
         }
       }
 
-      /* === 📱 HAPTIC VIBRATION HELPER (ระบบสั่นเตือนบนมือถือ) === */
+      /* === 📱 HAPTIC VIBRATION & 🔊 WEB AUDIO SOUND HELPER === */
+      let soundMuted = false;
+      let audioCtxRef = null;
+
+      function getAudioContext() {
+        if (soundMuted) return null;
+        try {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          if (!audioCtxRef) audioCtxRef = new Ctx();
+          if (audioCtxRef.state === 'suspended') audioCtxRef.resume().catch(() => {});
+          return audioCtxRef;
+        } catch (e) { return null; }
+      }
+
+      function playCountdownTickSound(isUrgent) {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = isUrgent ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(isUrgent ? 880 : 580, ctx.currentTime);
+          gain.gain.setValueAtTime(isUrgent ? 0.14 : 0.07, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.095);
+        } catch (e) {}
+      }
+
+      function playRevealChimeSound() {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const t0 = ctx.currentTime + idx * 0.085;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, t0);
+            gain.gain.setValueAtTime(0.14, t0);
+            gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t0);
+            osc.stop(t0 + 0.29);
+          });
+        } catch (e) {}
+      }
+
       function triggerHapticVibration(pattern) {
         try {
           if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
@@ -1642,6 +1737,23 @@
         document.getElementById('change-pw-success').style.display = 'block';
         syncAdminCore('admin_pw_changed');
       });
+
+      // Sound Toggle Button (Web Audio API)
+      const soundBtn = document.getElementById('tb-sound-toggle-btn');
+      if (soundBtn) {
+        soundBtn.addEventListener('click', () => {
+          soundMuted = !soundMuted;
+          if (!soundMuted) {
+            getAudioContext();
+            playCountdownTickSound(false);
+            soundBtn.textContent = '🔊 เสียง';
+            soundBtn.classList.add('green-status');
+          } else {
+            soundBtn.textContent = '🔇 ปิดเสียง';
+            soundBtn.classList.remove('green-status');
+          }
+        });
+      }
 
       // Manual Live Refresh Button (แก้ปัญหา iOS/Safari ตัด SSE ตอนล็อกจอ)
       const refreshBtn = document.getElementById('tb-refresh-sync-btn');
@@ -2361,6 +2473,7 @@
       // === KAHOOT SPEED QUIZ ENGINE (4 CHOICES + SPEED SCORE + AUTO-RUN + LEADERBOARD) ===
       const KAHOOT_SHAPES = ['▲', '◆', '●', '■'];
       const KAHOOT_LETTERS = ['A', 'B', 'C', 'D'];
+      let kahootEditingIdx = null;
 
       function clearAllKahootTimers() {
         if (kahootTimerInterval) { clearInterval(kahootTimerInterval); kahootTimerInterval = null; }
@@ -2405,6 +2518,9 @@
           const remSec = Math.ceil(remMs / 1000);
           state.kahootGame.timeLeft = remSec;
 
+          if (state.kahootGame.timeLeft !== remSec && remSec > 0) {
+            playCountdownTickSound(remSec <= 5);
+          }
           const tc = document.getElementById('kahoot-timer-circle');
           if (tc) {
             tc.textContent = String(remSec);
@@ -2453,6 +2569,7 @@
             kahootAutoNextInterval = null;
             if (canManageKahoot() && curKg.phase === 'revealed' && curKg.autoRun) {
               if (curKg.currentIdx + 1 < curKg.questions.length) {
+                autoDismissWinnerModalForNextRound();
                 curKg.currentIdx++;
                 startKahootCurrentQuestion();
               } else {
@@ -2530,6 +2647,7 @@
           localKahootAutoNextDeadlines[nextKey] = Date.now() + ((Number(kg.autoDelaySec) || 5) * 1000);
         }
 
+        playRevealChimeSound();
         triggerGrandConfetti();
         renderKahootGame();
         if (kg.autoRun) ensureKahootAutoNextLoop();
@@ -2571,9 +2689,98 @@
         syncAdminCore('kahoot_champion_awarded');
       }
 
+      function resetKahootEditorForm() {
+        kahootEditingIdx = null;
+        const titleEl = document.getElementById('kh-editor-title');
+        const saveBtn = document.getElementById('btn-kahoot-add-q');
+        const err = document.getElementById('kh-editor-error');
+        if (titleEl) titleEl.textContent = '✏️ เพิ่มคำถามใหม่เข้าคลัง';
+        if (saveBtn) saveBtn.textContent = '+ บันทึกคำถามเข้าคลัง';
+        if (err) err.classList.remove('visible');
+        ['kh-new-q', 'kh-new-c0', 'kh-new-c1', 'kh-new-c2', 'kh-new-c3'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        const ansEl = document.getElementById('kh-new-ans');
+        const secEl = document.getElementById('kh-new-sec');
+        if (ansEl) ansEl.value = '0';
+        if (secEl) secEl.value = '15';
+      }
+
       document.getElementById('btn-kahoot-toggle-editor').addEventListener('click', () => {
         const box = document.getElementById('kahoot-editor-box');
-        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        if (box.style.display === 'none') {
+          resetKahootEditorForm();
+          box.style.display = 'block';
+          document.getElementById('kh-new-q')?.focus();
+        } else {
+          resetKahootEditorForm();
+          box.style.display = 'none';
+        }
+      });
+
+      document.getElementById('btn-kahoot-toggle-bulk').addEventListener('click', () => {
+        const bBox = document.getElementById('kahoot-bulk-box');
+        const err = document.getElementById('kh-bulk-error');
+        if (err) err.classList.remove('visible');
+        if (bBox) {
+          bBox.style.display = bBox.style.display === 'none' ? 'block' : 'none';
+          if (bBox.style.display === 'block') document.getElementById('kh-bulk-textarea')?.focus();
+        }
+      });
+
+      document.getElementById('btn-kahoot-cancel-bulk').addEventListener('click', () => {
+        const bBox = document.getElementById('kahoot-bulk-box');
+        if (bBox) bBox.style.display = 'none';
+      });
+
+      document.getElementById('btn-kahoot-do-bulk').addEventListener('click', () => {
+        if (!canManageKahoot()) return;
+        const ta = document.getElementById('kh-bulk-textarea');
+        const err = document.getElementById('kh-bulk-error');
+        const raw = (ta ? ta.value : '').trim();
+        if (!raw) {
+          if (err) { err.textContent = '❌ กรุณาวางข้อความคำถามอย่างน้อย 1 บรรทัด'; err.classList.add('visible'); }
+          return;
+        }
+        const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const added = [];
+        for (const line of lines) {
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length < 5) {
+            if (err) { err.textContent = `❌ รูปแบบไม่ครบ 5 ส่วน (คำถาม | A | B | C | D): "${line}"`; err.classList.add('visible'); }
+            return;
+          }
+          const qTxt = parts[0];
+          const choices = [parts[1], parts[2], parts[3], parts[4]];
+          if (!qTxt || choices.some(c => !c)) {
+            if (err) { err.textContent = `❌ คำถามหรือตัวเลือกห้ามว่าง: "${line}"`; err.classList.add('visible'); }
+            return;
+          }
+          let ansIdx = 0;
+          const ansRaw = (parts[5] || 'A').toUpperCase();
+          if (ansRaw === 'A' || ansRaw === '1' || ansRaw === '0') ansIdx = 0;
+          else if (ansRaw === 'B' || ansRaw === '2') ansIdx = 1;
+          else if (ansRaw === 'C' || ansRaw === '3') ansIdx = 2;
+          else if (ansRaw === 'D' || ansRaw === '4') ansIdx = 3;
+          const secVal = Math.max(5, Math.min(120, Number(parts[6]) || 15));
+          added.push({ q: qTxt, choices, answer: ansIdx, sec: secVal });
+        }
+        if (err) err.classList.remove('visible');
+        if (!Array.isArray(state.kahootGame.questions)) state.kahootGame.questions = [];
+        state.kahootGame.questions.push(...added);
+        if (state.kahootGame.phase === 'finished') state.kahootGame.phase = 'idle';
+        if (ta) ta.value = '';
+        const bBox = document.getElementById('kahoot-bulk-box');
+        if (bBox) bBox.style.display = 'none';
+        triggerHapticVibration(40);
+        renderKahootGame();
+        syncAdminCore('kahoot_q_bulk_added');
+      });
+
+      document.getElementById('btn-kahoot-cancel-edit').addEventListener('click', () => {
+        resetKahootEditorForm();
+        document.getElementById('kahoot-editor-box').style.display = 'none';
       });
 
       document.getElementById('chk-kahoot-autorun').addEventListener('change', (e) => {
@@ -2621,13 +2828,62 @@
           return;
         }
         err.classList.remove('visible');
-        state.kahootGame.questions.push({ q: qTxt, choices: [c0, c1, c2, c3], answer: ans, sec });
-        state.kahootGame.currentIdx = state.kahootGame.questions.length - 1;
-        ['kh-new-q', 'kh-new-c0', 'kh-new-c1', 'kh-new-c2', 'kh-new-c3'].forEach(id => { document.getElementById(id).value = ''; });
+        if (!Array.isArray(state.kahootGame.questions)) state.kahootGame.questions = [];
+        const newObj = { q: qTxt, choices: [c0, c1, c2, c3], answer: ans, sec };
+
+        if (kahootEditingIdx !== null && kahootEditingIdx >= 0 && kahootEditingIdx < state.kahootGame.questions.length) {
+          state.kahootGame.questions[kahootEditingIdx] = newObj;
+          state.kahootGame.currentIdx = kahootEditingIdx;
+        } else {
+          state.kahootGame.questions.push(newObj);
+          state.kahootGame.currentIdx = state.kahootGame.questions.length - 1;
+        }
+        if (state.kahootGame.phase === 'finished') state.kahootGame.phase = 'idle';
+        resetKahootEditorForm();
         document.getElementById('kahoot-editor-box').style.display = 'none';
+        triggerHapticVibration(40);
         renderKahootGame();
-        syncAdminCore('kahoot_q_added');
+        syncAdminCore('kahoot_q_saved');
       });
+
+      window.editKahootQuestion = function(ev, idx) {
+        ev.stopPropagation();
+        if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
+        const item = state.kahootGame.questions[idx];
+        if (!item) return;
+        kahootEditingIdx = idx;
+        document.getElementById('kh-editor-title').textContent = `✏️ แก้ไขคำถามข้อที่ ${idx + 1}`;
+        document.getElementById('btn-kahoot-add-q').textContent = '💾 บันทึกการแก้ไขข้อนี้';
+        document.getElementById('kh-new-q').value = item.q || '';
+        document.getElementById('kh-new-c0').value = (item.choices && item.choices[0]) || '';
+        document.getElementById('kh-new-c1').value = (item.choices && item.choices[1]) || '';
+        document.getElementById('kh-new-c2').value = (item.choices && item.choices[2]) || '';
+        document.getElementById('kh-new-c3').value = (item.choices && item.choices[3]) || '';
+        document.getElementById('kh-new-ans').value = String(item.answer ?? 0);
+        document.getElementById('kh-new-sec').value = String(item.sec || 15);
+        document.getElementById('kh-editor-error').classList.remove('visible');
+        const box = document.getElementById('kahoot-editor-box');
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+
+      window.moveKahootQuestion = function(ev, idx, dir) {
+        ev.stopPropagation();
+        if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
+        const targetIdx = idx + dir;
+        const list = state.kahootGame.questions;
+        if (targetIdx < 0 || targetIdx >= list.length) return;
+        const temp = list[idx];
+        list[idx] = list[targetIdx];
+        list[targetIdx] = temp;
+        if (state.kahootGame.currentIdx === idx) state.kahootGame.currentIdx = targetIdx;
+        else if (state.kahootGame.currentIdx === targetIdx) state.kahootGame.currentIdx = idx;
+        if (kahootEditingIdx === idx) kahootEditingIdx = targetIdx;
+        else if (kahootEditingIdx === targetIdx) kahootEditingIdx = idx;
+        triggerHapticVibration(25);
+        renderKahootGame();
+        syncAdminCore('kahoot_q_reordered');
+      };
 
       window.selectKahootQuestion = function(idx) {
         if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
@@ -2645,9 +2901,18 @@
       window.deleteKahootQuestion = function(ev, idx) {
         ev.stopPropagation();
         if (!canManageKahoot() || state.kahootGame.phase === 'asking') return;
-        if (state.kahootGame.questions.length <= 1) return;
         state.kahootGame.questions.splice(idx, 1);
-        if (state.kahootGame.currentIdx >= state.kahootGame.questions.length) {
+        if (kahootEditingIdx === idx) {
+          resetKahootEditorForm();
+          document.getElementById('kahoot-editor-box').style.display = 'none';
+        } else if (kahootEditingIdx !== null && kahootEditingIdx > idx) {
+          kahootEditingIdx--;
+        }
+        if (state.kahootGame.questions.length === 0) {
+          clearAllKahootTimers();
+          state.kahootGame.currentIdx = 0;
+          state.kahootGame.phase = 'idle';
+        } else if (state.kahootGame.currentIdx >= state.kahootGame.questions.length) {
           state.kahootGame.currentIdx = Math.max(0, state.kahootGame.questions.length - 1);
         }
         renderKahootGame();
@@ -2764,15 +3029,24 @@
 
           const qListEl = document.getElementById('kahoot-question-bank-list');
           if (qListEl) {
-            qListEl.innerHTML = kg.questions.map((item, idx) => `
-              <div class="kahoot-q-item${idx === kg.currentIdx ? ' is-active' : ''}" onclick="selectKahootQuestion(${idx})">
-                <div style="min-width:0;flex:1;">
-                  <strong style="color:${idx === kg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
-                  <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • เฉลย ${KAHOOT_LETTERS[item.answer] || 'A'})</span>
+            if (!kg.questions.length) {
+              qListEl.innerHTML = '<div class="empty-state" style="padding:10px;font-size:12px;">ยังไม่มีข้อคำถามในคลัง กดปุ่ม <strong>➕ เพิ่ม/จัดการคลังคำถาม</strong> ด้านบนเพื่อสร้างคำถามได้เลย</div>';
+            } else {
+              qListEl.innerHTML = kg.questions.map((item, idx) => `
+                <div class="kahoot-q-item${idx === kg.currentIdx ? ' is-active' : ''}" onclick="selectKahootQuestion(${idx})">
+                  <div style="min-width:0;flex:1;">
+                    <strong style="color:${idx === kg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
+                    <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • เฉลย ${KAHOOT_LETTERS[item.answer] || 'A'})</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                    <button type="button" class="btn btn-secondary" title="เลื่อนขึ้น" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === 0 || kg.phase === 'asking' ? 'disabled' : ''} onclick="moveKahootQuestion(event, ${idx}, -1)">▲</button>
+                    <button type="button" class="btn btn-secondary" title="เลื่อนลง" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === kg.questions.length - 1 || kg.phase === 'asking' ? 'disabled' : ''} onclick="moveKahootQuestion(event, ${idx}, 1)">▼</button>
+                    <button type="button" class="btn btn-secondary" title="แก้ไขข้อนี้" style="min-height:24px;padding:2px 7px;font-size:10px;border-color:#60a5fa;color:#bae6fd;" ${kg.phase === 'asking' ? 'disabled' : ''} onclick="editKahootQuestion(event, ${idx})">✏️</button>
+                    <button type="button" class="btn btn-ghost-danger" title="ลบข้อนี้" style="min-height:24px;padding:2px 7px;font-size:10px;" ${kg.phase === 'asking' ? 'disabled' : ''} onclick="deleteKahootQuestion(event, ${idx})">✕</button>
+                  </div>
                 </div>
-                ${kg.questions.length > 1 ? `<button type="button" class="btn btn-ghost-danger" style="min-height:24px;padding:2px 7px;font-size:10px;" onclick="deleteKahootQuestion(event, ${idx})">✕</button>` : ''}
-              </div>
-            `).join('');
+              `).join('');
+            }
           }
 
           const btnStart = document.getElementById('btn-kahoot-start-q');
@@ -2780,10 +3054,14 @@
           const btnNext = document.getElementById('btn-kahoot-next-q');
           const btnPause = document.getElementById('btn-kahoot-pause-auto');
           if (btnStart && btnRev && btnNext && btnPause) {
+            const hasQs = kg.questions.length > 0;
             const startFrom = (kg.phase === 'finished' && kg.currentIdx >= kg.questions.length - 1) ? 1 : (kg.currentIdx + 1);
-            btnStart.textContent = kg.autoRun
-              ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${kg.questions.length})!`
-              : `📢 เริ่มคำถามข้อที่ ${startFrom}!`;
+            btnStart.textContent = !hasQs
+              ? '⚠️ กรุณาเพิ่มคำถามก่อนเริ่ม'
+              : (kg.autoRun
+                ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${kg.questions.length})!`
+                : `📢 เริ่มคำถามข้อที่ ${startFrom}!`);
+            btnStart.disabled = !hasQs;
             btnStart.style.display = (kg.phase === 'idle' || kg.phase === 'finished') ? 'inline-flex' : 'none';
             btnRev.style.display = kg.phase === 'asking' ? 'inline-flex' : 'none';
             btnNext.style.display = (kg.phase === 'revealed' && kg.currentIdx + 1 < kg.questions.length) ? 'inline-flex' : 'none';
@@ -2819,7 +3097,7 @@
           stage.innerHTML = `
             <div class="empty-state">
               <div style="font-size:36px;margin-bottom:6px;">⚡🎮</div>
-              <strong style="color:#fff;">${isAdmin ? `พร้อมปล่อยคำถามข้อที่ ${kg.currentIdx + 1} / ${kg.questions.length}${kg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}` : (isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกม Kahoot • ดูภาพรวมได้อย่างเดียว)' : 'รอผู้จัดงาน (Host) กดปล่อยคำถาม Kahoot')}</strong>
+              <strong style="color:#fff;">${isAdmin ? (kg.questions.length ? `พร้อมปล่อยคำถามข้อที่ ${kg.currentIdx + 1} / ${kg.questions.length}${kg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}` : 'คลังคำถามว่างอยู่ (สามารถเพิ่มคำถามใหม่ด้านบนได้ทันที)') : (isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกม Kahoot • ดูภาพรวมได้อย่างเดียว)' : 'รอผู้จัดงาน (Host) กดปล่อยคำถาม Kahoot')}</strong>
               <p style="margin:4px 0 0;font-size:12px;">${isAdmin && qObj ? `คำถามเริ่มต้น: "${escapeHtml(qObj.q)}"` : 'เตรียมนิ้วให้พร้อม! ยิ่งตอบถูกและตอบไว ยิ่งได้คะแนนเยอะ!'}</p>
             </div>
             ${lbHtml}`;
@@ -2917,6 +3195,17 @@
       /* === PART 6: WITS & WAGERS (QUESTION BANK + CUSTOM TIMER + AUTO-RUN) === */
       const chkAns = document.getElementById('chk-show-secret-ans');
       const witsAnsIn = document.getElementById('wits-answer-input');
+      let witsEditingIdx = null;
+
+      function getWitsSubValue(subEntry) {
+        if (typeof subEntry === 'number' && Number.isFinite(subEntry)) return subEntry;
+        if (subEntry && typeof subEntry === 'object' && typeof subEntry.val === 'number' && Number.isFinite(subEntry.val)) return subEntry.val;
+        return NaN;
+      }
+      function getWitsSubRemMs(subEntry) {
+        if (subEntry && typeof subEntry === 'object' && typeof subEntry.remMs === 'number' && Number.isFinite(subEntry.remMs)) return subEntry.remMs;
+        return 0;
+      }
       chkAns.addEventListener('change', () => { witsAnsIn.type = chkAns.checked ? 'text' : 'password'; });
 
       function clearAllWitsTimers() {
@@ -2924,14 +3213,18 @@
         if (witsAutoNextInterval) { clearInterval(witsAutoNextInterval); witsAutoNextInterval = null; }
       }
 
-      function getLocalRoundRemainingSec(wg) {
+      function getLocalWitsRemainingMs(wg) {
         if (!wg || wg.phase !== 'asking') return 0;
         if (wg.timeUp) return 0;
         const rid = wg.roundId || 'default_round';
         if (!localRoundDeadlines[rid]) {
           localRoundDeadlines[rid] = Date.now() + ((wg.durationSec || 15) * 1000);
         }
-        return Math.max(0, Math.ceil((localRoundDeadlines[rid] - Date.now()) / 1000));
+        return Math.max(0, localRoundDeadlines[rid] - Date.now());
+      }
+
+      function getLocalRoundRemainingSec(wg) {
+        return Math.max(0, Math.ceil(getLocalWitsRemainingMs(wg) / 1000));
       }
 
       function getLocalWitsAutoNextRemainingMs(wg) {
@@ -2956,6 +3249,9 @@
           const rem = getLocalRoundRemainingSec(state.witsGame);
           state.witsGame.timeLeft = rem;
 
+          if (state.witsGame.timeLeft !== rem && rem > 0) {
+            playCountdownTickSound(rem <= 5);
+          }
           const cEl = document.getElementById('wits-timer-circle');
           if (cEl) { cEl.textContent = String(rem); cEl.classList.toggle('urgent', rem <= 5); }
           const pSec = document.getElementById('wits-phone-live-sec');
@@ -2998,6 +3294,7 @@
             witsAutoNextInterval = null;
             if (canManageWits() && curWg.phase === 'revealed' && curWg.autoRun) {
               if (curWg.currentIdx + 1 < curWg.questions.length) {
+                autoDismissWinnerModalForNextRound();
                 curWg.currentIdx++;
                 startWitsCurrentQuestion();
               } else {
@@ -3051,17 +3348,32 @@
         if (!canManageWits() || state.witsGame.phase !== 'asking') return;
         clearAllWitsTimers();
         const wg = state.witsGame, target = wg.correctAnswer;
-        const entries = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').map(g => ({ id: g.id, name: g.name, guess: wg.submissions[g.id] }));
+        const entries = state.guests
+          .filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id])))
+          .map(g => ({
+            id: g.id,
+            name: g.name,
+            guess: getWitsSubValue(wg.submissions[g.id]),
+            remMs: getWitsSubRemMs(wg.submissions[g.id])
+          }));
 
         let winners = [];
         if (entries.length) {
           const under = wg.rule === 'wits' ? entries.filter(e => e.guess <= target) : [];
+          let tiedBest = [];
           if (under.length) {
             const best = Math.max(...under.map(e => e.guess));
-            winners = under.filter(e => e.guess === best);
+            tiedBest = under.filter(e => e.guess === best);
           } else {
             const minD = Math.min(...entries.map(e => Math.abs(e.guess - target)));
-            winners = entries.filter(e => Math.abs(e.guess - target) === minD);
+            tiedBest = entries.filter(e => Math.abs(e.guess - target) === minD);
+          }
+          if (tiedBest.length > 1) {
+            // กติกาเพิ่มเติม: หากตอบถูก/ใกล้เคียงเท่ากันมากกว่า 1 คน ให้เฉพาะคนที่ตอบไวที่สุด (remMs สูงสุด) เท่านั้นที่ได้รางวัล
+            tiedBest.sort((a, b) => (b.remMs - a.remMs) || ((a.submittedAt || 0) - (b.submittedAt || 0)));
+            winners = [tiedBest[0]];
+          } else {
+            winners = tiedBest;
           }
         }
         wg.phase = 'revealed';
@@ -3071,6 +3383,7 @@
         winners.forEach(w => {
           state.winners.unshift({ name: w.name, prize: `${wg.prize} (ทาย ${w.guess.toLocaleString('th-TH')} / เฉลย ${target.toLocaleString('th-TH')})`, timestamp: new Date().toLocaleTimeString('th-TH') });
         });
+        playRevealChimeSound();
         if (winners.length) triggerWinnerNotification(winners.map(w => w.id), winners.map(w => w.name).join(', '), wg.prize, 'ชนะเกมทายตัวเลข Wits & Wagers');
 
         if (wg.autoRun) {
@@ -3084,9 +3397,99 @@
         syncAdminCore('wits_reveal');
       }
 
+      function resetWitsEditorForm() {
+        witsEditingIdx = null;
+        const titleEl = document.getElementById('wits-editor-title');
+        const saveBtn = document.getElementById('btn-wits-add-q');
+        const err = document.getElementById('wits-host-error');
+        const qInp = document.getElementById('wits-question-input');
+        const prizeInp = document.getElementById('wits-prize-input');
+        const ruleSel = document.getElementById('wits-rule-select');
+        const secSel = document.getElementById('wits-sec-select');
+        if (titleEl) titleEl.textContent = '✏️ เพิ่มคำถามทายตัวเลขใหม่เข้าคลัง';
+        if (saveBtn) saveBtn.textContent = '+ บันทึกคำถามเข้าคลัง';
+        if (err) err.classList.remove('visible');
+        if (qInp) qInp.value = '';
+        if (witsAnsIn) {
+          witsAnsIn.value = '';
+          if (chkAns && !chkAns.checked) witsAnsIn.type = 'password';
+        }
+        if (prizeInp) prizeInp.value = 'ของรางวัลพิเศษปีใหม่';
+        if (ruleSel) ruleSel.value = 'wits';
+        if (secSel) secSel.value = '15';
+      }
+
       document.getElementById('btn-wits-toggle-editor').addEventListener('click', () => {
         const box = document.getElementById('wits-editor-box');
-        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        if (box.style.display === 'none') {
+          resetWitsEditorForm();
+          box.style.display = 'block';
+          document.getElementById('wits-question-input')?.focus();
+        } else {
+          resetWitsEditorForm();
+          box.style.display = 'none';
+        }
+      });
+
+      document.getElementById('btn-wits-toggle-bulk').addEventListener('click', () => {
+        const bBox = document.getElementById('wits-bulk-box');
+        const err = document.getElementById('wits-bulk-error');
+        if (err) err.classList.remove('visible');
+        if (bBox) {
+          bBox.style.display = bBox.style.display === 'none' ? 'block' : 'none';
+          if (bBox.style.display === 'block') document.getElementById('wits-bulk-textarea')?.focus();
+        }
+      });
+
+      document.getElementById('btn-wits-cancel-bulk').addEventListener('click', () => {
+        const bBox = document.getElementById('wits-bulk-box');
+        if (bBox) bBox.style.display = 'none';
+      });
+
+      document.getElementById('btn-wits-do-bulk').addEventListener('click', () => {
+        if (!canManageWits()) return;
+        const ta = document.getElementById('wits-bulk-textarea');
+        const err = document.getElementById('wits-bulk-error');
+        const raw = (ta ? ta.value : '').trim();
+        if (!raw) {
+          if (err) { err.textContent = '❌ กรุณาวางข้อความคำถามอย่างน้อย 1 บรรทัด'; err.classList.add('visible'); }
+          return;
+        }
+        const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const added = [];
+        for (const line of lines) {
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length < 2) {
+            if (err) { err.textContent = `❌ รูปแบบต้องมีอย่างน้อย คำถาม | เลขเฉลย: "${line}"`; err.classList.add('visible'); }
+            return;
+          }
+          const qTxt = parts[0];
+          const rawNum = (parts[1] || '').replace(/[๐-๙]/g, d => String('๐๑๒๓๔๕๖๗๘๙'.indexOf(d)));
+          const num = parseCleanNumber(rawNum);
+          if (!qTxt || !Number.isFinite(num)) {
+            if (err) { err.textContent = `❌ คำถามหรือเลขเฉลยไม่ถูกต้อง: "${line}"`; err.classList.add('visible'); }
+            return;
+          }
+          const prizeTxt = parts[2] || 'ของรางวัลพิเศษปีใหม่';
+          const secVal = Math.max(5, Math.min(120, Number(parts[3]) || 15));
+          const ruleVal = (parts[4] || '').toLowerCase() === 'closest' ? 'closest' : 'wits';
+          added.push({ q: qTxt, answer: num, prize: prizeTxt, rule: ruleVal, sec: secVal });
+        }
+        if (err) err.classList.remove('visible');
+        if (!Array.isArray(state.witsGame.questions)) state.witsGame.questions = [];
+        state.witsGame.questions.push(...added);
+        if (state.witsGame.phase === 'finished') state.witsGame.phase = 'idle';
+        if (ta) ta.value = '';
+        const bBox = document.getElementById('wits-bulk-box');
+        if (bBox) bBox.style.display = 'none';
+        triggerHapticVibration(40);
+        renderWitsGame();
+        syncAdminCore('wits_q_bulk_added');
+      });
+
+      document.getElementById('btn-wits-cancel-edit').addEventListener('click', () => {
+        resetWitsEditorForm();
+        document.getElementById('wits-editor-box').style.display = 'none';
       });
 
       document.getElementById('chk-wits-autorun').addEventListener('change', (e) => {
@@ -3141,27 +3544,71 @@
           return;
         }
         if (err) err.classList.remove('visible');
-        if (chkAns && !chkAns.checked && witsAnsIn) witsAnsIn.type = 'password';
 
         if (!Array.isArray(state.witsGame.questions)) state.witsGame.questions = [];
-        state.witsGame.questions.push({ q, answer: num, prize, rule, sec });
-        state.witsGame.currentIdx = state.witsGame.questions.length - 1;
+        const newObj = { q, answer: num, prize, rule, sec };
+        if (witsEditingIdx !== null && witsEditingIdx >= 0 && witsEditingIdx < state.witsGame.questions.length) {
+          state.witsGame.questions[witsEditingIdx] = newObj;
+          state.witsGame.currentIdx = witsEditingIdx;
+        } else {
+          state.witsGame.questions.push(newObj);
+          state.witsGame.currentIdx = state.witsGame.questions.length - 1;
+        }
         if (state.witsGame.phase === 'finished') state.witsGame.phase = 'idle';
 
-        if (qInp) qInp.value = '';
-        if (witsAnsIn) witsAnsIn.value = '';
+        resetWitsEditorForm();
         const edBox = document.getElementById('wits-editor-box');
         if (edBox) edBox.style.display = 'none';
 
         triggerHapticVibration(40);
         renderWitsGame();
-        syncAdminCore('wits_q_added');
+        syncAdminCore('wits_q_saved');
       }
 
       document.getElementById('btn-wits-add-q').addEventListener('click', handleAddWitsQuestion);
       witsAnsIn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); handleAddWitsQuestion(); }
       });
+
+      window.editWitsQuestion = function(ev, idx) {
+        ev.stopPropagation();
+        if (!canManageWits() || state.witsGame.phase === 'asking') return;
+        const item = state.witsGame.questions[idx];
+        if (!item) return;
+        witsEditingIdx = idx;
+        document.getElementById('wits-editor-title').textContent = `✏️ แก้ไขคำถามทายตัวเลขข้อที่ ${idx + 1}`;
+        document.getElementById('btn-wits-add-q').textContent = '💾 บันทึกการแก้ไขข้อนี้';
+        document.getElementById('wits-question-input').value = item.q || '';
+        if (witsAnsIn) {
+          witsAnsIn.value = String(item.answer ?? '');
+          if (chkAns) witsAnsIn.type = chkAns.checked ? 'text' : 'password';
+        }
+        document.getElementById('wits-prize-input').value = item.prize || 'ของรางวัลพิเศษปีใหม่';
+        document.getElementById('wits-rule-select').value = item.rule || 'wits';
+        document.getElementById('wits-sec-select').value = String(item.sec || 15);
+        document.getElementById('wits-host-error').classList.remove('visible');
+        const box = document.getElementById('wits-editor-box');
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+
+      window.moveWitsQuestion = function(ev, idx, dir) {
+        ev.stopPropagation();
+        if (!canManageWits() || state.witsGame.phase === 'asking') return;
+        const targetIdx = idx + dir;
+        const list = state.witsGame.questions;
+        if (targetIdx < 0 || targetIdx >= list.length) return;
+        const temp = list[idx];
+        list[idx] = list[targetIdx];
+        list[targetIdx] = temp;
+        if (state.witsGame.currentIdx === idx) state.witsGame.currentIdx = targetIdx;
+        else if (state.witsGame.currentIdx === targetIdx) state.witsGame.currentIdx = idx;
+        if (witsEditingIdx === idx) witsEditingIdx = targetIdx;
+        else if (witsEditingIdx === targetIdx) witsEditingIdx = idx;
+        triggerHapticVibration(25);
+        renderWitsGame();
+        syncAdminCore('wits_q_reordered');
+      };
 
       window.selectWitsQuestion = function(idx) {
         if (!canManageWits() || state.witsGame.phase === 'asking') return;
@@ -3179,9 +3626,18 @@
       window.deleteWitsQuestion = function(ev, idx) {
         ev.stopPropagation();
         if (!canManageWits() || state.witsGame.phase === 'asking') return;
-        if (state.witsGame.questions.length <= 1) return;
         state.witsGame.questions.splice(idx, 1);
-        if (state.witsGame.currentIdx >= state.witsGame.questions.length) {
+        if (witsEditingIdx === idx) {
+          resetWitsEditorForm();
+          document.getElementById('wits-editor-box').style.display = 'none';
+        } else if (witsEditingIdx !== null && witsEditingIdx > idx) {
+          witsEditingIdx--;
+        }
+        if (state.witsGame.questions.length === 0) {
+          clearAllWitsTimers();
+          state.witsGame.currentIdx = 0;
+          state.witsGame.phase = 'idle';
+        } else if (state.witsGame.currentIdx >= state.witsGame.questions.length) {
           state.witsGame.currentIdx = Math.max(0, state.witsGame.questions.length - 1);
         }
         renderWitsGame();
@@ -3211,16 +3667,18 @@
       window.submitWitsGuess = function() {
         const wg = state.witsGame, gid = state.deviceRole;
         if (wg.phase !== 'asking' || wg.timeUp || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
-        if (getLocalRoundRemainingSec(wg) <= 0) { wg.timeUp = true; renderWitsGame(); return; }
+        const remMs = getLocalWitsRemainingMs(wg);
+        if (remMs <= 0) { wg.timeUp = true; renderWitsGame(); return; }
         const inp = document.getElementById('wits-my-guess-input');
         if (!inp) return;
         const val = parseCleanNumber(inp.value);
         if (!Number.isFinite(val)) { inp.style.borderColor = 'var(--danger)'; inp.focus(); return; }
 
-        wg.submissions[gid] = val;
+        const subPayload = { val, remMs, submittedAt: Date.now(), roundId: wg.roundId };
+        wg.submissions[gid] = subPayload;
         triggerHapticVibration(40);
         renderWitsGame();
-        fbWriteSubpath(`witsSubmissions/${encodeURIComponent(gid)}`, val, 'PUT');
+        fbWriteSubpath(`witsSubmissions/${encodeURIComponent(gid)}`, subPayload, 'PUT');
         broadcastLocalOnly('wits_guess');
       };
 
@@ -3268,24 +3726,37 @@
 
           const qListEl = document.getElementById('wits-question-bank-list');
           if (qListEl) {
-            qListEl.innerHTML = wg.questions.map((item, idx) => {
-              const ruleTag = item.rule === 'closest' ? 'ใกล้สุด' : 'ไม่เกินจริง';
-              return `
-                <div class="kahoot-q-item${idx === wg.currentIdx ? ' is-active' : ''}" onclick="selectWitsQuestion(${idx})">
-                  <div style="min-width:0;flex:1;">
-                    <strong style="color:${idx === wg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
-                    <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ${ruleTag} • 🎁 ${escapeHtml(item.prize || '-')})</span>
-                  </div>
-                  ${wg.questions.length > 1 ? `<button type="button" class="btn btn-ghost-danger" style="min-height:24px;padding:2px 7px;font-size:10px;" onclick="deleteWitsQuestion(event, ${idx})">✕</button>` : ''}
-                </div>`;
-            }).join('');
+            if (!wg.questions.length) {
+              qListEl.innerHTML = '<div class="empty-state" style="padding:10px;font-size:12px;">ยังไม่มีข้อคำถามในคลัง กดปุ่ม <strong>➕ เพิ่ม/จัดการคลังคำถาม</strong> ด้านบนเพื่อสร้างคำถามได้เลย</div>';
+            } else {
+              qListEl.innerHTML = wg.questions.map((item, idx) => {
+                const ruleTag = item.rule === 'closest' ? 'ใกล้สุด' : 'ไม่เกินจริง';
+                return `
+                  <div class="kahoot-q-item${idx === wg.currentIdx ? ' is-active' : ''}" onclick="selectWitsQuestion(${idx})">
+                    <div style="min-width:0;flex:1;">
+                      <strong style="color:${idx === wg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
+                      <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ${ruleTag} • 🎁 ${escapeHtml(item.prize || '-')})</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                      <button type="button" class="btn btn-secondary" title="เลื่อนขึ้น" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === 0 || wg.phase === 'asking' ? 'disabled' : ''} onclick="moveWitsQuestion(event, ${idx}, -1)">▲</button>
+                      <button type="button" class="btn btn-secondary" title="เลื่อนลง" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === wg.questions.length - 1 || wg.phase === 'asking' ? 'disabled' : ''} onclick="moveWitsQuestion(event, ${idx}, 1)">▼</button>
+                      <button type="button" class="btn btn-secondary" title="แก้ไขข้อนี้" style="min-height:24px;padding:2px 7px;font-size:10px;border-color:#60a5fa;color:#bae6fd;" ${wg.phase === 'asking' ? 'disabled' : ''} onclick="editWitsQuestion(event, ${idx})">✏️</button>
+                      <button type="button" class="btn btn-ghost-danger" title="ลบข้อนี้" style="min-height:24px;padding:2px 7px;font-size:10px;" ${wg.phase === 'asking' ? 'disabled' : ''} onclick="deleteWitsQuestion(event, ${idx})">✕</button>
+                    </div>
+                  </div>`;
+              }).join('');
+            }
           }
 
           if (btnBroad && btnRev && btnNext && btnPause) {
+            const hasQs = wg.questions.length > 0;
             const startFrom = (wg.phase === 'finished' && wg.currentIdx >= wg.questions.length - 1) ? 1 : (wg.currentIdx + 1);
-            btnBroad.textContent = wg.autoRun
-              ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${wg.questions.length})!`
-              : `📢 เริ่มคำถามข้อที่ ${startFrom}!`;
+            btnBroad.textContent = !hasQs
+              ? '⚠️ กรุณาเพิ่มคำถามก่อนเริ่ม'
+              : (wg.autoRun
+                ? `🚀 เริ่มรันอัตโนมัติยาวๆ (ข้อ ${startFrom} ➔ ${wg.questions.length})!`
+                : `📢 เริ่มคำถามข้อที่ ${startFrom}!`);
+            btnBroad.disabled = !hasQs;
             btnBroad.style.display = (wg.phase === 'idle' || wg.phase === 'finished') ? 'inline-flex' : 'none';
             btnRev.style.display = wg.phase === 'asking' ? 'inline-flex' : 'none';
             btnNext.style.display = (wg.phase === 'revealed' && wg.currentIdx + 1 < wg.questions.length) ? 'inline-flex' : 'none';
@@ -3294,7 +3765,7 @@
         }
 
         const total = state.guests.length;
-        const ansCount = state.guests.filter(g => typeof wg.submissions[g.id] === 'number').length;
+        const ansCount = state.guests.filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id]))).length;
         const forfeitCount = wg.timeUp ? Math.max(0, total - ansCount) : 0;
 
         if (autoNextBanner) {
@@ -3348,20 +3819,20 @@
         if (isAdmin) {
           if (wg.phase === 'idle') {
             const qObj = wg.questions[wg.currentIdx];
-            stage.innerHTML = `<div class="empty-state"><div style="font-size:34px;margin-bottom:6px;">🔢🎮</div><strong style="color:#fff;">พร้อมปล่อยคำถามข้อที่ ${wg.currentIdx + 1} / ${wg.questions.length}${wg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}</strong><p style="margin:4px 0 0;font-size:12px;">${qObj ? `คำถามเริ่มต้น: "${escapeHtml(qObj.q)}" (${qObj.sec || 15} วิ)` : 'กรุณาเพิ่มคำถามในคลัง'}</p></div>`;
+            stage.innerHTML = `<div class="empty-state"><div style="font-size:34px;margin-bottom:6px;">🔢🎮</div><strong style="color:#fff;">${wg.questions.length ? `พร้อมปล่อยคำถามข้อที่ ${wg.currentIdx + 1} / ${wg.questions.length}${wg.autoRun ? ' (โหมดรันอัตโนมัติยาวๆ)' : ''}` : 'คลังคำถามว่างอยู่ (สามารถเพิ่มคำถามใหม่ด้านบนได้ทันที)'}</strong><p style="margin:4px 0 0;font-size:12px;">${qObj ? `คำถามเริ่มต้น: "${escapeHtml(qObj.q)}" (${qObj.sec || 15} วิ)` : 'กดปุ่ม ➕ เพิ่ม/จัดการคลังคำถาม ด้านบนเพื่อสร้างคำถามได้เลย'}</p></div>`;
             return;
           }
           if (!state.guests.length) { stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้เข้าร่วมออนไลน์ในขณะนี้</div>'; return; }
-          stage.innerHTML = '<div class="meta-caption" style="margin-bottom:6px;">📋 สถานะการตอบของผู้เข้าร่วมทั้งหมด:</div><div class="wits-status-grid">' +
+          stage.innerHTML = '<div class="meta-caption" style="margin-bottom:6px;">📋 สถานะการตอบของผู้เข้าร่วมทั้งหมด (หากตอบถูกเท่ากัน ตัดสินด้วยความไว):</div><div class="wits-status-grid">' +
             state.guests.map(g => {
-              const has = typeof wg.submissions[g.id] === 'number';
+              const gVal = getWitsSubValue(wg.submissions[g.id]);
+              const has = Number.isFinite(gVal);
               const isW = wg.phase === 'revealed' && wg.winnerIds.includes(g.id);
               let st = '<span style="color:var(--muted);">⚪ รอคำถาม</span>';
               if (wg.phase === 'asking') {
                 st = has ? '<span style="color:#38bdf8;">✅ ตอบแล้ว</span>' : (wg.timeUp ? '<span style="color:var(--danger);">🚫 สละสิทธิ์</span>' : '<span style="color:#fde68a;">⏳ รอตอบ...</span>');
               } else if (wg.phase === 'revealed') {
                 if (has) {
-                  const gVal = Number(wg.submissions[g.id]);
                   const diffVal = Math.abs(gVal - Number(wg.correctAnswer));
                   st = `${isW ? '🏆 ' : ''}${gVal.toLocaleString('th-TH')} <small style="opacity:0.8;">(ห่าง ${diffVal.toLocaleString('th-TH')})</small>`;
                 } else {
@@ -3376,8 +3847,8 @@
         const activePlayerId = (state.deviceRole && !canManageWits() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
         const me = activePlayerId ? state.guests.find(g => g.id === activePlayerId) : null;
         if (!me) { stage.innerHTML = `<div class="empty-state">${isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกมทายตัวเลข • ดูภาพรวมได้อย่างเดียว)' : 'กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อร่วมเล่น'}</div>`; return; }
-        const has = typeof wg.submissions[me.id] === 'number';
-        const myVal = wg.submissions[me.id];
+        const myVal = getWitsSubValue(wg.submissions[me.id]);
+        const has = Number.isFinite(myVal);
         const isW = wg.phase === 'revealed' && wg.winnerIds.includes(me.id);
 
         const existingInput = document.getElementById('wits-my-guess-input');
@@ -3481,6 +3952,7 @@
             autoDelaySec: Number(state.kahootGame.autoDelaySec) || 5,
             prize: state.kahootGame.prize,
             questions: state.kahootGame.questions,
+            questionsCount: state.kahootGame.questions.length,
             scores: state.kahootGame.scores,
             lastRoundPoints: state.kahootGame.lastRoundPoints
           },
@@ -3504,6 +3976,7 @@
             autoRun: Boolean(state.witsGame.autoRun),
             autoDelaySec: Number(state.witsGame.autoDelaySec) || 5,
             questions: state.witsGame.questions,
+            questionsCount: state.witsGame.questions.length,
             winnerIds: state.witsGame.winnerIds
           }
         };
@@ -3561,8 +4034,13 @@
         const subMap = fbMirror.witsSubmissions && typeof fbMirror.witsSubmissions === 'object' ? fbMirror.witsSubmissions : {};
         const cleanSubs = {};
         Object.keys(subMap).forEach(k => {
-          const n = Number(subMap[k]);
-          if (Number.isFinite(n)) cleanSubs[k] = n;
+          const entry = subMap[k];
+          if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.val))) {
+            cleanSubs[k] = { val: Number(entry.val), remMs: Number(entry.remMs) || 0, roundId: entry.roundId || '' };
+          } else {
+            const n = Number(entry);
+            if (Number.isFinite(n)) cleanSubs[k] = n;
+          }
         });
 
         const c = fbMirror.core;
@@ -3595,7 +4073,7 @@
               autoRun: typeof c.kahootMeta.autoRun === 'boolean' ? c.kahootMeta.autoRun : state.kahootGame.autoRun,
               autoDelaySec: Number(c.kahootMeta.autoDelaySec) || 5,
               prize: c.kahootMeta.prize || 'รางวัลแชมป์ Kahoot ประจำปีใหม่',
-              questions: Array.isArray(c.kahootMeta.questions) && c.kahootMeta.questions.length ? c.kahootMeta.questions : state.kahootGame.questions,
+              questions: c.kahootMeta.questionsCount === 0 ? [] : (Array.isArray(c.kahootMeta.questions) ? c.kahootMeta.questions : state.kahootGame.questions),
               scores: c.kahootMeta.scores && typeof c.kahootMeta.scores === 'object' ? c.kahootMeta.scores : {},
               lastRoundPoints: c.kahootMeta.lastRoundPoints && typeof c.kahootMeta.lastRoundPoints === 'object' ? c.kahootMeta.lastRoundPoints : {},
               answers: khAnsMap
@@ -3607,6 +4085,7 @@
               clearInterval(kahootTimerInterval); kahootTimerInterval = null;
             }
             if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
+              if (prevKhRid && prevKhRid !== state.kahootGame.roundId) autoDismissWinnerModalForNextRound();
               ensureKahootCountdownLoop();
             } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
               ensureKahootAutoNextLoop();
@@ -3637,7 +4116,7 @@
               timeUp: Boolean(c.witsMeta.timeUp),
               autoRun: typeof c.witsMeta.autoRun === 'boolean' ? c.witsMeta.autoRun : state.witsGame.autoRun,
               autoDelaySec: Number(c.witsMeta.autoDelaySec) || 5,
-              questions: Array.isArray(c.witsMeta.questions) && c.witsMeta.questions.length ? c.witsMeta.questions : state.witsGame.questions,
+              questions: c.witsMeta.questionsCount === 0 ? [] : (Array.isArray(c.witsMeta.questions) ? c.witsMeta.questions : state.witsGame.questions),
               winnerIds: Array.isArray(c.witsMeta.winnerIds) ? c.witsMeta.winnerIds : [],
               submissions: cleanSubs
             };
@@ -3648,6 +4127,7 @@
               clearInterval(witsTimerInterval); witsTimerInterval = null;
             }
             if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRoundId !== state.witsGame.roundId)) {
+              if (prevRoundId && prevRoundId !== state.witsGame.roundId) autoDismissWinnerModalForNextRound();
               ensureWitsCountdownLoop();
             } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRoundId !== state.witsGame.roundId)) {
               ensureWitsAutoNextLoop();
@@ -3841,7 +4321,8 @@
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
         if (p.kahootGame) {
           const prevKhPhase = state.kahootGame.phase, prevKhRid = state.kahootGame.roundId;
-          state.kahootGame = p.kahootGame;
+          const incomingQs = Array.isArray(p.kahootGame.questions) ? p.kahootGame.questions : (p.kahootGame.questionsCount === 0 ? [] : state.kahootGame.questions);
+          state.kahootGame = { ...state.kahootGame, ...p.kahootGame, questions: incomingQs };
           if (state.kahootGame.phase !== 'revealed' && kahootAutoNextInterval) {
             clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null;
           }
@@ -3849,6 +4330,7 @@
             clearInterval(kahootTimerInterval); kahootTimerInterval = null;
           }
           if (state.kahootGame.phase === 'asking' && (prevKhPhase !== 'asking' || prevKhRid !== state.kahootGame.roundId)) {
+            if (prevKhRid && prevKhRid !== state.kahootGame.roundId) autoDismissWinnerModalForNextRound();
             ensureKahootCountdownLoop();
           } else if (state.kahootGame.phase === 'revealed' && state.kahootGame.autoRun && (prevKhPhase !== 'revealed' || prevKhRid !== state.kahootGame.roundId)) {
             ensureKahootAutoNextLoop();
@@ -3861,7 +4343,8 @@
         if (typeof p.circularHasStarted === 'boolean') state.circularHasStarted = p.circularHasStarted;
         if (p.witsGame) {
           const prevPhase = state.witsGame.phase, prevRid = state.witsGame.roundId;
-          state.witsGame = p.witsGame;
+          const incomingWitsQs = Array.isArray(p.witsGame.questions) ? p.witsGame.questions : (p.witsGame.questionsCount === 0 ? [] : state.witsGame.questions);
+          state.witsGame = { ...state.witsGame, ...p.witsGame, questions: incomingWitsQs };
           if (state.witsGame.phase !== 'revealed' && witsAutoNextInterval) {
             clearInterval(witsAutoNextInterval); witsAutoNextInterval = null;
           }
@@ -3869,6 +4352,7 @@
             clearInterval(witsTimerInterval); witsTimerInterval = null;
           }
           if (state.witsGame.phase === 'asking' && (prevPhase !== 'asking' || prevRid !== state.witsGame.roundId)) {
+            if (prevRid && prevRid !== state.witsGame.roundId) autoDismissWinnerModalForNextRound();
             ensureWitsCountdownLoop();
           } else if (state.witsGame.phase === 'revealed' && state.witsGame.autoRun && (prevPhase !== 'revealed' || prevRid !== state.witsGame.roundId)) {
             ensureWitsAutoNextLoop();
