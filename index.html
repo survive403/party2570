@@ -3036,7 +3036,7 @@
                 <div class="kahoot-q-item${idx === kg.currentIdx ? ' is-active' : ''}" onclick="selectKahootQuestion(${idx})">
                   <div style="min-width:0;flex:1;">
                     <strong style="color:${idx === kg.currentIdx ? '#fde68a' : '#fff'};">ข้อ ${idx + 1}:</strong> ${escapeHtml(item.q)}
-                    <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • เฉลย ${KAHOOT_LETTERS[item.answer] || 'A'})</span>
+                    <span style="color:var(--muted);font-size:10px;"> (${item.sec || 15} วิ • ซ่อนเฉลย)</span>
                   </div>
                   <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                     <button type="button" class="btn btn-secondary" title="เลื่อนขึ้น" style="min-height:24px;padding:2px 6px;font-size:10px;" ${idx === 0 || kg.phase === 'asking' ? 'disabled' : ''} onclick="moveKahootQuestion(event, ${idx}, -1)">▲</button>
