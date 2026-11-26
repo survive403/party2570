@@ -138,9 +138,65 @@
     /* === 4. MOBILE-FIRST NAVIGATION TABS (PORTRAIT THUMB-FRIENDLY) === */
     .action-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 6px;
       margin-bottom: 14px;
+    }
+    .action-grid > .action-card:nth-child(-n+3) {
+      grid-column: span 4;
+    }
+    .action-grid > .action-card:nth-child(n+4) {
+      grid-column: span 3;
+    }
+    .bingo-board-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      max-width: 340px;
+      margin: 12px auto;
+    }
+    .bingo-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #0f172a;
+      color: #f8fafc;
+      font-weight: 800;
+      font-size: clamp(16px, 4.5vw, 22px);
+      display: grid;
+      place-items: center;
+      user-select: none;
+      transition: all 0.18s ease;
+    }
+    .bingo-cell.is-marked {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      border-color: #fde68a;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+      transform: scale(1.03);
+    }
+    .bingo-cell.is-bingo-line {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #a7f3d0;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+    }
+    .bingo-ball-pill {
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+    .bingo-ball-pill.is-latest {
+      background: linear-gradient(135deg, #ec4899, #f59e0b);
+      border-color: #fde68a;
+      color: #fff;
+      transform: scale(1.12);
     }
     @media (min-width: 768px) {
       .action-grid { gap: 10px; margin-bottom: 20px; }
@@ -168,7 +224,7 @@
     .action-info { min-width: 0; width: 100%; }
     .action-badge { font-size: 9px; font-weight: 700; color: var(--brand); display: none; }
     @media (min-width: 860px) { .action-badge { display: block; text-transform: uppercase; } }
-    .action-title { font-size: 11px; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; word-break: break-word; }
+    .action-title { font-size: 10.5px; font-weight: 700; margin: 0; color: #fff; line-height: 1.2; word-break: break-word; }
     @media (min-width: 860px) { .action-title { font-size: 13px; } }
 
     .module-split-layout { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
@@ -641,6 +697,13 @@
             <h3 class="action-title">ทายตัวเลข</h3>
           </div>
         </div>
+        <div class="action-card" id="card-bingo" onclick="switchMainModule('bingo')">
+          <div class="action-icon-wrap" style="color: #fbbf24;">🎱</div>
+          <div class="action-info">
+            <span class="action-badge">25 ตัวเลข</span>
+            <h3 class="action-title">Bingo</h3>
+          </div>
+        </div>
       </div>
 
       <div class="module-split-layout">
@@ -1103,6 +1166,62 @@
 
             <div id="wits-stage-container"></div>
           </div>
+          <!-- View: Bingo 1-25 (สุ่มการ์ดก่อนเริ่ม • ล็อกการ์ดทันทีเมื่อเริ่ม • ออกเลขเองหรือ Auto 5-10 วิ • กดปุ่ม BINGO! จัดอันดับ 1-2-3) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-bingo">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🎱 บิงโก 25 ตัวเลข (1–25)</h2>
+              <span class="meta-caption" id="bingo-status-pill">🟡 รอเริ่มเกม • สุ่มการ์ดได้จนกว่าจะเริ่ม</span>
+            </div>
+
+            <!-- Host Controls -->
+            <div class="wits-host-box admin-only-control" data-admin-scope="core">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงควบคุมเกมบิงโก (Host)</strong>
+                <button type="button" class="btn btn-ghost-danger" id="btn-bingo-reset" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตรอบบิงโก</button>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                <div>
+                  <label class="field-label" for="bingo-mode-select">โหมดการออกเลข</label>
+                  <select id="bingo-mode-select" class="select">
+                    <option value="manual" selected>👆 แอดมินกดสุ่มออกเลขทีละตัว</option>
+                    <option value="auto">🤖 ออกเลขอัตโนมัติตามเวลา</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="bingo-interval-select">ความเร็วออกเลขอัตโนมัติ</label>
+                  <select id="bingo-interval-select" class="select">
+                    <option value="5" selected>ทุก 5 วินาที</option>
+                    <option value="7">ทุก 7 วินาที</option>
+                    <option value="10">ทุก 10 วินาที</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="bingo-prize-input">รางวัลบิงโก</label>
+                  <input type="text" id="bingo-prize-input" class="input" value="รางวัลบิงโก 25 ตัวเลข">
+                </div>
+              </div>
+
+              <!-- Pattern Checkboxes -->
+              <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+                <div style="font-size: 11px; font-weight: 700; color: #fde68a; margin-bottom: 6px;">📐 รูปแบบการบิงโกที่นับชนะในรอบนี้:</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <label class="checkbox-label" style="color: #e2e8f0;"><input type="checkbox" id="chk-bingo-line" checked disabled> ➖ แนวนอน / แนวตั้ง / แนวทแยง (5 ช่อง)</label>
+                  <label class="checkbox-label" style="color: #e2e8f0;"><input type="checkbox" id="chk-bingo-corners" checked> 🔲 4 มุมนอก + ช่องกลาง (5 ช่อง)</label>
+                  <label class="checkbox-label" style="color: #e2e8f0;"><input type="checkbox" id="chk-bingo-inner-x" checked> 💠 4 มุมแถว 2 (กากบาทใน) + ช่องกลาง (5 ช่อง)</label>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" id="btn-bingo-start" style="flex: 1;">🔒 ล็อกการ์ดทุกคน &amp; เริ่มเกม!</button>
+                <button type="button" class="btn btn-draw" id="btn-bingo-draw-next" style="display: none; flex: 1; font-size: 15px; padding: 9px 16px;">🎱 สุ่มออกเลขถัดไป!</button>
+                <button type="button" class="btn btn-secondary" id="btn-bingo-toggle-auto" style="display: none; border-color: #a855f7; color: #e9d5ff;">⏸️ หยุดออกเลข Auto</button>
+              </div>
+            </div>
+
+            <!-- Live Bingo Stage (Both Host & Players) -->
+            <div id="bingo-stage-container"></div>
+          </div>
         </div>
 
         <!-- Right Column: Winners History -->
@@ -1326,6 +1445,18 @@
           submissions: {},
           winnerIds: [],
           rankedEntries: []
+        },
+        bingoGame: {
+          roundId: '',
+          phase: 'setup', // 'setup' | 'playing' | 'finished'
+          mode: 'manual', // 'manual' | 'auto'
+          intervalSec: 5,
+          autoPaused: false,
+          prize: 'รางวัลบิงโก 25 ตัวเลข',
+          allowCorners: true,
+          allowInnerX: true,
+          calledNumbers: [],
+          claims: [] // [{ id, name, claimedAt, callCount, pattern }]
         }
       };
 
@@ -1388,6 +1519,9 @@
             }
           });
         }
+        if (state.bingoGame && Array.isArray(state.bingoGame.claims)) {
+          state.bingoGame.claims = state.bingoGame.claims.filter(c => c.id !== guestId);
+        }
         if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
 
         let loopWasReset = false;
@@ -1400,6 +1534,8 @@
           fbWriteSubpath(`guests/${encodeURIComponent(guestId)}`, null, 'DELETE');
           fbWriteSubpath(`kahootAnswers/${encodeURIComponent(guestId)}`, null, 'DELETE');
           fbWriteSubpath(`witsSubmissions/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`bingoClaims/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`costumeVotes/${encodeURIComponent(guestId)}`, null, 'DELETE');
           if (loopWasReset || isAnyAdmin()) fbPushCoreState('guest_purged');
         }
         return existed;
@@ -1711,6 +1847,31 @@
             lines.push(`   ${medal} ${c.name}: ${c.score.toLocaleString('th-TH')} คะแนน`);
           });
         }
+        lines.push('');
+        lines.push('👗 4. สรุปผลโหวดชุดเครื่องแต่งกาย:');
+        const cvFinalists = getCostumeFinalists(state.costumeVote);
+        if (cvFinalists.length === 0) {
+          lines.push('   - ยังไม่มีคะแนนโหวต');
+        } else {
+          cvFinalists.forEach((f, idx) => {
+            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}.`));
+            const voteSuffix = state.costumeVote?.showScores ? ` (${f.votes} โหวต)` : '';
+            lines.push(`   ${medal} ${f.name}${voteSuffix}`);
+          });
+        }
+
+        lines.push('');
+        lines.push('🎱 5. สรุปผู้ชนะเกมบิงโก 25 ตัวเลข:');
+        const bgClaims = Array.isArray(state.bingoGame?.claims) ? state.bingoGame.claims : [];
+        if (bgClaims.length === 0) {
+          lines.push('   - ยังไม่มีผู้กด BINGO');
+        } else {
+          bgClaims.forEach((c, idx) => {
+            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}.`));
+            lines.push(`   ${medal} ${c.name} (${c.pattern || 'บิงโก'} • เลขที่ ${c.callCount || '-'})`);
+          });
+        }
+
         return lines.join('\n');
       }
 
@@ -2133,6 +2294,7 @@
         renderCostumeVote();
         renderKahootGame();
         renderWitsGame();
+        renderBingoGame();
         updateCircularLoopUI();
       }
 
@@ -2681,7 +2843,405 @@
         });
       });
 
-            // === COSTUME VOTE ENGINE (โหวดชุดเครื่องแต่งกาย • ห้ามโหวดตัวเอง • เปลี่ยนใจได้จนปิดโหวด • โชว์ Top 3-5) ===
+                  // === BINGO 1-25 ENGINE (ล็อกการ์ดเมื่อเริ่ม • 5 แนวมาตรฐาน + 4 มุม+กลาง + 4 มุมแถว2+กลาง • กดปุ่ม BINGO จัดอันดับ 1-2-3) ===
+      const BINGO_CARD_STORAGE_KEY = 'happynewyear_my_bingo_card_v1';
+      let bingoAutoTimer = null;
+      let myLocalBingoCard = null;
+
+      function generateShuffled25() {
+        const arr = Array.from({ length: 25 }, (_, i) => i + 1);
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function getOrInitMyBingoCard() {
+        if (Array.isArray(myLocalBingoCard) && myLocalBingoCard.length === 25) return myLocalBingoCard;
+        try {
+          const raw = localStorage.getItem(BINGO_CARD_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length === 25) {
+              myLocalBingoCard = parsed;
+              return myLocalBingoCard;
+            }
+          }
+        } catch (e) {}
+        myLocalBingoCard = generateShuffled25();
+        try { localStorage.setItem(BINGO_CARD_STORAGE_KEY, JSON.stringify(myLocalBingoCard)); } catch (e) {}
+        return myLocalBingoCard;
+      }
+
+      window.shuffleMyBingoCard = function() {
+        const bg = state.bingoGame;
+        if (bg && bg.phase !== 'setup') return; // ล็อกการ์ดทันทีเมื่อแอดมินกดเริ่มเกม
+        myLocalBingoCard = generateShuffled25();
+        try { localStorage.setItem(BINGO_CARD_STORAGE_KEY, JSON.stringify(myLocalBingoCard)); } catch (e) {}
+        triggerHapticVibration(30);
+        renderBingoGame();
+      };
+
+      function evaluateBingoCard(card, calledSet, allowCorners, allowInnerX) {
+        if (!Array.isArray(card) || card.length !== 25) return { isBingo: false, winningIndices: [], patternName: '' };
+        const lines = [
+          // 5 แนวนอน
+          { idx: [0, 1, 2, 3, 4], name: 'แนวนอนแถวที่ 1' },
+          { idx: [5, 6, 7, 8, 9], name: 'แนวนอนแถวที่ 2' },
+          { idx: [10, 11, 12, 13, 14], name: 'แนวนอนแถวที่ 3' },
+          { idx: [15, 16, 17, 18, 19], name: 'แนวนอนแถวที่ 4' },
+          { idx: [20, 21, 22, 23, 24], name: 'แนวนอนแถวที่ 5' },
+          // 5 แนวตั้ง
+          { idx: [0, 5, 10, 15, 20], name: 'แนวตั้งคอลัมน์ที่ 1' },
+          { idx: [1, 6, 11, 16, 21], name: 'แนวตั้งคอลัมน์ที่ 2' },
+          { idx: [2, 7, 12, 17, 22], name: 'แนวตั้งคอลัมน์ที่ 3' },
+          { idx: [3, 8, 13, 18, 23], name: 'แนวตั้งคอลัมน์ที่ 4' },
+          { idx: [4, 9, 14, 19, 24], name: 'แนวตั้งคอลัมน์ที่ 5' },
+          // 2 แนวทแยง
+          { idx: [0, 6, 12, 18, 24], name: 'แนวทแยงมุม' },
+          { idx: [4, 8, 12, 16, 20], name: 'แนวทแยงมุม' }
+        ];
+        if (allowCorners) {
+          lines.push({ idx: [0, 4, 12, 20, 24], name: '4 มุมนอก + ช่องกลาง' });
+        }
+        if (allowInnerX) {
+          lines.push({ idx: [6, 8, 12, 16, 18], name: '4 มุมแถว 2 + ช่องกลาง' });
+        }
+
+        const winIdxSet = new Set();
+        let firstPattern = '';
+        for (const line of lines) {
+          if (line.idx.every(i => calledSet.has(card[i]))) {
+            if (!firstPattern) firstPattern = line.name;
+            line.idx.forEach(i => winIdxSet.add(i));
+          }
+        }
+        return {
+          isBingo: winIdxSet.size > 0,
+          winningIndices: Array.from(winIdxSet),
+          patternName: firstPattern
+        };
+      }
+
+      function clearBingoAutoTimer() {
+        if (bingoAutoTimer) { clearInterval(bingoAutoTimer); bingoAutoTimer = null; }
+      }
+
+      function ensureBingoAutoLoop() {
+        clearBingoAutoTimer();
+        const bg = state.bingoGame;
+        if (!canManageCore() || bg.phase !== 'playing' || bg.mode !== 'auto' || bg.autoPaused) return;
+        const ms = Math.max(3000, (Number(bg.intervalSec) || 5) * 1000);
+        bingoAutoTimer = setInterval(() => {
+          const cur = state.bingoGame;
+          if (!canManageCore() || cur.phase !== 'playing' || cur.mode !== 'auto' || cur.autoPaused) {
+            clearBingoAutoTimer();
+            return;
+          }
+          if ((cur.calledNumbers || []).length >= 25) {
+            clearBingoAutoTimer();
+            return;
+          }
+          drawNextBingoNumber();
+        }, ms);
+      }
+
+      function drawNextBingoNumber() {
+        if (!canManageCore()) return;
+        const bg = state.bingoGame;
+        if (bg.phase !== 'playing') return;
+        const called = Array.isArray(bg.calledNumbers) ? bg.calledNumbers : [];
+        const remaining = [];
+        for (let n = 1; n <= 25; n++) {
+          if (!called.includes(n)) remaining.push(n);
+        }
+        if (!remaining.length) {
+          bg.phase = 'finished';
+          clearBingoAutoTimer();
+          renderBingoGame();
+          syncAdminCore('bingo_all_drawn');
+          return;
+        }
+        const picked = remaining[Math.floor(Math.random() * remaining.length)];
+        bg.calledNumbers.push(picked);
+        playCountdownTickSound(true);
+        triggerHapticVibration(35);
+        if (bg.calledNumbers.length >= 25) {
+          clearBingoAutoTimer();
+        }
+        renderBingoGame();
+        syncAdminCore('bingo_number_drawn');
+      }
+
+      document.getElementById('btn-bingo-start')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        const bg = state.bingoGame;
+        bg.roundId = 'bg_' + Date.now();
+        bg.phase = 'playing';
+        bg.mode = document.getElementById('bingo-mode-select')?.value || 'manual';
+        bg.intervalSec = Math.max(5, Math.min(10, Number(document.getElementById('bingo-interval-select')?.value) || 5));
+        bg.prize = document.getElementById('bingo-prize-input')?.value.trim() || 'รางวัลบิงโก 25 ตัวเลข';
+        bg.allowCorners = Boolean(document.getElementById('chk-bingo-corners')?.checked);
+        bg.allowInnerX = Boolean(document.getElementById('chk-bingo-inner-x')?.checked);
+        bg.autoPaused = false;
+        bg.calledNumbers = [];
+        bg.claims = [];
+        fbMirror.bingoClaims = {};
+        fbWriteSubpath('bingoClaims', null, 'DELETE');
+        triggerHapticVibration(50);
+        // ออกเลขตัวแรกทันทีตอนเริ่มเกมเพื่อล็อกการ์ดทุกคน
+        drawNextBingoNumber();
+        if (bg.mode === 'auto') ensureBingoAutoLoop();
+      });
+
+      document.getElementById('btn-bingo-draw-next')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        drawNextBingoNumber();
+      });
+
+      document.getElementById('btn-bingo-toggle-auto')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        const bg = state.bingoGame;
+        if (bg.phase !== 'playing') return;
+        if (bg.mode !== 'auto') {
+          bg.mode = 'auto';
+          bg.autoPaused = false;
+          ensureBingoAutoLoop();
+        } else {
+          bg.autoPaused = !bg.autoPaused;
+          if (bg.autoPaused) clearBingoAutoTimer();
+          else ensureBingoAutoLoop();
+        }
+        renderBingoGame();
+        syncAdminCore('bingo_auto_toggled');
+      });
+
+      document.getElementById('bingo-mode-select')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        state.bingoGame.mode = e.target.value === 'auto' ? 'auto' : 'manual';
+        if (state.bingoGame.phase === 'playing') {
+          if (state.bingoGame.mode === 'auto' && !state.bingoGame.autoPaused) ensureBingoAutoLoop();
+          else clearBingoAutoTimer();
+        }
+        renderBingoGame();
+        syncAdminCore('bingo_mode_changed');
+      });
+
+      document.getElementById('bingo-interval-select')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        state.bingoGame.intervalSec = Math.max(5, Math.min(10, Number(e.target.value) || 5));
+        if (state.bingoGame.phase === 'playing' && state.bingoGame.mode === 'auto' && !state.bingoGame.autoPaused) {
+          ensureBingoAutoLoop();
+        }
+        syncAdminCore('bingo_interval_changed');
+      });
+
+      document.getElementById('btn-bingo-reset')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        askSafetyConfirm('รีเซ็ตรอบเกมบิงโก?', 'ตัวเลขที่ออกและรายชื่อคนกด BINGO รอบนี้จะถูกล้าง ผู้เล่นจะสุ่มจัดเรียงการ์ดใหม่ได้อีกครั้ง', () => {
+          clearBingoAutoTimer();
+          state.bingoGame.roundId = '';
+          state.bingoGame.phase = 'setup';
+          state.bingoGame.autoPaused = false;
+          state.bingoGame.calledNumbers = [];
+          state.bingoGame.claims = [];
+          fbMirror.bingoClaims = {};
+          fbWriteSubpath('bingoClaims', null, 'DELETE');
+          renderBingoGame();
+          syncAdminCore('bingo_reset');
+        });
+      });
+
+      window.claimMyBingo = function() {
+        const bg = state.bingoGame;
+        const gid = state.deviceRole;
+        if (bg.phase !== 'playing' || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
+        const me = state.guests.find(g => g.id === gid);
+        if (!me) return;
+        if (!Array.isArray(bg.claims)) bg.claims = [];
+        if (bg.claims.some(c => c.id === gid)) return;
+
+        const card = getOrInitMyBingoCard();
+        const calledSet = new Set(bg.calledNumbers || []);
+        const res = evaluateBingoCard(card, calledSet, bg.allowCorners !== false, bg.allowInnerX !== false);
+        if (!res.isBingo) return;
+
+        const claimObj = {
+          id: gid,
+          name: me.name,
+          claimedAt: Date.now(),
+          callCount: (bg.calledNumbers || []).length,
+          pattern: res.patternName
+        };
+        bg.claims.push(claimObj);
+        bg.claims.sort((a, b) => a.claimedAt - b.claimedAt);
+        const rankNum = bg.claims.findIndex(c => c.id === gid) + 1;
+
+        const prizeText = `${bg.prize || 'รางวัลบิงโก 25 ตัวเลข'} (บิงโกอันดับ #${rankNum} • ${res.patternName})`;
+        state.winners.unshift({
+          name: me.name,
+          prize: prizeText,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+        triggerWinnerNotification(gid, me.name, prizeText, `บิงโก 25 ตัวเลข (อันดับ #${rankNum})`);
+        playRevealChimeSound();
+        triggerGrandConfetti();
+        triggerHapticVibration([150, 70, 200]);
+
+        renderWinners();
+        renderBingoGame();
+        // เขียนลง Firebase sub-path และ core เพื่อให้ Host เห็นลำดับการกด BINGO แบบเรียลไทม์
+        fbWriteSubpath(`bingoClaims/${encodeURIComponent(gid)}`, claimObj, 'PUT');
+        syncAdminCore('bingo_claimed');
+      };
+
+      function renderBingoGame() {
+        const bg = state.bingoGame || { phase: 'setup', mode: 'manual', intervalSec: 5, calledNumbers: [], claims: [] };
+        const isAdmin = canManageCore();
+        const stage = document.getElementById('bingo-stage-container');
+        const statusPill = document.getElementById('bingo-status-pill');
+        if (!stage) return;
+
+        const called = Array.isArray(bg.calledNumbers) ? bg.calledNumbers : [];
+        const claims = Array.isArray(bg.claims) ? [...bg.claims].sort((a, b) => (a.claimedAt || 0) - (b.claimedAt || 0)) : [];
+        const latestNum = called.length ? called[called.length - 1] : null;
+
+        if (statusPill) {
+          if (bg.phase === 'setup') {
+            statusPill.textContent = '🟡 รอเริ่มเกม • สุ่มการ์ดได้จนกว่าจะเริ่ม';
+            statusPill.style.color = '#fde68a';
+          } else if (bg.phase === 'playing') {
+            statusPill.textContent = `🟢 กำลังเล่น • ล็อกการ์ดแล้ว (ออกแล้ว ${called.length}/25 เลข)`;
+            statusPill.style.color = '#6ee7b7';
+          } else {
+            statusPill.textContent = '🏁 จบรอบบิงโกแล้ว';
+            statusPill.style.color = '#94a3b8';
+          }
+        }
+
+        if (isAdmin) {
+          const selMode = document.getElementById('bingo-mode-select');
+          const selInt = document.getElementById('bingo-interval-select');
+          const inpPrize = document.getElementById('bingo-prize-input');
+          const chkCorners = document.getElementById('chk-bingo-corners');
+          const chkInnerX = document.getElementById('chk-bingo-inner-x');
+          const btnStart = document.getElementById('btn-bingo-start');
+          const btnNext = document.getElementById('btn-bingo-draw-next');
+          const btnAuto = document.getElementById('btn-bingo-toggle-auto');
+
+          if (selMode) selMode.value = bg.mode || 'manual';
+          if (selInt) selInt.value = String(bg.intervalSec || 5);
+          if (inpPrize && document.activeElement !== inpPrize) inpPrize.value = bg.prize || 'รางวัลบิงโก 25 ตัวเลข';
+          if (chkCorners) { chkCorners.checked = bg.allowCorners !== false; chkCorners.disabled = bg.phase === 'playing'; }
+          if (chkInnerX) { chkInnerX.checked = bg.allowInnerX !== false; chkInnerX.disabled = bg.phase === 'playing'; }
+
+          if (btnStart && btnNext && btnAuto) {
+            btnStart.style.display = bg.phase === 'setup' ? 'inline-flex' : 'none';
+            btnNext.style.display = (bg.phase === 'playing' && called.length < 25) ? 'inline-flex' : 'none';
+            btnNext.disabled = called.length >= 25;
+            btnAuto.style.display = (bg.phase === 'playing' && bg.mode === 'auto' && called.length < 25) ? 'inline-flex' : 'none';
+            btnAuto.textContent = bg.autoPaused ? '▶️ เริ่มออกเลข Auto ต่อ' : '⏸️ หยุดออกเลข Auto';
+          }
+        }
+
+        // Build called numbers history strip
+        const calledHtml = called.length
+          ? `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px;">${called.map((num, idx) => `<span class="bingo-ball-pill${idx === called.length - 1 ? ' is-latest' : ''}">${num}</span>`).join('')}</div>`
+          : '<div style="font-size:12px;color:var(--muted);margin-top:4px;">ยังไม่มีตัวเลขที่ออก</div>';
+
+        // Build Bingo Winners Ranking Leaderboard (1, 2, 3...)
+        const claimsHtml = claims.length
+          ? `<div style="margin-top:12px;text-align:left;">
+              <div class="meta-caption" style="font-weight:700;color:#fde68a;margin-bottom:6px;">🏆 ลำดับผู้กดปุ่ม BINGO! เร็วที่สุด (${claims.length} คน):</div>
+              <div class="kahoot-lb-list">${claims.map((c, idx) => {
+                const rank = idx + 1;
+                const medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : `#${rank}`));
+                const isMine = state.deviceRole === c.id;
+                return `<div class="kahoot-lb-row${rank === 1 ? ' is-top1' : ''}${isMine ? ' is-me' : ''}">
+                  <span style="font-weight:700;">${medal} อันดับ ${rank}: ${escapeHtml(c.name)}${isMine ? ' <small style="color:#38bdf8;">(คุณ)</small>' : ''}</span>
+                  <span style="color:var(--brand);font-size:11px;font-weight:700;">${escapeHtml(c.pattern || 'บิงโก')} • เลขที่ ${c.callCount || '-'}</span>
+                </div>`;
+              }).join('')}</div>
+            </div>`
+          : `<div class="empty-state" style="margin-top:12px;padding:12px;">${bg.phase === 'setup' ? 'รอ Host กดเริ่มเกม (ระหว่างนี้ผู้เล่นสุ่มจัดเรียงการ์ด 1–25 ได้เต็มที่)' : '⏳ ยังไม่มีใครกด BINGO! (เมื่อใครครบ 5 ช่อง ปุ่ม BINGO! จะเด้งให้กดทันที)'}</div>`;
+
+        const latestBannerHtml = `
+          <div class="wits-question-banner" style="margin-bottom:12px;">
+            <span class="slot-prize-badge" style="margin:0;">🎱 ออกเลขแล้ว ${called.length} / 25 ตัว${bg.phase === 'playing' && bg.mode === 'auto' && !bg.autoPaused ? ` • 🤖 Auto ทุก ${bg.intervalSec} วิ` : ''}</span>
+            <div style="font-size:clamp(34px,8vw,48px);font-weight:800;color:#fde68a;line-height:1.15;margin:6px 0;">
+              ${latestNum !== null ? `เลขที่ออก: ${latestNum}` : 'เตรียมการ์ด 1–25 ให้พร้อม!'}
+            </div>
+            ${calledHtml}
+          </div>`;
+
+        if (isAdmin) {
+          stage.innerHTML = latestBannerHtml + claimsHtml;
+          return;
+        }
+
+        // Participant View: 5x5 Bingo Card + Shuffle (only before start) + Big BINGO! button when 5-in-a-row matched
+        const myId = (state.deviceRole && !isAnyAdmin() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+        if (!myId) {
+          stage.innerHTML = latestBannerHtml + '<div class="empty-state">กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อรับการ์ดบิงโก 1–25</div>' + claimsHtml;
+          return;
+        }
+
+        const card = getOrInitMyBingoCard();
+        const calledSet = new Set(called);
+        const evalRes = evaluateBingoCard(card, calledSet, bg.allowCorners !== false, bg.allowInnerX !== false);
+        const winIdxSet = new Set(evalRes.winningIndices);
+        const myClaimIdx = claims.findIndex(c => c.id === myId);
+        const alreadyClaimed = myClaimIdx !== -1;
+
+        const cellsHtml = card.map((num, idx) => {
+          const isWinCell = winIdxSet.has(idx);
+          const isMarked = calledSet.has(num);
+          return `<div class="bingo-cell${isWinCell ? ' is-bingo-line' : (isMarked ? ' is-marked' : '')}">${num}</div>`;
+        }).join('');
+
+        let actionBoxHtml = '';
+        if (bg.phase === 'setup') {
+          actionBoxHtml = `
+            <div style="text-align:center;margin:10px 0;">
+              <button type="button" class="btn btn-primary" onclick="shuffleMyBingoCard()" style="width:100%;max-width:320px;">
+                🔀 สุ่มจัดเรียงเลข 1–25 ใหม่ (เปลี่ยนได้จนกว่าจะเริ่ม)
+              </button>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;">⚠️ เมื่อ Host กดเริ่มเกม การ์ดใบนี้จะถูกล็อกทันที</div>
+            </div>`;
+        } else if (alreadyClaimed) {
+          actionBoxHtml = `
+            <div style="background:rgba(16,185,129,0.18);border:2px solid var(--success);border-radius:12px;padding:12px;text-align:center;margin:10px 0;">
+              <div style="font-size:18px;font-weight:800;color:#fde68a;">🎉 คุณกด BINGO! ได้อันดับที่ #${myClaimIdx + 1}</div>
+              <div style="font-size:12px;color:#a7f3d0;">รูปแบบ: ${escapeHtml(claims[myClaimIdx].pattern || evalRes.patternName)}</div>
+            </div>`;
+        } else if (evalRes.isBingo && bg.phase === 'playing') {
+          actionBoxHtml = `
+            <div style="text-align:center;margin:12px 0;">
+              <button type="button" class="btn btn-draw" onclick="claimMyBingo()" style="width:100%;max-width:340px;font-size:20px;min-height:56px;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 0 24px rgba(16,185,129,0.75);">
+                🎉 กด BINGO! ทันที! (${escapeHtml(evalRes.patternName)})
+              </button>
+              <div style="font-size:11px;color:#a7f3d0;margin-top:4px;font-weight:600;">⚡ รีบกดให้ไว! จัดอันดับ 1, 2, 3 ตามเวลาที่กดปุ่มนี้</div>
+            </div>`;
+        } else {
+          actionBoxHtml = `<div style="text-align:center;font-size:12px;color:var(--muted);margin:8px 0;">🔒 ล็อกการ์ดแล้ว • ระบบแต้มสีให้อัตโนมัติ เมื่อครบ 5 ช่องปุ่ม BINGO! จะเด้งขึ้นมาให้กดทันที</div>`;
+        }
+
+        stage.innerHTML = `
+          ${latestBannerHtml}
+          <div style="background:#070b14;border:1px solid var(--border);border-radius:16px;padding:12px;max-width:380px;margin:0 auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;">
+              <strong style="color:#fde68a;">🎫 การ์ดบิงโกของคุณ (${bg.phase === 'setup' ? '🔓 ยังไม่ล็อก' : '🔒 ล็อกแล้ว'})</strong>
+              <span style="color:var(--success);font-weight:700;">แต้มแล้ว ${called.length}/25</span>
+            </div>
+            <div class="bingo-board-grid">${cellsHtml}</div>
+            ${actionBoxHtml}
+          </div>
+          ${claimsHtml}
+        `;
+      }
+
+// === COSTUME VOTE ENGINE (โหวดชุดเครื่องแต่งกาย • ห้ามโหวดตัวเอง • เปลี่ยนใจได้จนปิดโหวด • โชว์ Top 3-5) ===
       let costumeSelectedJudgeWinnerId = '';
 
       window.castCostumeVote = function(targetGuestId) {
@@ -2700,7 +3260,12 @@
         }
         triggerHapticVibration(35);
         renderCostumeVote();
-        syncAdminCore('costume_vote_cast');
+        if (cv.votes[voterId]) {
+          fbWriteSubpath(`costumeVotes/${encodeURIComponent(voterId)}`, cv.votes[voterId], 'PUT');
+        } else {
+          fbWriteSubpath(`costumeVotes/${encodeURIComponent(voterId)}`, null, 'DELETE');
+        }
+        broadcastLocalOnly('costume_vote_cast');
       };
 
       document.getElementById('btn-costume-toggle-open')?.addEventListener('click', () => {
@@ -2740,6 +3305,8 @@
         askSafetyConfirm('ล้างผลโหวตชุดเครื่องแต่งกายทั้งหมด?', 'คะแนนโหวตทั้งหมดจะถูกล้างและเปิดโหวตใหม่', () => {
           state.costumeVote.votes = {};
           state.costumeVote.isOpen = true;
+          fbMirror.costumeVotes = {};
+          fbWriteSubpath('costumeVotes', null, 'DELETE');
           costumeSelectedJudgeWinnerId = '';
           renderCostumeVote();
           syncAdminCore('costume_votes_reset');
@@ -2755,16 +3322,14 @@
       document.getElementById('btn-costume-award-top1')?.addEventListener('click', () => {
         if (!canManageCore()) return;
         const cv = state.costumeVote;
-        const ranked = getCostumeRankedList(cv);
-        const limit = Math.max(3, Math.min(5, Number(cv.topLimit) || 3));
-        const finalists = ranked.slice(0, limit);
+        const finalists = getCostumeFinalists(cv);
         const chosen = finalists.find(f => f.id === costumeSelectedJudgeWinnerId) || finalists[0];
         if (!chosen) return;
         const prizeName = document.getElementById('costume-prize-input')?.value.trim() || cv.prize || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
         cv.isOpen = false;
         state.winners.unshift({
           name: chosen.name,
-          prize: `${prizeName} (กรรมการคัดเลือกจาก Top ${finalists.length})`,
+          prize: `${prizeName} (กรรมการคัดเลือกจากผู้มีคะแนนโหวต ${finalists.length} ลำดับแรก)`,
           timestamp: new Date().toLocaleTimeString('th-TH')
         });
         triggerWinnerNotification(chosen.id, chosen.name, prizeName, 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม');
@@ -2778,7 +3343,9 @@
         const votesMap = (cv && cv.votes && typeof cv.votes === 'object') ? cv.votes : {};
         const tally = {};
         Object.values(votesMap).forEach(targetId => {
-          if (targetId) tally[targetId] = (tally[targetId] || 0) + 1;
+          if (targetId && state.guests.some(g => g.id === targetId)) {
+            tally[targetId] = (tally[targetId] || 0) + 1;
+          }
         });
         return state.guests
           .map((g, idx) => ({
@@ -2787,7 +3354,13 @@
             votes: Number(tally[g.id] || 0),
             order: g.order || idx
           }))
+          .filter(item => item.votes > 0)
           .sort((a, b) => (b.votes - a.votes) || (a.order - b.order));
+      }
+
+      function getCostumeFinalists(cv) {
+        const limit = Math.max(3, Math.min(5, Number(cv?.topLimit) || 3));
+        return getCostumeRankedList(cv).slice(0, limit);
       }
 
       function renderCostumeVote() {
@@ -2857,16 +3430,19 @@
           return;
         }
 
-        const ranked = getCostumeRankedList(cv);
         const limit = Math.max(3, Math.min(5, Number(cv.topLimit) || 3));
-        const finalists = ranked.slice(0, limit);
-        if (!costumeSelectedJudgeWinnerId && finalists[0]) {
+        const finalists = getCostumeFinalists(cv);
+        if (!finalists.length) {
+          stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้ได้รับคะแนนโหวตเลย จึงยังไม่มีรายชื่อผู้เข้ารอบตัดสิน</div>';
+          return;
+        }
+        if (!finalists.some(f => f.id === costumeSelectedJudgeWinnerId)) {
           costumeSelectedJudgeWinnerId = finalists[0].id;
         }
 
         const scoreNotice = cv.showScores
-          ? '📊 แสดงคะแนนโหวตเพื่อความโปร่งใส (เรียงลำดับผู้ได้คะแนนสูงสุด + เวลาลงชื่อ)'
-          : '🙈 ซ่อนคะแนนโหวตเพื่อลดอคติของคณะกรรมการ (คัดรายชื่อ Top ' + finalists.length + ' ให้กรรมการพิจารณาตัดสิน)';
+          ? `📊 แสดงคะแนนโหวตเพื่อความโปร่งใส (คัดเฉพาะผู้มีคะแนนโหวต ${finalists.length} จากสูงสุด ${limit} ลำดับ)`
+          : `🙈 ซ่อนคะแนนโหวตเพื่อลดอคติของคณะกรรมการ (คัดเฉพาะผู้มีคะแนนโหวต ${finalists.length} จากสูงสุด ${limit} ลำดับ ให้กรรมการพิจารณาตัดสิน)`;
 
         const rowsHtml = finalists.map((item, idx) => {
           const rankNum = idx + 1;
@@ -3619,9 +4195,12 @@
       const witsAnsIn = document.getElementById('wits-answer-input');
       let witsEditingIdx = null;
 
-      function getWitsSubValue(subEntry) {
+      function getWitsSubValue(subEntry, expectedRoundId) {
         if (typeof subEntry === 'number' && Number.isFinite(subEntry)) return subEntry;
-        if (subEntry && typeof subEntry === 'object' && typeof subEntry.val === 'number' && Number.isFinite(subEntry.val)) return subEntry.val;
+        if (subEntry && typeof subEntry === 'object' && typeof subEntry.val === 'number' && Number.isFinite(subEntry.val)) {
+          if (expectedRoundId && subEntry.roundId && subEntry.roundId !== expectedRoundId) return NaN;
+          return subEntry.val;
+        }
         return NaN;
       }
       function getWitsSubRemMs(subEntry) {
@@ -3803,11 +4382,11 @@
         wg.rankDisplayLimit = qRankLimit;
 
         const entries = state.guests
-          .filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id])))
+          .filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id], wg.roundId)))
           .map(g => ({
             id: g.id,
             name: g.name,
-            guess: getWitsSubValue(wg.submissions[g.id]),
+            guess: getWitsSubValue(wg.submissions[g.id], wg.roundId),
             remMs: getWitsSubRemMs(wg.submissions[g.id]),
             submittedAt: getWitsSubSubmittedAt(wg.submissions[g.id])
           }));
@@ -4278,7 +4857,7 @@
         }
 
         const total = state.guests.length;
-        const ansCount = state.guests.filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id]))).length;
+        const ansCount = state.guests.filter(g => Number.isFinite(getWitsSubValue(wg.submissions[g.id], wg.roundId))).length;
         const forfeitCount = wg.timeUp ? Math.max(0, total - ansCount) : 0;
 
         if (autoNextBanner) {
@@ -4343,7 +4922,7 @@
           if (!state.guests.length) { stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้เข้าร่วมออนไลน์ในขณะนี้</div>'; return; }
           stage.innerHTML = '<div class="meta-caption" style="margin-bottom:6px;">📋 สถานะการตอบของผู้เข้าร่วมทั้งหมด (หากตอบถูกเท่ากัน ตัดสินด้วยความไว):</div><div class="wits-status-grid">' +
             state.guests.map(g => {
-              const gVal = getWitsSubValue(wg.submissions[g.id]);
+              const gVal = getWitsSubValue(wg.submissions[g.id], wg.roundId);
               const has = Number.isFinite(gVal);
               const isW = wg.phase === 'revealed' && wg.winnerIds.includes(g.id);
               let st = '<span style="color:var(--muted);">⚪ รอคำถาม</span>';
@@ -4365,7 +4944,7 @@
         const activePlayerId = (state.deviceRole && !canManageWits() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
         const me = activePlayerId ? state.guests.find(g => g.id === activePlayerId) : null;
         if (!me) { stage.innerHTML = `<div class="empty-state">${isAnyAdmin() ? 'คุณอยู่ในโหมด Host (ไม่มีสิทธิ์คุมเกมทายตัวเลข • ดูภาพรวมได้อย่างเดียว)' : 'กรุณาลงชื่อเข้างานที่หน้าแรกเพื่อร่วมเล่น'}</div>`; return; }
-        const myVal = getWitsSubValue(wg.submissions[me.id]);
+        const myVal = getWitsSubValue(wg.submissions[me.id], wg.roundId);
         const has = Number.isFinite(myVal);
         const isW = wg.phase === 'revealed' && wg.winnerIds.includes(me.id);
 
@@ -4438,7 +5017,7 @@
       let fbEventSource = null;
       let fbPollTimer = null;
       let fbInitialLoaded = false;
-      const fbMirror = { guests: {}, kahootAnswers: {}, witsSubmissions: {}, core: null };
+      const fbMirror = { guests: {}, kahootAnswers: {}, witsSubmissions: {}, bingoClaims: {}, costumeVotes: {}, core: null };
 
       try {
         const params = new URLSearchParams(window.location.search);
@@ -4482,6 +5061,7 @@
           giftExchangeExclusions: state.giftExchangeExclusions,
           wheelStage: state.wheelStage,
           costumeVote: state.costumeVote,
+          bingoGame: state.bingoGame,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
           kahootMeta: {
@@ -4549,6 +5129,8 @@
             target.guests = src.guests && typeof src.guests === 'object' ? src.guests : {};
             target.kahootAnswers = src.kahootAnswers && typeof src.kahootAnswers === 'object' ? src.kahootAnswers : {};
             target.witsSubmissions = src.witsSubmissions && typeof src.witsSubmissions === 'object' ? src.witsSubmissions : {};
+            target.bingoClaims = src.bingoClaims && typeof src.bingoClaims === 'object' ? src.bingoClaims : {};
+            target.costumeVotes = src.costumeVotes && typeof src.costumeVotes === 'object' ? src.costumeVotes : {};
             target.core = src.core || null;
           }
           return;
@@ -4582,7 +5164,7 @@
         Object.keys(subMap).forEach(k => {
           const entry = subMap[k];
           if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.val))) {
-            cleanSubs[k] = { val: Number(entry.val), remMs: Number(entry.remMs) || 0, roundId: entry.roundId || '' };
+            cleanSubs[k] = { val: Number(entry.val), remMs: Number(entry.remMs) || 0, submittedAt: Number(entry.submittedAt) || 0, roundId: entry.roundId || '' };
           } else {
             const n = Number(entry);
             if (Number.isFinite(n)) cleanSubs[k] = n;
@@ -4605,7 +5187,31 @@
           state.wheelManualExclusions = Array.isArray(c.wheelManualExclusions) ? c.wheelManualExclusions : [];
           state.giftExchangeExclusions = Array.isArray(c.giftExchangeExclusions) ? c.giftExchangeExclusions : [];
           if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
-          if (c.costumeVote && typeof c.costumeVote === 'object') state.costumeVote = { ...state.costumeVote, ...c.costumeVote, votes: (c.costumeVote.votes && typeof c.costumeVote.votes === 'object') ? c.costumeVote.votes : {} };
+          if (c.costumeVote && typeof c.costumeVote === 'object') {
+            const coreVotes = (c.costumeVote.votes && typeof c.costumeVote.votes === 'object') ? c.costumeVote.votes : {};
+            const subVotes = (fbMirror.costumeVotes && typeof fbMirror.costumeVotes === 'object') ? fbMirror.costumeVotes : {};
+            state.costumeVote = { ...state.costumeVote, ...c.costumeVote, votes: { ...coreVotes, ...subVotes } };
+          }
+          if (c.bingoGame && typeof c.bingoGame === 'object') {
+            const prevBgPhase = state.bingoGame.phase;
+            const prevBgRid = state.bingoGame.roundId;
+            const remoteClaimsMap = fbMirror.bingoClaims && typeof fbMirror.bingoClaims === 'object' ? Object.values(fbMirror.bingoClaims) : [];
+            const coreClaims = Array.isArray(c.bingoGame.claims) ? c.bingoGame.claims : [];
+            const mergedClaimsMap = {};
+            [...coreClaims, ...remoteClaimsMap].forEach(cl => { if (cl && cl.id) mergedClaimsMap[cl.id] = cl; });
+            state.bingoGame = {
+              ...state.bingoGame,
+              ...c.bingoGame,
+              calledNumbers: Array.isArray(c.bingoGame.calledNumbers) ? c.bingoGame.calledNumbers : [],
+              claims: Object.values(mergedClaimsMap).sort((a, b) => (a.claimedAt || 0) - (b.claimedAt || 0))
+            };
+            if (prevBgRid && prevBgRid !== state.bingoGame.roundId) autoDismissWinnerModalForNextRound();
+            if (state.bingoGame.phase === 'playing' && state.bingoGame.mode === 'auto' && !state.bingoGame.autoPaused && !bingoAutoTimer) {
+              ensureBingoAutoLoop();
+            } else if (state.bingoGame.phase !== 'playing' || state.bingoGame.autoPaused || state.bingoGame.mode !== 'auto') {
+              clearBingoAutoTimer();
+            }
+          }
           state.winners = Array.isArray(c.winners) ? c.winners : [];
           state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
           if (c.kahootMeta && typeof c.kahootMeta === 'object') {
@@ -4845,7 +5451,7 @@
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
           giftExchangeExclusions: state.giftExchangeExclusions,
-          wheelStage: state.wheelStage, costumeVote: state.costumeVote, winners: state.winners, prizeAlerts: state.prizeAlerts,
+          wheelStage: state.wheelStage, costumeVote: state.costumeVote, bingoGame: state.bingoGame, winners: state.winners, prizeAlerts: state.prizeAlerts,
           kahootGame: state.kahootGame,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
           circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
@@ -4872,6 +5478,19 @@
         if (Array.isArray(p.giftExchangeExclusions)) state.giftExchangeExclusions = p.giftExchangeExclusions;
         if (p.wheelStage) state.wheelStage = p.wheelStage;
         if (p.costumeVote && typeof p.costumeVote === 'object') state.costumeVote = { ...state.costumeVote, ...p.costumeVote, votes: (p.costumeVote.votes && typeof p.costumeVote.votes === 'object') ? p.costumeVote.votes : {} };
+        if (p.bingoGame && typeof p.bingoGame === 'object') {
+          state.bingoGame = {
+            ...state.bingoGame,
+            ...p.bingoGame,
+            calledNumbers: Array.isArray(p.bingoGame.calledNumbers) ? p.bingoGame.calledNumbers : [],
+            claims: Array.isArray(p.bingoGame.claims) ? p.bingoGame.claims : []
+          };
+          if (state.bingoGame.phase === 'playing' && state.bingoGame.mode === 'auto' && !state.bingoGame.autoPaused && !bingoAutoTimer) {
+            ensureBingoAutoLoop();
+          } else if (state.bingoGame.phase !== 'playing' || state.bingoGame.autoPaused || state.bingoGame.mode !== 'auto') {
+            clearBingoAutoTimer();
+          }
+        }
         if (Array.isArray(p.winners)) state.winners = p.winners;
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
         if (p.kahootGame) {
