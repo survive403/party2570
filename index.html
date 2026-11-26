@@ -161,12 +161,22 @@
       border: 2px solid var(--border);
       background: #0f172a;
       color: #f8fafc;
+      font-family: inherit;
       font-weight: 800;
       font-size: clamp(16px, 4.5vw, 22px);
       display: grid;
       place-items: center;
       user-select: none;
+      cursor: pointer;
+      padding: 0;
       transition: all 0.18s ease;
+    }
+    .bingo-cell:active:not(:disabled) { transform: scale(0.95); }
+    .bingo-cell:disabled { cursor: default; }
+    .bingo-cell.is-invalid-tap {
+      border-color: var(--danger);
+      background: rgba(244, 63, 94, 0.22);
+      color: #fda4af;
     }
     .bingo-cell.is-marked {
       background: linear-gradient(135deg, #f59e0b, #ea580c);
@@ -1184,11 +1194,11 @@
                 <div>
                   <label class="field-label" for="bingo-mode-select">โหมดการออกเลข</label>
                   <select id="bingo-mode-select" class="select">
-                    <option value="manual" selected>👆 แอดมินกดสุ่มออกเลขทีละตัว</option>
-                    <option value="auto">🤖 ออกเลขอัตโนมัติตามเวลา</option>
+                    <option value="manual" selected>👆 Hostกดสุ่มออกเลข</option>
+                    <option value="auto">🤖 ออกเลขอัตโนมัติ</option>
                   </select>
                 </div>
-                <div>
+                <div id="bingo-interval-wrap" style="display: none;">
                   <label class="field-label" for="bingo-interval-select">ความเร็วออกเลขอัตโนมัติ</label>
                   <select id="bingo-interval-select" class="select">
                     <option value="5" selected>ทุก 5 วินาที</option>
@@ -2843,10 +2853,14 @@
         });
       });
 
-                  // === BINGO 1-25 ENGINE (ล็อกการ์ดเมื่อเริ่ม • 5 แนวมาตรฐาน + 4 มุม+กลาง + 4 มุมแถว2+กลาง • กดปุ่ม BINGO จัดอันดับ 1-2-3) ===
+                  // === BINGO 1-25 ENGINE (ล็อกการ์ดเมื่อเริ่ม • ผู้เล่นกดเลขเอง • ป้องกันโกงกดได้เฉพาะเลขที่ออกแล้วเท่านั้น • กดปุ่ม BINGO จัดอันดับ 1-2-3) ===
       const BINGO_CARD_STORAGE_KEY = 'happynewyear_my_bingo_card_v1';
+      const BINGO_MARKS_STORAGE_KEY = 'happynewyear_my_bingo_marks_v1';
       let bingoAutoTimer = null;
       let myLocalBingoCard = null;
+      let myBingoMarksState = { roundId: '', marks: [] };
+      let bingoTapFeedbackMsg = '';
+      let bingoInvalidNum = null;
 
       function generateShuffled25() {
         const arr = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -2873,6 +2887,73 @@
         try { localStorage.setItem(BINGO_CARD_STORAGE_KEY, JSON.stringify(myLocalBingoCard)); } catch (e) {}
         return myLocalBingoCard;
       }
+
+      function getMyValidMarkedSet(bg) {
+        const currentRid = (bg && bg.roundId) ? String(bg.roundId) : '';
+        const calledSet = new Set(Array.isArray(bg?.calledNumbers) ? bg.calledNumbers : []);
+        if (!currentRid || bg?.phase === 'setup') {
+          myBingoMarksState = { roundId: currentRid, marks: [] };
+          return new Set();
+        }
+        if (myBingoMarksState.roundId !== currentRid) {
+          try {
+            const raw = localStorage.getItem(BINGO_MARKS_STORAGE_KEY);
+            const parsed = raw ? JSON.parse(raw) : null;
+            if (parsed && parsed.roundId === currentRid && Array.isArray(parsed.marks)) {
+              myBingoMarksState = { roundId: currentRid, marks: parsed.marks };
+            } else {
+              myBingoMarksState = { roundId: currentRid, marks: [] };
+            }
+          } catch (e) {
+            myBingoMarksState = { roundId: currentRid, marks: [] };
+          }
+        }
+        // ชั้นป้องกันการโกง: กรองเฉพาะตัวเลขที่อยู่ในรายการที่ Host ออกเลขจริงแล้วเท่านั้น (calledSet)
+        const validMarks = myBingoMarksState.marks.filter(n => calledSet.has(n));
+        if (validMarks.length !== myBingoMarksState.marks.length) {
+          myBingoMarksState.marks = validMarks;
+          try { localStorage.setItem(BINGO_MARKS_STORAGE_KEY, JSON.stringify(myBingoMarksState)); } catch (e) {}
+        }
+        return new Set(validMarks);
+      }
+
+      window.toggleMyBingoMark = function(num) {
+        const bg = state.bingoGame;
+        const gid = state.deviceRole;
+        if (!bg || bg.phase !== 'playing' || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
+        const claims = Array.isArray(bg.claims) ? bg.claims : [];
+        if (claims.some(c => c.id === gid)) return; // บิงโกไปแล้วล็อกกระดาน
+
+        const calledSet = new Set(Array.isArray(bg.calledNumbers) ? bg.calledNumbers : []);
+        // ป้องกันการโกง: ห้ามกดตัวเลขที่ยังไม่ได้ออกเลขเด็ดขาด
+        if (!calledSet.has(num)) {
+          bingoInvalidNum = num;
+          bingoTapFeedbackMsg = `🚫 เลข ${num} ยังไม่ออก! กดได้เฉพาะตัวเลขที่ออกแล้วเท่านั้น`;
+          triggerHapticVibration([60, 40, 60]);
+          renderBingoGame();
+          setTimeout(() => {
+            if (bingoInvalidNum === num) {
+              bingoInvalidNum = null;
+              renderBingoGame();
+            }
+          }, 900);
+          return;
+        }
+
+        const validSet = getMyValidMarkedSet(bg);
+        if (validSet.has(num)) {
+          validSet.delete(num);
+          bingoTapFeedbackMsg = `↩️ ยกเลิกการแต้มเลข ${num}`;
+        } else {
+          validSet.add(num);
+          bingoTapFeedbackMsg = `✅ แต้มเลข ${num} เรียบร้อย`;
+        }
+        bingoInvalidNum = null;
+        myBingoMarksState = { roundId: String(bg.roundId || ''), marks: Array.from(validSet) };
+        try { localStorage.setItem(BINGO_MARKS_STORAGE_KEY, JSON.stringify(myBingoMarksState)); } catch (e) {}
+        triggerHapticVibration(25);
+        renderBingoGame();
+      };
 
       window.shuffleMyBingoCard = function() {
         const bg = state.bingoGame;
@@ -3063,8 +3144,8 @@
         if (bg.claims.some(c => c.id === gid)) return;
 
         const card = getOrInitMyBingoCard();
-        const calledSet = new Set(bg.calledNumbers || []);
-        const res = evaluateBingoCard(card, calledSet, bg.allowCorners !== false, bg.allowInnerX !== false);
+        const validMarkedSet = getMyValidMarkedSet(bg);
+        const res = evaluateBingoCard(card, validMarkedSet, bg.allowCorners !== false, bg.allowInnerX !== false);
         if (!res.isBingo) return;
 
         const claimObj = {
@@ -3122,6 +3203,7 @@
 
         if (isAdmin) {
           const selMode = document.getElementById('bingo-mode-select');
+          const intWrap = document.getElementById('bingo-interval-wrap');
           const selInt = document.getElementById('bingo-interval-select');
           const inpPrize = document.getElementById('bingo-prize-input');
           const chkCorners = document.getElementById('chk-bingo-corners');
@@ -3130,7 +3212,9 @@
           const btnNext = document.getElementById('btn-bingo-draw-next');
           const btnAuto = document.getElementById('btn-bingo-toggle-auto');
 
-          if (selMode) selMode.value = bg.mode || 'manual';
+          const curMode = bg.mode || 'manual';
+          if (selMode) selMode.value = curMode;
+          if (intWrap) intWrap.style.display = curMode === 'auto' ? '' : 'none';
           if (selInt) selInt.value = String(bg.intervalSec || 5);
           if (inpPrize && document.activeElement !== inpPrize) inpPrize.value = bg.prize || 'รางวัลบิงโก 25 ตัวเลข';
           if (chkCorners) { chkCorners.checked = bg.allowCorners !== false; chkCorners.disabled = bg.phase === 'playing'; }
@@ -3188,17 +3272,26 @@
         }
 
         const card = getOrInitMyBingoCard();
-        const calledSet = new Set(called);
-        const evalRes = evaluateBingoCard(card, calledSet, bg.allowCorners !== false, bg.allowInnerX !== false);
+        const validMarkedSet = getMyValidMarkedSet(bg);
+        const evalRes = evaluateBingoCard(card, validMarkedSet, bg.allowCorners !== false, bg.allowInnerX !== false);
         const winIdxSet = new Set(evalRes.winningIndices);
         const myClaimIdx = claims.findIndex(c => c.id === myId);
         const alreadyClaimed = myClaimIdx !== -1;
+        const canTapCells = bg.phase === 'playing' && !alreadyClaimed;
 
         const cellsHtml = card.map((num, idx) => {
           const isWinCell = winIdxSet.has(idx);
-          const isMarked = calledSet.has(num);
-          return `<div class="bingo-cell${isWinCell ? ' is-bingo-line' : (isMarked ? ' is-marked' : '')}">${num}</div>`;
+          const isMarked = validMarkedSet.has(num);
+          const isInvalid = bingoInvalidNum === num;
+          const cls = `bingo-cell${isWinCell ? ' is-bingo-line' : (isMarked ? ' is-marked' : '')}${isInvalid ? ' is-invalid-tap' : ''}`;
+          return `<button type="button" class="${cls}" ${canTapCells ? `onclick="toggleMyBingoMark(${num})"` : 'disabled'}>${num}</button>`;
         }).join('');
+
+        let feedbackHtml = '';
+        if (bg.phase === 'playing' && !alreadyClaimed && bingoTapFeedbackMsg) {
+          const isErr = bingoTapFeedbackMsg.startsWith('🚫');
+          feedbackHtml = `<div style="text-align:center;font-size:11px;font-weight:600;margin:6px 0;color:${isErr ? '#fda4af' : '#a7f3d0'};">${escapeHtml(bingoTapFeedbackMsg)}</div>`;
+        }
 
         let actionBoxHtml = '';
         if (bg.phase === 'setup') {
@@ -3224,7 +3317,7 @@
               <div style="font-size:11px;color:#a7f3d0;margin-top:4px;font-weight:600;">⚡ รีบกดให้ไว! จัดอันดับ 1, 2, 3 ตามเวลาที่กดปุ่มนี้</div>
             </div>`;
         } else {
-          actionBoxHtml = `<div style="text-align:center;font-size:12px;color:var(--muted);margin:8px 0;">🔒 ล็อกการ์ดแล้ว • ระบบแต้มสีให้อัตโนมัติ เมื่อครบ 5 ช่องปุ่ม BINGO! จะเด้งขึ้นมาให้กดทันที</div>`;
+          actionBoxHtml = `<div style="text-align:center;font-size:12px;color:var(--muted);margin:8px 0;">👆 <strong>แตะกดเลขบนการ์ดด้วยตัวเอง</strong> (กดได้เฉพาะเลขที่ออกแล้วเท่านั้น) เมื่อครบ 5 ช่องปุ่ม BINGO! จะเด้งขึ้นมา</div>`;
         }
 
         stage.innerHTML = `
@@ -3232,9 +3325,10 @@
           <div style="background:#070b14;border:1px solid var(--border);border-radius:16px;padding:12px;max-width:380px;margin:0 auto;">
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;">
               <strong style="color:#fde68a;">🎫 การ์ดบิงโกของคุณ (${bg.phase === 'setup' ? '🔓 ยังไม่ล็อก' : '🔒 ล็อกแล้ว'})</strong>
-              <span style="color:var(--success);font-weight:700;">แต้มแล้ว ${called.length}/25</span>
+              <span style="color:var(--success);font-weight:700;">กดแต้มแล้ว ${validMarkedSet.size} / ออก ${called.length}</span>
             </div>
             <div class="bingo-board-grid">${cellsHtml}</div>
+            ${feedbackHtml}
             ${actionBoxHtml}
           </div>
           ${claimsHtml}
