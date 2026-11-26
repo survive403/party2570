@@ -138,8 +138,8 @@
     /* === 4. MOBILE-FIRST NAVIGATION TABS (PORTRAIT THUMB-FRIENDLY) === */
     .action-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       margin-bottom: 14px;
     }
     @media (min-width: 768px) {
@@ -597,7 +597,7 @@
         </div>
       </div>
 
-      <!-- 5 Thumb-Friendly Mobile Portrait Tabs -->
+      <!-- 6 Thumb-Friendly Mobile Portrait Tabs (2 Rows x 3 Columns) -->
       <div class="action-grid" role="tablist">
         <div class="action-card active" id="card-checkin" onclick="switchMainModule('checkin')">
           <div class="action-icon-wrap" style="color: #38bdf8;">🙋</div>
@@ -618,6 +618,13 @@
           <div class="action-info">
             <span class="action-badge">ส่งต่อคิวออโต้</span>
             <h3 class="action-title">แลกของขวัญ</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-costumevote" onclick="switchMainModule('costumevote')">
+          <div class="action-icon-wrap" style="color: #f472b6;">👗</div>
+          <div class="action-info">
+            <span class="action-badge">I Love My Job</span>
+            <h3 class="action-title">โหวดเครื่องแต่งกาย</h3>
           </div>
         </div>
         <div class="action-card" id="card-kahoot" onclick="switchMainModule('kahoot')">
@@ -778,6 +785,49 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- View: Costume Vote (โหวดชุดเครื่องแต่งกาย • ห้ามโหวดตัวเอง • เปลี่ยนใจได้จนปิดโหวด • โชว์ Top 3-5 ให้กรรมการตัดสิน) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-costumevote">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">👗 โหวดชุดเครื่องแต่งกาย</h2>
+              <span class="meta-caption" id="costume-status-pill">🟢 เปิดโหวตอยู่ • เปลี่ยนใจได้ตลอด</span>
+            </div>
+
+            <div class="wits-host-box admin-only-control" data-admin-scope="core">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงควบคุมการโหวดชุด (Host)</strong>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-secondary" id="btn-costume-toggle-open" style="min-height: 32px; padding: 4px 10px; font-size: 11px; border-color: var(--danger); color: #fda4af;">🛑 ปิดโหวต &amp; สรุปผล</button>
+                  <button type="button" class="btn btn-ghost-danger" id="btn-costume-reset-votes" style="min-height: 32px; padding: 4px 10px; font-size: 11px;">🔄 ล้างผลโหวต</button>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                <div>
+                  <label class="field-label" for="costume-topn-select">จำนวนลำดับที่คัดเข้ารอบตัดสิน</label>
+                  <select id="costume-topn-select" class="select">
+                    <option value="3" selected>3 ลำดับแรก (Top 3)</option>
+                    <option value="4">4 ลำดับแรก (Top 4)</option>
+                    <option value="5">5 ลำดับแรก (Top 5)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="costume-prize-input">รางวัลชุดยอดเยี่ยม</label>
+                  <input type="text" id="costume-prize-input" class="input" value="รางวัลชุดเครื่องแต่งกายยอดเยี่ยม">
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <label class="checkbox-label" style="color: #fde68a; font-weight: 600;">
+                  <input type="checkbox" id="chk-costume-show-scores">
+                  📊 แสดงคะแนนโหวตในหน้าสรุป (ถ้าไม่ติ๊ก จะไม่โชว์คะแนนลดอคติกรรมการ)
+                </label>
+                <button type="button" class="btn btn-primary" id="btn-costume-award-top1" style="min-height: 36px; padding: 6px 12px; font-size: 12px;">🏆 บันทึกผู้ชนะที่กรรมการเลือก</button>
+              </div>
+            </div>
+
+            <div id="costume-stage-container"></div>
           </div>
 
           <!-- View 4: Kahoot Speed Quiz (ควิซตอบไว 4 ตัวเลือก + สะสมคะแนนความเร็ว + ตารางอันดับ) -->
@@ -1220,6 +1270,13 @@
         circularCurrentIdx: 0,
         circularDrawnList: [],
         circularHasStarted: false,
+        costumeVote: {
+          isOpen: true,
+          topLimit: 3,
+          showScores: false,
+          prize: 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม',
+          votes: {}
+        },
         adminLevel: 'none',
         deviceRole: 'guest_unselected',
         witsGame: {
@@ -1323,6 +1380,14 @@
         state.luckyDrawExclusions = state.luckyDrawExclusions.filter(id => id !== guestId);
         state.wheelManualExclusions = state.wheelManualExclusions.filter(id => id !== guestId);
         state.giftExchangeExclusions = state.giftExchangeExclusions.filter(id => id !== guestId);
+        if (state.costumeVote && state.costumeVote.votes) {
+          delete state.costumeVote.votes[guestId];
+          Object.keys(state.costumeVote.votes).forEach(voterId => {
+            if (state.costumeVote.votes[voterId] === guestId) {
+              delete state.costumeVote.votes[voterId];
+            }
+          });
+        }
         if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
 
         let loopWasReset = false;
@@ -2065,6 +2130,7 @@
         renderPrizes();
         syncWheelStageUI();
         drawLuckyWheel();
+        renderCostumeVote();
         renderKahootGame();
         renderWitsGame();
         updateCircularLoopUI();
@@ -2615,7 +2681,218 @@
         });
       });
 
-      // === KAHOOT SPEED QUIZ ENGINE (4 CHOICES + SPEED SCORE + AUTO-RUN + LEADERBOARD) ===
+            // === COSTUME VOTE ENGINE (โหวดชุดเครื่องแต่งกาย • ห้ามโหวดตัวเอง • เปลี่ยนใจได้จนปิดโหวด • โชว์ Top 3-5) ===
+      let costumeSelectedJudgeWinnerId = '';
+
+      window.castCostumeVote = function(targetGuestId) {
+        const cv = state.costumeVote || (state.costumeVote = { isOpen: true, topLimit: 3, showScores: false, prize: 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม', votes: {} });
+        const voterId = state.deviceRole;
+        if (!cv.isOpen) return;
+        if (!voterId || isAnyAdmin() || voterId === 'guest_unselected') return;
+        if (targetGuestId === voterId) return;
+        if (!state.guests.some(g => g.id === targetGuestId)) return;
+
+        if (!cv.votes || typeof cv.votes !== 'object') cv.votes = {};
+        if (cv.votes[voterId] === targetGuestId) {
+          delete cv.votes[voterId];
+        } else {
+          cv.votes[voterId] = targetGuestId;
+        }
+        triggerHapticVibration(35);
+        renderCostumeVote();
+        syncAdminCore('costume_vote_cast');
+      };
+
+      document.getElementById('btn-costume-toggle-open')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        const cv = state.costumeVote;
+        cv.isOpen = !cv.isOpen;
+        cv.prize = document.getElementById('costume-prize-input')?.value.trim() || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
+        costumeSelectedJudgeWinnerId = '';
+        triggerHapticVibration(45);
+        renderCostumeVote();
+        syncAdminCore(cv.isOpen ? 'costume_vote_reopened' : 'costume_vote_closed');
+      });
+
+      document.getElementById('costume-topn-select')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        const n = Math.max(3, Math.min(5, Number(e.target.value) || 3));
+        state.costumeVote.topLimit = n;
+        renderCostumeVote();
+        syncAdminCore('costume_topn_changed');
+      });
+
+      document.getElementById('chk-costume-show-scores')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        state.costumeVote.showScores = Boolean(e.target.checked);
+        renderCostumeVote();
+        syncAdminCore('costume_show_scores_toggled');
+      });
+
+      document.getElementById('costume-prize-input')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        state.costumeVote.prize = e.target.value.trim() || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
+        syncAdminCore('costume_prize_changed');
+      });
+
+      document.getElementById('btn-costume-reset-votes')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        askSafetyConfirm('ล้างผลโหวตชุดเครื่องแต่งกายทั้งหมด?', 'คะแนนโหวตทั้งหมดจะถูกล้างและเปิดโหวตใหม่', () => {
+          state.costumeVote.votes = {};
+          state.costumeVote.isOpen = true;
+          costumeSelectedJudgeWinnerId = '';
+          renderCostumeVote();
+          syncAdminCore('costume_votes_reset');
+        });
+      });
+
+      window.pickJudgeWinnerCandidate = function(candidateId) {
+        if (!canManageCore()) return;
+        costumeSelectedJudgeWinnerId = candidateId;
+        renderCostumeVote();
+      };
+
+      document.getElementById('btn-costume-award-top1')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        const cv = state.costumeVote;
+        const ranked = getCostumeRankedList(cv);
+        const limit = Math.max(3, Math.min(5, Number(cv.topLimit) || 3));
+        const finalists = ranked.slice(0, limit);
+        const chosen = finalists.find(f => f.id === costumeSelectedJudgeWinnerId) || finalists[0];
+        if (!chosen) return;
+        const prizeName = document.getElementById('costume-prize-input')?.value.trim() || cv.prize || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
+        cv.isOpen = false;
+        state.winners.unshift({
+          name: chosen.name,
+          prize: `${prizeName} (กรรมการคัดเลือกจาก Top ${finalists.length})`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+        triggerWinnerNotification(chosen.id, chosen.name, prizeName, 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม');
+        playRevealChimeSound();
+        renderWinners();
+        renderCostumeVote();
+        syncAdminCore('costume_winner_awarded');
+      });
+
+      function getCostumeRankedList(cv) {
+        const votesMap = (cv && cv.votes && typeof cv.votes === 'object') ? cv.votes : {};
+        const tally = {};
+        Object.values(votesMap).forEach(targetId => {
+          if (targetId) tally[targetId] = (tally[targetId] || 0) + 1;
+        });
+        return state.guests
+          .map((g, idx) => ({
+            id: g.id,
+            name: g.name,
+            votes: Number(tally[g.id] || 0),
+            order: g.order || idx
+          }))
+          .sort((a, b) => (b.votes - a.votes) || (a.order - b.order));
+      }
+
+      function renderCostumeVote() {
+        const cv = state.costumeVote || { isOpen: true, topLimit: 3, showScores: false, prize: 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม', votes: {} };
+        const stage = document.getElementById('costume-stage-container');
+        const statusPill = document.getElementById('costume-status-pill');
+        if (!stage) return;
+
+        if (statusPill) {
+          statusPill.textContent = cv.isOpen ? '🟢 เปิดโหวตอยู่ • เปลี่ยนใจได้ตลอด' : '🛑 ปิดโหวตแล้ว • สรุปเข้ารอบตัดสิน';
+          statusPill.style.color = cv.isOpen ? '#6ee7b7' : '#fda4af';
+        }
+
+        const isAdmin = canManageCore();
+        if (isAdmin) {
+          const selTop = document.getElementById('costume-topn-select');
+          const chkScore = document.getElementById('chk-costume-show-scores');
+          const prizeInp = document.getElementById('costume-prize-input');
+          const toggleBtn = document.getElementById('btn-costume-toggle-open');
+          if (selTop) selTop.value = String(cv.topLimit || 3);
+          if (chkScore) chkScore.checked = Boolean(cv.showScores);
+          if (prizeInp && document.activeElement !== prizeInp) prizeInp.value = cv.prize || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
+          if (toggleBtn) {
+            toggleBtn.textContent = cv.isOpen ? '🛑 ปิดโหวต & สรุปผล' : '🟢 เปิดโหวตต่อ';
+            toggleBtn.style.borderColor = cv.isOpen ? 'var(--danger)' : 'var(--success)';
+            toggleBtn.style.color = cv.isOpen ? '#fda4af' : '#a7f3d0';
+          }
+        }
+
+        const votesMap = (cv.votes && typeof cv.votes === 'object') ? cv.votes : {};
+        const totalVotesCast = Object.keys(votesMap).filter(vid => state.guests.some(g => g.id === vid)).length;
+        const myId = (!isAdmin && state.deviceRole && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+        const myVotedForId = myId ? votesMap[myId] : '';
+
+        if (!state.guests.length) {
+          stage.innerHTML = '<div class="empty-state">ยังไม่มีผู้เข้าร่วมในห้องสำหรับโหวดชุดเครื่องแต่งกาย</div>';
+          return;
+        }
+
+        if (cv.isOpen) {
+          const cardsHtml = state.guests.map(g => {
+            const isSelf = Boolean(myId && g.id === myId);
+            const isPicked = Boolean(myId && myVotedForId === g.id);
+            const disabledAttr = (!myId || isSelf) ? 'disabled' : '';
+            const badgeText = isSelf
+              ? '🚫 โหวดให้ตัวเองไม่ได้'
+              : (isPicked ? '💖 โหวตแล้ว (แตะเพื่อเปลี่ยน/ยกเลิก)' : '👗 โหวตชุดนี้');
+            return `<button type="button" class="btn ${isPicked ? 'btn-primary' : 'btn-secondary'}" ${disabledAttr} style="justify-content:space-between;width:100%;min-height:46px;padding:8px 12px;font-size:13px;" onclick="castCostumeVote('${escapeHtml(g.id)}')">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(g.name)}</span>
+              <span style="font-size:11px;flex-shrink:0;">${badgeText}</span>
+            </button>`;
+          }).join('');
+
+          const myChoiceSummary = myId
+            ? (myVotedForId
+              ? `คุณกำลังโหวตให้: <strong style="color:#fde68a;">${escapeHtml(state.guests.find(g => g.id === myVotedForId)?.name || '-')}</strong> (เปลี่ยนใจกดเลือกคนอื่นได้จนกว่า Host จะปิดโหวต)`
+              : 'คุณยังไม่ได้เลือกโหวต (เลือกใครก็ได้ที่ไม่ใช่ตัวเอง)')
+            : (isAdmin ? 'โหมด Host • ผู้ร่วมงานกำลังโหวตและเปลี่ยนใจได้จนกว่าจะกดปิดโหวต' : 'ลงชื่อเข้างานเพื่อร่วมโหวดชุดเครื่องแต่งกาย');
+
+          stage.innerHTML = `
+            <div style="background:#0b1222;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <span>${myChoiceSummary}</span>
+              <span style="color:var(--brand);font-weight:700;">โหวตแล้ว ${totalVotesCast} / ${state.guests.length} คน</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;">${cardsHtml}</div>
+          `;
+          return;
+        }
+
+        const ranked = getCostumeRankedList(cv);
+        const limit = Math.max(3, Math.min(5, Number(cv.topLimit) || 3));
+        const finalists = ranked.slice(0, limit);
+        if (!costumeSelectedJudgeWinnerId && finalists[0]) {
+          costumeSelectedJudgeWinnerId = finalists[0].id;
+        }
+
+        const scoreNotice = cv.showScores
+          ? '📊 แสดงคะแนนโหวตเพื่อความโปร่งใส (เรียงลำดับผู้ได้คะแนนสูงสุด + เวลาลงชื่อ)'
+          : '🙈 ซ่อนคะแนนโหวตเพื่อลดอคติของคณะกรรมการ (คัดรายชื่อ Top ' + finalists.length + ' ให้กรรมการพิจารณาตัดสิน)';
+
+        const rowsHtml = finalists.map((item, idx) => {
+          const rankNum = idx + 1;
+          const medal = rankNum === 1 ? '🥇' : (rankNum === 2 ? '🥈' : (rankNum === 3 ? '🥉' : `#${rankNum}`));
+          const isSelectedByJudge = isAdmin && costumeSelectedJudgeWinnerId === item.id;
+          const scorePart = cv.showScores ? `<span style="color:var(--brand);font-weight:800;">${item.votes} โหวต</span>` : `<span style="color:var(--muted);font-size:11px;">เข้ารอบตัดสิน</span>`;
+          const judgeBtn = isAdmin
+            ? `<button type="button" class="btn ${isSelectedByJudge ? 'btn-primary' : 'btn-secondary'}" style="min-height:28px;padding:3px 9px;font-size:11px;" onclick="pickJudgeWinnerCandidate('${escapeHtml(item.id)}')">${isSelectedByJudge ? '✓ เลือกคนนี้' : 'เลือก'}</button>`
+            : '';
+          return `<div class="kahoot-lb-row${rankNum === 1 ? ' is-top1' : ''}${item.id === myId ? ' is-me' : ''}">
+            <span style="font-weight:700;">${medal} ลำดับที่ ${rankNum}: ${escapeHtml(item.name)}${item.id === myId ? ' <small style="color:#38bdf8;">(คุณ)</small>' : ''}</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;">${scorePart}${judgeBtn}</span>
+          </div>`;
+        }).join('');
+
+        stage.innerHTML = `
+          <div class="wits-question-banner" style="border-color:var(--brand);margin-bottom:10px;">
+            <div style="font-size:34px;line-height:1.1;">👗🏆</div>
+            <h3 style="margin:6px 0 4px;font-size:18px;color:#fde68a;">สรุป ${finalists.length} ลำดับแรกให้คณะกรรมการตัดสิน</h3>
+            <p style="margin:0;font-size:12px;color:#cbd5e1;">${escapeHtml(scoreNotice)}</p>
+          </div>
+          <div class="kahoot-lb-list">${rowsHtml}</div>
+        `;
+      }
+
+// === KAHOOT SPEED QUIZ ENGINE (4 CHOICES + SPEED SCORE + AUTO-RUN + LEADERBOARD) ===
       const KAHOOT_SHAPES = ['▲', '◆', '●', '■'];
       const KAHOOT_LETTERS = ['A', 'B', 'C', 'D'];
       let kahootEditingIdx = null;
@@ -4204,6 +4481,7 @@
           wheelManualExclusions: state.wheelManualExclusions,
           giftExchangeExclusions: state.giftExchangeExclusions,
           wheelStage: state.wheelStage,
+          costumeVote: state.costumeVote,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
           kahootMeta: {
@@ -4327,6 +4605,7 @@
           state.wheelManualExclusions = Array.isArray(c.wheelManualExclusions) ? c.wheelManualExclusions : [];
           state.giftExchangeExclusions = Array.isArray(c.giftExchangeExclusions) ? c.giftExchangeExclusions : [];
           if (c.wheelStage && typeof c.wheelStage === 'object') state.wheelStage = c.wheelStage;
+          if (c.costumeVote && typeof c.costumeVote === 'object') state.costumeVote = { ...state.costumeVote, ...c.costumeVote, votes: (c.costumeVote.votes && typeof c.costumeVote.votes === 'object') ? c.costumeVote.votes : {} };
           state.winners = Array.isArray(c.winners) ? c.winners : [];
           state.prizeAlerts = Array.isArray(c.prizeAlerts) ? c.prizeAlerts : [];
           if (c.kahootMeta && typeof c.kahootMeta === 'object') {
@@ -4566,7 +4845,7 @@
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
           giftExchangeExclusions: state.giftExchangeExclusions,
-          wheelStage: state.wheelStage, winners: state.winners, prizeAlerts: state.prizeAlerts,
+          wheelStage: state.wheelStage, costumeVote: state.costumeVote, winners: state.winners, prizeAlerts: state.prizeAlerts,
           kahootGame: state.kahootGame,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
           circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
@@ -4592,6 +4871,7 @@
         if (Array.isArray(p.wheelManualExclusions)) state.wheelManualExclusions = p.wheelManualExclusions;
         if (Array.isArray(p.giftExchangeExclusions)) state.giftExchangeExclusions = p.giftExchangeExclusions;
         if (p.wheelStage) state.wheelStage = p.wheelStage;
+        if (p.costumeVote && typeof p.costumeVote === 'object') state.costumeVote = { ...state.costumeVote, ...p.costumeVote, votes: (p.costumeVote.votes && typeof p.costumeVote.votes === 'object') ? p.costumeVote.votes : {} };
         if (Array.isArray(p.winners)) state.winners = p.winners;
         if (Array.isArray(p.prizeAlerts)) state.prizeAlerts = p.prizeAlerts;
         if (p.kahootGame) {
