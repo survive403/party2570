@@ -2039,7 +2039,7 @@
 
         lines.push('');
         lines.push('🎯 6. สรุปผลเกม Unique Number ล่าสุด:');
-        if (state.uniqueGame?.winnerName && state.uniqueGame?.winningNumber !== null) {
+        if (state.uniqueGame?.winnerName && typeof state.uniqueGame?.winningNumber === 'number') {
           lines.push(`   🥇 ${state.uniqueGame.winnerName} (เลข ${state.uniqueGame.winningNumber} • ${state.uniqueGame.prize})`);
         } else {
           lines.push('   - ยังไม่มีผู้ชนะ');
@@ -2582,10 +2582,10 @@
           tags.appendChild(chip);
         });
         if (state.prizes.includes(state.selectedPrize)) {
-          drawPrizeSelect.value = state.selectedPrize;
+          if (document.activeElement !== drawPrizeSelect) drawPrizeSelect.value = state.selectedPrize;
         } else {
           state.selectedPrize = state.prizes[0] || '';
-          drawPrizeSelect.value = state.selectedPrize;
+          if (document.activeElement !== drawPrizeSelect) drawPrizeSelect.value = state.selectedPrize;
         }
 
         const exhaustedBanner = document.getElementById('prizes-exhausted-banner');
@@ -3307,6 +3307,26 @@
         syncAdminCore('bingo_interval_changed');
       });
 
+      document.getElementById('bingo-prize-input')?.addEventListener('change', (e) => {
+        if (!canManageCore()) return;
+        state.bingoGame.prize = e.target.value.trim() || 'รางวัลบิงโก 25 ตัวเลข';
+        syncAdminCore('bingo_prize_changed');
+      });
+
+      document.getElementById('chk-bingo-corners')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.bingoGame.phase === 'playing') return;
+        state.bingoGame.allowCorners = Boolean(e.target.checked);
+        renderBingoGame();
+        syncAdminCore('bingo_corners_toggled');
+      });
+
+      document.getElementById('chk-bingo-inner-x')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.bingoGame.phase === 'playing') return;
+        state.bingoGame.allowInnerX = Boolean(e.target.checked);
+        renderBingoGame();
+        syncAdminCore('bingo_inner_x_toggled');
+      });
+
       document.getElementById('btn-bingo-reset')?.addEventListener('click', () => {
         if (!canManageCore()) return;
         askSafetyConfirm('รีเซ็ตรอบเกมบิงโก?', 'ตัวเลขที่ออกและรายชื่อคนกด BINGO รอบนี้จะถูกล้าง ผู้เล่นจะสุ่มจัดเรียงการ์ดใหม่ได้อีกครั้ง', () => {
@@ -3402,9 +3422,9 @@
           const btnAuto = document.getElementById('btn-bingo-toggle-auto');
 
           const curMode = bg.mode || 'manual';
-          if (selMode) selMode.value = curMode;
+          if (selMode && document.activeElement !== selMode) selMode.value = curMode;
           if (intWrap) intWrap.style.display = curMode === 'auto' ? '' : 'none';
-          if (selInt) selInt.value = String(bg.intervalSec || 5);
+          if (selInt && document.activeElement !== selInt) selInt.value = String(bg.intervalSec || 5);
           if (inpPrize && document.activeElement !== inpPrize) inpPrize.value = bg.prize || 'รางวัลบิงโก 25 ตัวเลข';
           if (chkCorners) { chkCorners.checked = bg.allowCorners !== false; chkCorners.disabled = bg.phase === 'playing'; }
           if (chkInnerX) { chkInnerX.checked = bg.allowInnerX !== false; chkInnerX.disabled = bg.phase === 'playing'; }
@@ -3684,6 +3704,32 @@
         broadcastLocalOnly('unique_num_picked');
       };
 
+      document.getElementById('unique-rule-select')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.uniqueGame.phase === 'picking') return;
+        state.uniqueGame.rule = e.target.value === 'highest' ? 'highest' : 'lowest';
+        renderUniqueGame();
+        syncAdminCore('unique_rule_changed');
+      });
+      document.getElementById('unique-max-select')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.uniqueGame.phase === 'picking') return;
+        state.uniqueGame.maxNum = Math.max(5, Math.min(50, Number(e.target.value) || 15));
+        renderUniqueGame();
+        syncAdminCore('unique_max_changed');
+      });
+      document.getElementById('unique-sec-select')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.uniqueGame.phase === 'picking') return;
+        const secVal = Math.max(5, Math.min(60, Number(e.target.value) || 15));
+        state.uniqueGame.durationSec = secVal;
+        state.uniqueGame.timeLeft = secVal;
+        renderUniqueGame();
+        syncAdminCore('unique_sec_changed');
+      });
+      document.getElementById('unique-prize-input')?.addEventListener('change', (e) => {
+        if (!canManageCore() || state.uniqueGame.phase === 'picking') return;
+        state.uniqueGame.prize = e.target.value.trim() || 'รางวัล Unique Number';
+        syncAdminCore('unique_prize_changed');
+      });
+
       document.getElementById('btn-unique-start')?.addEventListener('click', startUniqueNumberRound);
       document.getElementById('btn-unique-reveal')?.addEventListener('click', revealUniqueNumberRound);
       document.getElementById('btn-unique-reset')?.addEventListener('click', () => {
@@ -3739,9 +3785,9 @@
           const btnStart = document.getElementById('btn-unique-start');
           const btnRev = document.getElementById('btn-unique-reveal');
 
-          if (selRule && ug.phase !== 'picking') selRule.value = ug.rule || 'lowest';
-          if (selMax && ug.phase !== 'picking') selMax.value = String(ug.maxNum || 15);
-          if (selSec && ug.phase !== 'picking') selSec.value = String(ug.durationSec || 15);
+          if (selRule && document.activeElement !== selRule && ug.phase !== 'picking') selRule.value = ug.rule || 'lowest';
+          if (selMax && document.activeElement !== selMax && ug.phase !== 'picking') selMax.value = String(ug.maxNum || 15);
+          if (selSec && document.activeElement !== selSec && ug.phase !== 'picking') selSec.value = String(ug.durationSec || 15);
           if (inpPrize && document.activeElement !== inpPrize && ug.phase !== 'picking') inpPrize.value = ug.prize || 'รางวัล Unique Number';
 
           if (btnStart && btnRev) {
@@ -3998,7 +4044,7 @@
           const chkScore = document.getElementById('chk-costume-show-scores');
           const prizeInp = document.getElementById('costume-prize-input');
           const toggleBtn = document.getElementById('btn-costume-toggle-open');
-          if (selTop) selTop.value = String(cv.topLimit || 3);
+          if (selTop && document.activeElement !== selTop) selTop.value = String(cv.topLimit || 3);
           if (chkScore) chkScore.checked = Boolean(cv.showScores);
           if (prizeInp && document.activeElement !== prizeInp) prizeInp.value = cv.prize || 'รางวัลชุดเครื่องแต่งกายยอดเยี่ยม';
           if (toggleBtn) {
@@ -4419,6 +4465,12 @@
         syncAdminCore('kahoot_autodelay_changed');
       });
 
+      document.getElementById('kahoot-prize-input')?.addEventListener('change', (e) => {
+        if (!canManageKahoot()) return;
+        state.kahootGame.prize = e.target.value.trim() || 'รางวัลแชมป์ Kahoot ประจำปีใหม่';
+        syncAdminCore('kahoot_prize_changed');
+      });
+
       document.getElementById('btn-kahoot-pause-auto').addEventListener('click', () => {
         if (!canManageKahoot()) return;
         if (kahootAutoNextInterval) { clearInterval(kahootAutoNextInterval); kahootAutoNextInterval = null; }
@@ -4641,7 +4693,7 @@
           const chkAuto = document.getElementById('chk-kahoot-autorun');
           const selDelay = document.getElementById('kahoot-autodelay-select');
           if (chkAuto) chkAuto.checked = Boolean(kg.autoRun);
-          if (selDelay) selDelay.value = String(kg.autoDelaySec || 5);
+          if (selDelay && document.activeElement !== selDelay) selDelay.value = String(kg.autoDelaySec || 5);
 
           const qListEl = document.getElementById('kahoot-question-bank-list');
           if (qListEl) {
@@ -5421,11 +5473,11 @@
           const chkAuto = document.getElementById('chk-wits-autorun');
           const selDelay = document.getElementById('wits-autodelay-select');
           if (chkAuto) chkAuto.checked = Boolean(wg.autoRun);
-          if (selDelay) selDelay.value = String(wg.autoDelaySec || 5);
+          if (selDelay && document.activeElement !== selDelay) selDelay.value = String(wg.autoDelaySec || 5);
           const chkRank = document.getElementById('chk-wits-oneshot-rank');
           const selLimit = document.getElementById('wits-rank-limit-select');
           if (chkRank) chkRank.checked = wg.oneShotRankEnabled !== false;
-          if (selLimit) selLimit.value = String(wg.rankDisplayLimit || 3);
+          if (selLimit && document.activeElement !== selLimit) selLimit.value = String(wg.rankDisplayLimit || 3);
 
           const qListEl = document.getElementById('wits-question-bank-list');
           if (qListEl) {
