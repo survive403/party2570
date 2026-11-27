@@ -126,7 +126,23 @@
       margin-bottom: 8px;
     }
     .countdown-title-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 2px; font-weight: 600; }
-    .grand-countdown-title { font-size: clamp(19px, 5vw, 34px); font-weight: 800; line-height: 1.2; color: #fff; margin: 0 0 6px; }
+    .grand-countdown-title { font-size: clamp(19px, 5vw, 34px); font-weight: 800; line-height: 1.2; color: #fff; margin: 0 0 6px; transition: font-size 0.35s ease, margin 0.35s ease; }
+    .hero-countdown.is-celebrating {
+      min-height: 165px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 16px;
+    }
+    @media (min-width: 768px) {
+      .hero-countdown.is-celebrating { min-height: 210px; padding: 36px 24px; }
+    }
+    .hero-countdown.is-celebrating .grand-countdown-title {
+      font-size: clamp(24px, 6.2vw, 48px);
+      margin: 0;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+    }
     .grand-countdown-title span { background: linear-gradient(to right, #fde68a, #f59e0b, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .grand-countdown-subtitle { font-size: 11px; color: var(--muted); margin: 0 0 12px; }
     .countdown-timer-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 360px; margin: 0 auto; }
@@ -138,16 +154,40 @@
     /* === 4. MOBILE-FIRST NAVIGATION TABS (PORTRAIT THUMB-FRIENDLY) === */
     .action-grid {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 6px;
       margin-bottom: 14px;
     }
-    .action-grid > .action-card:nth-child(-n+3) {
-      grid-column: span 4;
+    .unique-num-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      max-width: 360px;
+      margin: 12px auto;
     }
-    .action-grid > .action-card:nth-child(n+4) {
-      grid-column: span 3;
+    .unique-num-btn {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: clamp(16px, 4.5vw, 20px);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.15s ease;
     }
+    .unique-num-btn:active:not(:disabled) { transform: scale(0.95); }
+    .unique-num-btn.is-picked {
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      border-color: #7dd3fc;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+    }
+    .unique-num-btn:disabled { cursor: default; opacity: 0.75; }
     .bingo-board-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -583,6 +623,7 @@
         <button id="tb-sound-toggle-btn" class="toolbar-btn green-status" type="button" title="เปิด/ปิดเสียงเตือนนับถอยหลังและเสียงเฉลย">🔊 เสียง</button>
         <button id="tb-enter-admin-top-btn" class="toolbar-btn orange-status" type="button">👑 Host</button>
         <button id="tb-line-export-btn" class="toolbar-btn green-status admin-only-control" data-admin-scope="core" type="button" style="display: none;">📋 สรุปส่ง LINE</button>
+        <button id="tb-preview-celebrate-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;" title="พรีวิวหน้าจอป้ายฉลองปีใหม่เมื่อเวลานับถอยหลังสิ้นสุดลง (เฉพาะเครื่อง Super Host)">👁️ พรีวิวจบ Countdown</button>
         <button id="tb-firebase-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;">☁️ Firebase</button>
         <button id="tb-change-pw-btn" class="toolbar-btn admin-only-control" data-admin-scope="super" type="button" style="display: none;">🔑 รหัส</button>
       </div>
@@ -591,14 +632,15 @@
 
   <main class="container">
     <!-- Hero Countdown -->
-    <section class="hero-countdown">
+    <section class="hero-countdown" id="hero-countdown-section">
       <div class="interactive-fireworks-container" id="fireworks-tap-zone" title="แตะหน้าจอจุดพลุได้ทุกเมื่อ!"></div>
-      <div style="position: relative; z-index: 10; pointer-events: none;">
+      <div style="position: relative; z-index: 10; pointer-events: none; width: 100%;">
         <div class="announcement-banner" id="banner-announcement">✨ 🎆 นับถอยหลังงานปีใหม่ I Love My (Dream) Job! 🎆 ✨</div>
-        <h2 class="countdown-title-label">นับถอยหลัง</h2>
-        <h1 class="grand-countdown-title">"ฉลองปีใหม่ <span>I Love My (Dream) Job</span>"</h1>
-        <p class="grand-countdown-subtitle">วันที่ <strong>18 ธันวาคม 2569 (18/12/69) เวลา 18.00 น.</strong> — แตะป้ายนี้จุดพลุได้ทุกเมื่อ!</p>
-        <div class="countdown-timer-group">
+        <h2 class="countdown-title-label" id="countdown-title-label">นับถอยหลัง</h2>
+        <h1 class="grand-countdown-title" id="grand-countdown-title">"ฉลองปีใหม่ <span>I Love My (Dream) Job</span>"</h1>
+        <div id="hero-preview-mode-tag" style="display: none; margin-top: 10px; font-size: 11px; color: #fde68a; opacity: 0.85;">👁️ โหมดพรีวิวหน้าจอเมื่อนับถอยหลังสิ้นสุด (กดปุ่มด้านบนอีกครั้งเพื่อกลับสู่นับถอยหลังปกติ)</div>
+        <p class="grand-countdown-subtitle" id="grand-countdown-subtitle">วันที่ <strong>18 ธันวาคม 2569 (18/12/69) เวลา 18.00 น.</strong> — แตะป้ายนี้จุดพลุได้ทุกเมื่อ!</p>
+        <div class="countdown-timer-group" id="countdown-timer-group">
           <div class="timer-circle-card"><span class="value" id="timer-days">00</span><span class="label">วัน</span></div>
           <div class="timer-circle-card"><span class="value" id="timer-hours">00</span><span class="label">ชม.</span></div>
           <div class="timer-circle-card"><span class="value" id="timer-mins">00</span><span class="label">นาที</span></div>
@@ -663,7 +705,7 @@
         </div>
       </div>
 
-      <!-- 6 Thumb-Friendly Mobile Portrait Tabs (2 Rows x 3 Columns) -->
+      <!-- 8 Thumb-Friendly Mobile Portrait Tabs (2 Rows x 4 Columns) -->
       <div class="action-grid" role="tablist">
         <div class="action-card active" id="card-checkin" onclick="switchMainModule('checkin')">
           <div class="action-icon-wrap" style="color: #38bdf8;">🙋</div>
@@ -693,6 +735,13 @@
             <h3 class="action-title">โหวดเครื่องแต่งกาย</h3>
           </div>
         </div>
+        <div class="action-card" id="card-witwager" onclick="switchMainModule('witwager')">
+          <div class="action-icon-wrap" style="color: #34d399;">🔢</div>
+          <div class="action-info">
+            <span class="action-badge">แทงแม่นทายเนียน</span>
+            <h3 class="action-title">Wits and Wager</h3>
+          </div>
+        </div>
         <div class="action-card" id="card-kahoot" onclick="switchMainModule('kahoot')">
           <div class="action-icon-wrap" style="color: #a855f7;">⚡</div>
           <div class="action-info">
@@ -700,18 +749,18 @@
             <h3 class="action-title">Kahoot</h3>
           </div>
         </div>
-        <div class="action-card" id="card-witwager" onclick="switchMainModule('witwager')">
-          <div class="action-icon-wrap" style="color: #34d399;">🔢</div>
-          <div class="action-info">
-            <span class="action-badge">ตั้งเวลา / Auto</span>
-            <h3 class="action-title">ทายตัวเลข</h3>
-          </div>
-        </div>
         <div class="action-card" id="card-bingo" onclick="switchMainModule('bingo')">
           <div class="action-icon-wrap" style="color: #fbbf24;">🎱</div>
           <div class="action-info">
             <span class="action-badge">25 ตัวเลข</span>
             <h3 class="action-title">Bingo</h3>
+          </div>
+        </div>
+        <div class="action-card" id="card-uniquenum" onclick="switchMainModule('uniquenum')">
+          <div class="action-icon-wrap" style="color: #38bdf8;">🎯</div>
+          <div class="action-info">
+            <span class="action-badge">ทายถูกคนเดียว</span>
+            <h3 class="action-title">Unique Number</h3>
           </div>
         </div>
       </div>
@@ -1232,6 +1281,63 @@
             <!-- Live Bingo Stage (Both Host & Players) -->
             <div id="bingo-stage-container"></div>
           </div>
+
+          <!-- View: Unique Number (เกมทายถูกคนเดียว / หลุดกลุ่ม: น้อยสุดหรือมากสุดที่ไม่ซ้ำใคร) -->
+          <div class="panel-card view-section" style="display: none;" id="view-section-uniquenum">
+            <div class="panel-title-bar">
+              <h2 class="panel-title">🎯 Unique Number (ทายถูกคนเดียว)</h2>
+              <span class="meta-caption" id="unique-status-pill">🟡 รอเริ่มรอบ • เลือกเลขที่ไม่ซ้ำใคร</span>
+            </div>
+
+            <!-- Host Controls -->
+            <div class="wits-host-box admin-only-control" data-admin-scope="core">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                <strong style="font-size: 13px; color: var(--brand);">👑 แผงควบคุมเกม Unique Number (Host)</strong>
+                <button type="button" class="btn btn-ghost-danger" id="btn-unique-reset" style="min-height: 30px; padding: 4px 10px; font-size: 11px;">🔄 รีเซ็ตรอบ</button>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                <div>
+                  <label class="field-label" for="unique-rule-select">กติกาตัดสินผู้ชนะ</label>
+                  <select id="unique-rule-select" class="select">
+                    <option value="lowest" selected>⬇️ น้อยที่สุดและไม่ซ้ำใคร (Lowest Unique)</option>
+                    <option value="highest">⬆️ มากที่สุดและไม่ซ้ำใคร (Highest Unique)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="unique-max-select">ช่วงตัวเลขให้เลือก</label>
+                  <select id="unique-max-select" class="select">
+                    <option value="10">1 ถึง 10</option>
+                    <option value="15" selected>1 ถึง 15</option>
+                    <option value="20">1 ถึง 20</option>
+                    <option value="25">1 ถึง 25</option>
+                    <option value="30">1 ถึง 30</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="unique-sec-select">เวลาตัดสินใจ (วินาที)</label>
+                  <select id="unique-sec-select" class="select">
+                    <option value="10">10 วินาที</option>
+                    <option value="15" selected>15 วินาที</option>
+                    <option value="20">20 วินาที</option>
+                    <option value="30">30 วินาที</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="unique-prize-input">รางวัลรอบนี้</label>
+                  <input type="text" id="unique-prize-input" class="input" value="รางวัล Unique Number">
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-primary" id="btn-unique-start" style="flex: 1;">🚀 เริ่มเปิดให้เลือกตัวเลข!</button>
+                <button type="button" class="btn btn-draw" id="btn-unique-reveal" style="display: none; flex: 1; font-size: 14px; padding: 9px 16px;">✨ ปิดรับ &amp; เฉลยผู้รอดคนเดียว!</button>
+              </div>
+            </div>
+
+            <!-- Live Unique Number Stage -->
+            <div id="unique-stage-container"></div>
+          </div>
         </div>
 
         <!-- Right Column: Winners History -->
@@ -1467,6 +1573,20 @@
           allowInnerX: true,
           calledNumbers: [],
           claims: [] // [{ id, name, claimedAt, callCount, pattern }]
+        },
+        uniqueGame: {
+          roundId: '',
+          phase: 'idle', // 'idle' | 'picking' | 'revealed'
+          rule: 'lowest', // 'lowest' | 'highest'
+          maxNum: 15,
+          durationSec: 15,
+          timeLeft: 15,
+          timeUp: false,
+          prize: 'รางวัล Unique Number',
+          picks: {}, // { guestId: { num, roundId, pickedAt } }
+          winnerId: '',
+          winnerName: '',
+          winningNumber: null
         }
       };
 
@@ -1532,6 +1652,9 @@
         if (state.bingoGame && Array.isArray(state.bingoGame.claims)) {
           state.bingoGame.claims = state.bingoGame.claims.filter(c => c.id !== guestId);
         }
+        if (state.uniqueGame && state.uniqueGame.picks) {
+          delete state.uniqueGame.picks[guestId];
+        }
         if (state.witsGame.submissions) delete state.witsGame.submissions[guestId];
 
         let loopWasReset = false;
@@ -1546,6 +1669,7 @@
           fbWriteSubpath(`witsSubmissions/${encodeURIComponent(guestId)}`, null, 'DELETE');
           fbWriteSubpath(`bingoClaims/${encodeURIComponent(guestId)}`, null, 'DELETE');
           fbWriteSubpath(`costumeVotes/${encodeURIComponent(guestId)}`, null, 'DELETE');
+          fbWriteSubpath(`uniquePicks/${encodeURIComponent(guestId)}`, null, 'DELETE');
           if (loopWasReset || isAnyAdmin()) fbPushCoreState('guest_purged');
         }
         return existed;
@@ -1575,13 +1699,44 @@
       }
 
       /* === PART 2: COUNTDOWN & FIREWORKS === */
+      let countdownCelebratedOnce = false;
+      let superHostCountdownPreview = false;
+
       function tickCountdown() {
         const diff = state.targetTime - Date.now();
-        if (diff <= 0) {
-          ['days', 'hours', 'mins', 'secs'].forEach(k => { document.getElementById('timer-' + k).textContent = '00'; });
-          document.getElementById('banner-announcement').innerHTML = '✨ 🎆 <strong>ถึงเวลาฉลองปีใหม่ I Love My (Dream) Job แล้ว!</strong> 🎆 ✨';
+        const isPreview = Boolean(superHostCountdownPreview && canManageSuper());
+        const isFinished = diff <= 0 || isPreview;
+        const heroEl = document.getElementById('hero-countdown-section');
+        const bannerEl = document.getElementById('banner-announcement');
+        const labelEl = document.getElementById('countdown-title-label');
+        const subEl = document.getElementById('grand-countdown-subtitle');
+        const groupEl = document.getElementById('countdown-timer-group');
+        const previewTagEl = document.getElementById('hero-preview-mode-tag');
+
+        if (isFinished) {
+          if (heroEl && !heroEl.classList.contains('is-celebrating')) {
+            heroEl.classList.add('is-celebrating');
+          }
+          if (bannerEl) bannerEl.style.display = 'none';
+          if (labelEl) labelEl.style.display = 'none';
+          if (subEl) subEl.style.display = 'none';
+          if (groupEl) groupEl.style.display = 'none';
+          if (previewTagEl) previewTagEl.style.display = (isPreview && diff > 0) ? 'block' : 'none';
+          if (diff <= 0 && !countdownCelebratedOnce) {
+            countdownCelebratedOnce = true;
+            if (typeof triggerGrandConfetti === 'function') triggerGrandConfetti();
+          }
           return;
         }
+
+        if (heroEl && heroEl.classList.contains('is-celebrating')) {
+          heroEl.classList.remove('is-celebrating');
+        }
+        if (bannerEl) bannerEl.style.display = '';
+        if (labelEl) labelEl.style.display = '';
+        if (subEl) subEl.style.display = '';
+        if (groupEl) groupEl.style.display = '';
+        if (previewTagEl) previewTagEl.style.display = 'none';
         document.getElementById('timer-days').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
         document.getElementById('timer-hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
         document.getElementById('timer-mins').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
@@ -1882,6 +2037,14 @@
           });
         }
 
+        lines.push('');
+        lines.push('🎯 6. สรุปผลเกม Unique Number ล่าสุด:');
+        if (state.uniqueGame?.winnerName && state.uniqueGame?.winningNumber !== null) {
+          lines.push(`   🥇 ${state.uniqueGame.winnerName} (เลข ${state.uniqueGame.winningNumber} • ${state.uniqueGame.prize})`);
+        } else {
+          lines.push('   - ยังไม่มีผู้ชนะ');
+        }
+
         return lines.join('\n');
       }
 
@@ -1987,6 +2150,22 @@
       document.getElementById('btn-switch-to-admin').addEventListener('click', openAdminPasswordModal);
       document.getElementById('btn-gatekeeper-admin-login').addEventListener('click', () => verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')));
       document.getElementById('gatekeeper-admin-pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyAndEnterAdmin(document.getElementById('gatekeeper-admin-pw').value, document.getElementById('gatekeeper-admin-error')); });
+
+      // Super Host Countdown Celebration Preview Toggle (เฉพาะเครื่อง Host หลัก ไม่กระทบผู้ร่วมงาน)
+      const previewCelebrateBtn = document.getElementById('tb-preview-celebrate-btn');
+      if (previewCelebrateBtn) {
+        previewCelebrateBtn.addEventListener('click', () => {
+          if (!canManageSuper()) return;
+          superHostCountdownPreview = !superHostCountdownPreview;
+          previewCelebrateBtn.textContent = superHostCountdownPreview ? '⏱️ กลับสู่นับถอยหลัง' : '👁️ พรีวิวจบ Countdown';
+          previewCelebrateBtn.classList.toggle('green-status', superHostCountdownPreview);
+          tickCountdown();
+          if (superHostCountdownPreview) {
+            triggerGrandConfetti();
+            triggerHapticVibration(40);
+          }
+        });
+      }
 
       // Change Admin Passwords (4 Tiers - Super Admin Only)
       const changePwModal = document.getElementById('change-pw-modal');
@@ -2258,6 +2437,15 @@
           myPrizesBtn.style.display = 'none';
         }
 
+        if (!canManageSuper() && superHostCountdownPreview) {
+          superHostCountdownPreview = false;
+          const prevBtn = document.getElementById('tb-preview-celebrate-btn');
+          if (prevBtn) {
+            prevBtn.textContent = '👁️ พรีวิวจบ Countdown';
+            prevBtn.classList.remove('green-status');
+          }
+          tickCountdown();
+        }
         const myGuest = mySessionGuestId && state.guests.find(g => g.id === mySessionGuestId);
         document.getElementById('gatekeeper-checkin-form').style.display = myGuest ? 'none' : 'block';
         document.getElementById('gatekeeper-already-registered-box').style.display = myGuest ? 'block' : 'none';
@@ -2305,6 +2493,7 @@
         renderKahootGame();
         renderWitsGame();
         renderBingoGame();
+        renderUniqueGame();
         updateCircularLoopUI();
       }
 
@@ -3333,6 +3522,341 @@
           </div>
           ${claimsHtml}
         `;
+      }
+
+      // === UNIQUE NUMBER GAME ENGINE (ทายถูกคนเดียว / หลุดกลุ่ม: น้อยสุดหรือมากสุดที่ไม่ซ้ำใคร) ===
+      const localUniqueDeadlines = {};
+      let uniqueTimerInterval = null;
+
+      function clearUniqueTimer() {
+        if (uniqueTimerInterval) { clearInterval(uniqueTimerInterval); uniqueTimerInterval = null; }
+      }
+
+      function getLocalUniqueRemainingMs(ug) {
+        if (!ug || ug.phase !== 'picking' || ug.timeUp) return 0;
+        const rid = ug.roundId || 'uq_default';
+        const durMs = (Number(ug.durationSec) || 15) * 1000;
+        if (!localUniqueDeadlines[rid]) {
+          localUniqueDeadlines[rid] = Date.now() + durMs;
+        }
+        return Math.max(0, localUniqueDeadlines[rid] - Date.now());
+      }
+
+      function ensureUniqueCountdownLoop() {
+        clearUniqueTimer();
+        const ug = state.uniqueGame;
+        if (!ug || ug.phase !== 'picking' || ug.timeUp) return;
+        getLocalUniqueRemainingMs(ug);
+        uniqueTimerInterval = setInterval(() => {
+          const cur = state.uniqueGame;
+          if (!cur || cur.phase !== 'picking') {
+            clearUniqueTimer();
+            return;
+          }
+          const remMs = getLocalUniqueRemainingMs(cur);
+          const remSec = Math.ceil(remMs / 1000);
+          if (cur.timeLeft !== remSec && remSec > 0) {
+            playCountdownTickSound(remSec <= 5);
+          }
+          cur.timeLeft = remSec;
+          const tc = document.getElementById('unique-timer-circle');
+          if (tc) {
+            tc.textContent = String(remSec);
+            tc.classList.toggle('urgent', remSec <= 5);
+          }
+          if (remMs <= 0) {
+            clearUniqueTimer();
+            cur.timeUp = true;
+            cur.timeLeft = 0;
+            if (canManageCore()) {
+              revealUniqueNumberRound();
+            } else {
+              renderUniqueGame();
+            }
+          }
+        }, 200);
+      }
+
+      function startUniqueNumberRound() {
+        if (!canManageCore()) return;
+        clearUniqueTimer();
+        const ug = state.uniqueGame;
+        const rule = document.getElementById('unique-rule-select')?.value === 'highest' ? 'highest' : 'lowest';
+        const maxNum = Math.max(5, Math.min(50, Number(document.getElementById('unique-max-select')?.value) || 15));
+        const dur = Math.max(5, Math.min(60, Number(document.getElementById('unique-sec-select')?.value) || 15));
+        const prize = document.getElementById('unique-prize-input')?.value.trim() || 'รางวัล Unique Number';
+        const rid = 'uq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+        localUniqueDeadlines[rid] = Date.now() + dur * 1000;
+
+        ug.roundId = rid;
+        ug.phase = 'picking';
+        ug.rule = rule;
+        ug.maxNum = maxNum;
+        ug.durationSec = dur;
+        ug.timeLeft = dur;
+        ug.timeUp = false;
+        ug.prize = prize;
+        ug.picks = {};
+        ug.winnerId = '';
+        ug.winnerName = '';
+        ug.winningNumber = null;
+
+        fbMirror.uniquePicks = {};
+        fbWriteSubpath('uniquePicks', null, 'DELETE');
+        triggerHapticVibration(45);
+        renderUniqueGame();
+        ensureUniqueCountdownLoop();
+        syncAdminCore('unique_round_started');
+      }
+
+      function evaluateUniquePicks(ug) {
+        const picksMap = (ug && ug.picks && typeof ug.picks === 'object') ? ug.picks : {};
+        const maxN = Number(ug?.maxNum) || 15;
+        const byNum = {};
+        state.guests.forEach(g => {
+          const entry = picksMap[g.id];
+          if (entry && (!ug.roundId || !entry.roundId || entry.roundId === ug.roundId)) {
+            const n = Number(entry.num);
+            if (Number.isInteger(n) && n >= 1 && n <= maxN) {
+              if (!byNum[n]) byNum[n] = [];
+              byNum[n].push({ id: g.id, name: g.name, pickedAt: Number(entry.pickedAt) || 0 });
+            }
+          }
+        });
+        const uniqueNums = Object.keys(byNum)
+          .map(Number)
+          .filter(n => byNum[n].length === 1)
+          .sort((a, b) => ug.rule === 'highest' ? (b - a) : (a - b));
+
+        const winNum = uniqueNums.length ? uniqueNums[0] : null;
+        const winner = winNum !== null ? byNum[winNum][0] : null;
+        return { byNum, uniqueNums, winNum, winner };
+      }
+
+      function revealUniqueNumberRound() {
+        if (!canManageCore() || state.uniqueGame.phase !== 'picking') return;
+        clearUniqueTimer();
+        const ug = state.uniqueGame;
+        const { winNum, winner } = evaluateUniquePicks(ug);
+
+        ug.phase = 'revealed';
+        ug.timeUp = true;
+        ug.timeLeft = 0;
+        ug.winningNumber = winNum;
+        ug.winnerId = winner ? winner.id : '';
+        ug.winnerName = winner ? winner.name : '';
+
+        playRevealChimeSound();
+        if (winner && winNum !== null) {
+          const ruleLabel = ug.rule === 'highest' ? 'มากสุดไม่ซ้ำใคร' : 'น้อยสุดไม่ซ้ำใคร';
+          const prizeFull = `${ug.prize} (เลข ${winNum} • ${ruleLabel})`;
+          state.winners.unshift({
+            name: winner.name,
+            prize: prizeFull,
+            timestamp: new Date().toLocaleTimeString('th-TH')
+          });
+          triggerWinnerNotification(winner.id, winner.name, prizeFull, 'เกม Unique Number (ทายถูกคนเดียว)');
+          triggerGrandConfetti();
+        }
+        renderWinners();
+        renderUniqueGame();
+        syncAdminCore('unique_round_revealed');
+      }
+
+      window.pickUniqueNumber = function(num) {
+        const ug = state.uniqueGame;
+        const gid = state.deviceRole;
+        if (!ug || ug.phase !== 'picking' || ug.timeUp || !gid || isAnyAdmin() || gid === 'guest_unselected') return;
+        const remMs = getLocalUniqueRemainingMs(ug);
+        if (remMs <= 0) {
+          ug.timeUp = true;
+          renderUniqueGame();
+          return;
+        }
+        const maxN = Number(ug.maxNum) || 15;
+        if (!Number.isInteger(num) || num < 1 || num > maxN) return;
+        if (!ug.picks || typeof ug.picks !== 'object') ug.picks = {};
+        const payload = { num, roundId: ug.roundId, pickedAt: Date.now() };
+        ug.picks[gid] = payload;
+        triggerHapticVibration(35);
+        renderUniqueGame();
+        fbWriteSubpath(`uniquePicks/${encodeURIComponent(gid)}`, payload, 'PUT');
+        broadcastLocalOnly('unique_num_picked');
+      };
+
+      document.getElementById('btn-unique-start')?.addEventListener('click', startUniqueNumberRound);
+      document.getElementById('btn-unique-reveal')?.addEventListener('click', revealUniqueNumberRound);
+      document.getElementById('btn-unique-reset')?.addEventListener('click', () => {
+        if (!canManageCore()) return;
+        askSafetyConfirm('รีเซ็ตรอบเกม Unique Number?', 'ตัวเลขที่ผู้เล่นเลือกในรอบนี้จะถูกล้างออกทั้งหมด', () => {
+          clearUniqueTimer();
+          state.uniqueGame.roundId = '';
+          state.uniqueGame.phase = 'idle';
+          state.uniqueGame.timeUp = false;
+          state.uniqueGame.picks = {};
+          state.uniqueGame.winnerId = '';
+          state.uniqueGame.winnerName = '';
+          state.uniqueGame.winningNumber = null;
+          fbMirror.uniquePicks = {};
+          fbWriteSubpath('uniquePicks', null, 'DELETE');
+          renderUniqueGame();
+          syncAdminCore('unique_reset');
+        });
+      });
+
+      function renderUniqueGame() {
+        const ug = state.uniqueGame || { phase: 'idle', rule: 'lowest', maxNum: 15, durationSec: 15, timeLeft: 15, picks: {} };
+        const isAdmin = canManageCore();
+        const stage = document.getElementById('unique-stage-container');
+        const statusPill = document.getElementById('unique-status-pill');
+        if (!stage) return;
+
+        if (ug.phase === 'picking') {
+          const remMs = getLocalUniqueRemainingMs(ug);
+          ug.timeLeft = Math.ceil(remMs / 1000);
+          if (remMs <= 0) ug.timeUp = true;
+        }
+
+        const ruleTitle = ug.rule === 'highest' ? '⬆️ มากที่สุดและไม่ซ้ำใคร (Highest Unique)' : '⬇️ น้อยที่สุดและไม่ซ้ำใคร (Lowest Unique)';
+        if (statusPill) {
+          if (ug.phase === 'idle') {
+            statusPill.textContent = '🟡 รอเริ่มรอบ • เลือกเลขที่ไม่ซ้ำใคร';
+            statusPill.style.color = '#fde68a';
+          } else if (ug.phase === 'picking') {
+            statusPill.textContent = `🟢 กำลังเลือกเลข 1–${ug.maxNum} • เหลือ ${ug.timeLeft} วิ`;
+            statusPill.style.color = '#6ee7b7';
+          } else {
+            statusPill.textContent = '🏁 เฉลยผลรอบนี้แล้ว';
+            statusPill.style.color = '#94a3b8';
+          }
+        }
+
+        if (isAdmin) {
+          const selRule = document.getElementById('unique-rule-select');
+          const selMax = document.getElementById('unique-max-select');
+          const selSec = document.getElementById('unique-sec-select');
+          const inpPrize = document.getElementById('unique-prize-input');
+          const btnStart = document.getElementById('btn-unique-start');
+          const btnRev = document.getElementById('btn-unique-reveal');
+
+          if (selRule && ug.phase !== 'picking') selRule.value = ug.rule || 'lowest';
+          if (selMax && ug.phase !== 'picking') selMax.value = String(ug.maxNum || 15);
+          if (selSec && ug.phase !== 'picking') selSec.value = String(ug.durationSec || 15);
+          if (inpPrize && document.activeElement !== inpPrize && ug.phase !== 'picking') inpPrize.value = ug.prize || 'รางวัล Unique Number';
+
+          if (btnStart && btnRev) {
+            btnStart.style.display = ug.phase !== 'picking' ? 'inline-flex' : 'none';
+            btnStart.textContent = ug.phase === 'revealed' ? '🚀 เริ่มรอบถัดไป!' : '🚀 เริ่มเปิดให้เลือกตัวเลข!';
+            btnRev.style.display = ug.phase === 'picking' ? 'inline-flex' : 'none';
+          }
+        }
+
+        const picksMap = (ug.picks && typeof ug.picks === 'object') ? ug.picks : {};
+        const pickedCount = state.guests.filter(g => {
+          const p = picksMap[g.id];
+          return p && (!ug.roundId || !p.roundId || p.roundId === ug.roundId) && Number.isFinite(Number(p.num));
+        }).length;
+
+        if (ug.phase === 'idle') {
+          stage.innerHTML = `
+            <div class="empty-state">
+              <div style="font-size: 38px; margin-bottom: 6px;">🎯🧠</div>
+              <strong style="color: #fff;">เกมทายถูกคนเดียว / หลุดกลุ่ม (Unique Number)</strong>
+              <p style="margin: 6px 0 0; font-size: 12px; line-height: 1.5;">
+                กติกา: เลือกตัวเลข 1 ตัวในช่วงที่กำหนด <strong>ใครใจตรงกับคนอื่น (เลขซ้ำ) ตกรอบทันที!</strong><br>
+                คนที่เลือกเลข <strong>ไม่ซ้ำใครเลย</strong> และน้อยสุด/มากสุดตามกติกา ชนะรับรางวัล!
+              </p>
+            </div>`;
+          return;
+        }
+
+        if (ug.phase === 'picking') {
+          const myId = (!isAdmin && state.deviceRole && !isAnyAdmin() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+          const myPickEntry = myId ? picksMap[myId] : null;
+          const myNum = (myPickEntry && (!ug.roundId || !myPickEntry.roundId || myPickEntry.roundId === ug.roundId)) ? Number(myPickEntry.num) : null;
+          const maxN = Number(ug.maxNum) || 15;
+
+          const headerBanner = `
+            <div class="wits-question-banner" style="margin-bottom: 12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                <span class="slot-prize-badge" style="margin:0;">🎁 ${escapeHtml(ug.prize)}</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:12px;color:#fde68a;font-weight:700;">เวลาที่เหลือ:</span>
+                  <div class="game-timer-circle${ug.timeLeft <= 5 ? ' urgent' : ''}" id="unique-timer-circle">${ug.timeLeft}</div>
+                </div>
+              </div>
+              <div style="font-size: 16px; font-weight: 800; color: #fff; margin: 4px 0;">${ruleTitle}</div>
+              <div style="font-size: 12px; color: #cbd5e1;">เลือกตัวเลข <strong>1 ถึง ${maxN}</strong> • ส่งคำตอบแล้ว <strong style="color:var(--brand);">${pickedCount} / ${state.guests.length}</strong> คน</div>
+            </div>`;
+
+          if (!myId) {
+            const statusGrid = state.guests.map(g => {
+              const has = picksMap[g.id] && (!ug.roundId || !picksMap[g.id].roundId || picksMap[g.id].roundId === ug.roundId);
+              return `<div class="wits-status-pill"><span>${escapeHtml(g.name)}</span><span>${has ? '<span style="color:#38bdf8;">✅ เลือกแล้ว</span>' : '<span style="color:#fde68a;">⏳ กำลังคิด...</span>'}</span></div>`;
+            }).join('');
+            stage.innerHTML = headerBanner + `<div class="wits-status-grid">${statusGrid}</div>`;
+            return;
+          }
+
+          let btnsHtml = '';
+          for (let n = 1; n <= maxN; n++) {
+            const isPicked = myNum === n;
+            btnsHtml += `<button type="button" class="unique-num-btn${isPicked ? ' is-picked' : ''}" ${ug.timeUp ? 'disabled' : ''} onclick="pickUniqueNumber(${n})">${n}</button>`;
+          }
+
+          const myMsg = myNum !== null
+            ? `✅ คุณเลือกเลข <strong style="color:#fde68a;font-size:16px;">${myNum}</strong> (เปลี่ยนใจจิ้มเลขอื่นได้จนกว่าจะหมดเวลา • ซ่อนจากคนอื่น)`
+            : '👆 จิ้มเลือกตัวเลขที่คุณคิดว่าจะไม่ซ้ำกับใครในห้องเลย!';
+
+          stage.innerHTML = `
+            ${headerBanner}
+            <div style="background:#070b14;border:1px solid var(--border);border-radius:16px;padding:12px;max-width:400px;margin:0 auto;">
+              <div style="text-align:center;font-size:12px;color:#bae6fd;margin-bottom:6px;">${myMsg}</div>
+              <div class="unique-num-grid">${btnsHtml}</div>
+            </div>`;
+          return;
+        }
+
+        // Phase: 'revealed'
+        const { byNum, winNum, winner } = evaluateUniquePicks(ug);
+        const maxN = Number(ug.maxNum) || 15;
+        const myId = (!isAdmin && state.deviceRole && !isAnyAdmin() && state.deviceRole !== 'guest_unselected') ? state.deviceRole : null;
+
+        let breakdownRows = '';
+        for (let n = 1; n <= maxN; n++) {
+          const list = byNum[n] || [];
+          if (!list.length) continue;
+          const isWinRow = winNum === n;
+          const isClashed = list.length > 1;
+          const namesStr = list.map(p => escapeHtml(p.name) + (p.id === myId ? ' (คุณ)' : '')).join(', ');
+          const badge = isWinRow
+            ? '<span style="color:#a7f3d0;font-weight:800;">🏆 รอดคนเดียว &amp; ชนะ!</span>'
+            : (isClashed
+              ? `<span style="color:#fda4af;font-weight:700;">❌ ซ้ำ ${list.length} คน (ตกรอบ)</span>`
+              : '<span style="color:#94a3b8;">✅ ไม่ซ้ำ (แต่แพ้อันดับ)</span>');
+          breakdownRows += `
+            <div class="kahoot-lb-row${isWinRow ? ' is-top1' : ''}" style="${isClashed ? 'opacity:0.72;' : ''}">
+              <span><strong style="color:${isWinRow ? '#fde68a' : '#fff'};font-size:15px;">เลข ${n}</strong> ➔ ${namesStr}</span>
+              <span style="font-size:11px;flex-shrink:0;">${badge}</span>
+            </div>`;
+        }
+
+        const resultBanner = winner && winNum !== null
+          ? `<div class="wits-question-banner" style="border-color:var(--brand);background:radial-gradient(circle at 50% 0%, rgba(245,158,11,0.28), rgba(16,185,129,0.16));margin-bottom:12px;">
+              <div style="font-size:40px;line-height:1.1;">🎯🏆🎉</div>
+              <h3 style="margin:6px 0 4px;font-size:20px;color:#fde68a;">ผู้รอดชีวิตคนเดียว: ${escapeHtml(winner.name)}!</h3>
+              <p style="margin:0;font-size:14px;color:#fff;">ชนะด้วยเลข <strong style="color:var(--brand);font-size:18px;">${winNum}</strong> (${ruleTitle})</p>
+              <div style="margin-top:4px;font-size:12px;color:#a7f3d0;">🎁 ได้รับ: ${escapeHtml(ug.prize)}</div>
+            </div>`
+          : `<div class="wits-question-banner" style="border-color:var(--danger);margin-bottom:12px;">
+              <div style="font-size:38px;line-height:1.1;">💥😅</div>
+              <h3 style="margin:6px 0 4px;font-size:18px;color:#fda4af;">ใจตรงกันทั้งห้อง! ไม่มีเลขเดี่ยวเหลือรอดเลย</h3>
+              <p style="margin:0;font-size:12px;color:#cbd5e1;">ทุกคนเลือกเลขซ้ำกันหมด หรือไม่มีใครส่งคำตอบในรอบนี้</p>
+            </div>`;
+
+        stage.innerHTML = resultBanner + (breakdownRows
+          ? `<div class="meta-caption" style="font-weight:700;color:#fde68a;margin-bottom:6px;">📊 สรุปการชนกันของตัวเลขทั้งหมดในรอบนี้:</div><div class="kahoot-lb-list">${breakdownRows}</div>`
+          : '<div class="empty-state">ไม่มีผู้ส่งตัวเลขในรอบนี้</div>');
       }
 
 // === COSTUME VOTE ENGINE (โหวดชุดเครื่องแต่งกาย • ห้ามโหวดตัวเอง • เปลี่ยนใจได้จนปิดโหวด • โชว์ Top 3-5) ===
@@ -5111,7 +5635,7 @@
       let fbEventSource = null;
       let fbPollTimer = null;
       let fbInitialLoaded = false;
-      const fbMirror = { guests: {}, kahootAnswers: {}, witsSubmissions: {}, bingoClaims: {}, costumeVotes: {}, core: null };
+      const fbMirror = { guests: {}, kahootAnswers: {}, witsSubmissions: {}, bingoClaims: {}, costumeVotes: {}, uniquePicks: {}, core: null };
 
       try {
         const params = new URLSearchParams(window.location.search);
@@ -5156,6 +5680,7 @@
           wheelStage: state.wheelStage,
           costumeVote: state.costumeVote,
           bingoGame: state.bingoGame,
+          uniqueGame: state.uniqueGame,
           winners: state.winners,
           prizeAlerts: state.prizeAlerts,
           kahootMeta: {
@@ -5225,6 +5750,7 @@
             target.witsSubmissions = src.witsSubmissions && typeof src.witsSubmissions === 'object' ? src.witsSubmissions : {};
             target.bingoClaims = src.bingoClaims && typeof src.bingoClaims === 'object' ? src.bingoClaims : {};
             target.costumeVotes = src.costumeVotes && typeof src.costumeVotes === 'object' ? src.costumeVotes : {};
+            target.uniquePicks = src.uniquePicks && typeof src.uniquePicks === 'object' ? src.uniquePicks : {};
             target.core = src.core || null;
           }
           return;
@@ -5304,6 +5830,22 @@
               ensureBingoAutoLoop();
             } else if (state.bingoGame.phase !== 'playing' || state.bingoGame.autoPaused || state.bingoGame.mode !== 'auto') {
               clearBingoAutoTimer();
+            }
+          }
+          if (c.uniqueGame && typeof c.uniqueGame === 'object') {
+            const prevUqRid = state.uniqueGame.roundId;
+            const prevUqPhase = state.uniqueGame.phase;
+            const corePicks = (c.uniqueGame.picks && typeof c.uniqueGame.picks === 'object') ? c.uniqueGame.picks : {};
+            const subPicks = (fbMirror.uniquePicks && typeof fbMirror.uniquePicks === 'object') ? fbMirror.uniquePicks : {};
+            state.uniqueGame = {
+              ...state.uniqueGame,
+              ...c.uniqueGame,
+              picks: { ...corePicks, ...subPicks }
+            };
+            if (state.uniqueGame.phase !== 'picking') clearUniqueTimer();
+            if (state.uniqueGame.phase === 'picking' && (prevUqPhase !== 'picking' || prevUqRid !== state.uniqueGame.roundId)) {
+              if (prevUqRid && prevUqRid !== state.uniqueGame.roundId) autoDismissWinnerModalForNextRound();
+              ensureUniqueCountdownLoop();
             }
           }
           state.winners = Array.isArray(c.winners) ? c.winners : [];
@@ -5545,7 +6087,7 @@
           hadConfiguredPrizes: state.hadConfiguredPrizes, selectedPrize: state.selectedPrize,
           luckyDrawExclusions: state.luckyDrawExclusions, wheelManualExclusions: state.wheelManualExclusions,
           giftExchangeExclusions: state.giftExchangeExclusions,
-          wheelStage: state.wheelStage, costumeVote: state.costumeVote, bingoGame: state.bingoGame, winners: state.winners, prizeAlerts: state.prizeAlerts,
+          wheelStage: state.wheelStage, costumeVote: state.costumeVote, bingoGame: state.bingoGame, uniqueGame: state.uniqueGame, winners: state.winners, prizeAlerts: state.prizeAlerts,
           kahootGame: state.kahootGame,
           circularLoopId: state.circularLoopId, circularLoopPath: state.circularLoopPath,
           circularCurrentIdx: state.circularCurrentIdx, circularDrawnList: state.circularDrawnList,
@@ -5583,6 +6125,20 @@
             ensureBingoAutoLoop();
           } else if (state.bingoGame.phase !== 'playing' || state.bingoGame.autoPaused || state.bingoGame.mode !== 'auto') {
             clearBingoAutoTimer();
+          }
+        }
+        if (p.uniqueGame && typeof p.uniqueGame === 'object') {
+          const prevUqRid = state.uniqueGame.roundId;
+          const prevUqPhase = state.uniqueGame.phase;
+          state.uniqueGame = {
+            ...state.uniqueGame,
+            ...p.uniqueGame,
+            picks: (p.uniqueGame.picks && typeof p.uniqueGame.picks === 'object') ? p.uniqueGame.picks : {}
+          };
+          if (state.uniqueGame.phase !== 'picking') clearUniqueTimer();
+          if (state.uniqueGame.phase === 'picking' && (prevUqPhase !== 'picking' || prevUqRid !== state.uniqueGame.roundId)) {
+            if (prevUqRid && prevUqRid !== state.uniqueGame.roundId) autoDismissWinnerModalForNextRound();
+            ensureUniqueCountdownLoop();
           }
         }
         if (Array.isArray(p.winners)) state.winners = p.winners;
